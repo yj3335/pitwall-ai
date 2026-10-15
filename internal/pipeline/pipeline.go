@@ -61,8 +61,9 @@ func New(cfg Config) *Pipeline {
 		if cfg.WriteTelemetry {
 			p.telemetry = pq.NewSink(pq.NewBatchWriter[stream.Event](cfg.LakehouseDir, "telemetry", cfg.WriterID), cfg.FlushRows, cfg.FlushEvery)
 		}
-		p.laps = pq.NewSink(pq.NewBatchWriter[stream.LapRecord](cfg.LakehouseDir, "laps", cfg.WriterID), 2_000, cfg.FlushEvery)
-		p.triggers = pq.NewSink(pq.NewBatchWriter[stream.Trigger](cfg.LakehouseDir, "triggers", cfg.WriterID), 500, cfg.FlushEvery)
+		lapRows, trigRows := min(2_000, cfg.FlushRows), min(500, cfg.FlushRows)
+		p.laps = pq.NewSink(pq.NewBatchWriter[stream.LapRecord](cfg.LakehouseDir, "laps", cfg.WriterID), lapRows, cfg.FlushEvery)
+		p.triggers = pq.NewSink(pq.NewBatchWriter[stream.Trigger](cfg.LakehouseDir, "triggers", cfg.WriterID), trigRows, cfg.FlushEvery)
 	}
 	return p
 }

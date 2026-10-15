@@ -35,12 +35,14 @@ func main() {
 	fromFile := flag.String("from-file", "", "process an events file offline instead of Kafka")
 	noTelemetry := flag.Bool("no-telemetry-table", false, "skip the raw telemetry table (laps/triggers only)")
 	publish := flag.Bool("publish-triggers", true, "produce triggers to f1.triggers")
+	flushRows := flag.Int("flush-rows", 20_000, "telemetry rows per committed Parquet batch")
 	flag.Parse()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	cfg := pipeline.Config{LakehouseDir: *out, WriterID: fmt.Sprintf("p%d_", os.Getpid()), WriteTelemetry: !*noTelemetry}
+	cfg := pipeline.Config{LakehouseDir: *out, WriterID: fmt.Sprintf("p%d_", os.Getpid()), WriteTelemetry: !*noTelemetry,
+		FlushRows: *flushRows}
 
 	if *fromFile != "" {
 		runOffline(cfg, *fromFile)
