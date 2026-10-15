@@ -1,0 +1,40 @@
+{"qid": "E01", "type": "exact", "query": "Article 30.5(m) two different dry-weather tyre specifications", "gold": ["2025-30.5-m"]}
+{"qid": "E02", "type": "exact", "query": "What does Article 54.4 c) say about working on a car serving a penalty?", "gold": ["2025-54.4-cde"]}
+{"qid": "E03", "type": "exact", "query": "Article 34.7 pit lane speed limit", "gold": ["2025-34.7"]}
+{"qid": "E04", "type": "exact", "query": "Article 34.14 unsafe release from the pit stop position", "gold": ["2025-34.14-abcd"]}
+{"qid": "E05", "type": "exact", "query": "Article 34.15 pit entry closed", "gold": ["2025-34.15"]}
+{"qid": "E06", "type": "exact", "query": "Article 56.4 entering the pits during the VSC", "gold": ["2025-56.4"]}
+{"qid": "E07", "type": "exact", "query": "Article 55.12 entering the pits while the safety car is deployed", "gold": ["2025-55.12"]}
+{"qid": "E08", "type": "exact", "query": "Article 57.4 b) work permitted on cars during a race suspension", "gold": ["2025-57.4-bc"]}
+{"qid": "E09", "type": "exact", "query": "Article 54.3 a) five second time penalty", "gold": ["2025-54.3-abc"]}
+{"qid": "E10", "type": "exact", "query": "Article 54.3 d) ten second stop-and-go penalty", "gold": ["2025-54.3-defghi"]}
+{"qid": "E11", "type": "exact", "query": "Article 55.14 LAPPED CARS MAY NOW OVERTAKE", "gold": ["2025-55.14"]}
+{"qid": "E12", "type": "exact", "query": "Article 55.15 SAFETY CAR IN THIS LAP message", "gold": ["2025-55.15"]}
+{"qid": "E13", "type": "exact", "query": "Article 56.7 VSC ENDING", "gold": ["2025-56.7"]}
+{"qid": "E14", "type": "exact", "query": "Article 58.12 rolling start procedure", "gold": ["2025-58.12"]}
+{"qid": "E15", "type": "exact", "query": "Article 33.3 leaving the track without a justifiable reason", "gold": ["2025-33.3"]}
+{"qid": "E16", "type": "exact", "query": "Article 26.11 rear lights with intermediate or wet tyres", "gold": ["2025-26.11"]}
+{"qid": "E17", "type": "exact", "query": "Article 54.4 b) crossing the Line no more than twice before serving a drive-through", "gold": ["2025-54.4-ab"]}
+{"qid": "E18", "type": "exact", "query": "Article 30.5 n) wet-weather tyres compulsory when the race is resumed behind the safety car", "gold": ["2025-30.5-n"]}
+{"qid": "E19", "type": "exact", "query": "Article 58.14 race cannot be resumed", "gold": ["2025-58.14"]}
+{"qid": "E20", "type": "exact", "query": "Article 55.17 safety car deployed on the last lap", "gold": ["2025-55.17"]}
+{"qid": "S01", "type": "semantic", "query": "My driver has a 5 second penalty. Can the mechanics start changing tyres as soon as he stops?", "gold": ["2025-54.4-cde", "prec-2023-sau-alo-penalty-service", "prec-2023-bhr-oco-penalty-service"]}
+{"qid": "S02", "type": "semantic", "query": "We have only run mediums all race in the dry. Can we finish the race on another set of mediums?", "gold": ["2025-30.5-m", "prec-wet-tyre-exemption"]}
+{"qid": "S03", "type": "semantic", "query": "Is it legal to come in for fresh tyres while the virtual safety car is out?", "gold": ["2025-56.4"]}
+{"qid": "S04", "type": "semantic", "query": "The race has been red flagged. Are we allowed to change tyres while the cars sit in the pit lane?", "gold": ["2025-57.4-bc", "prec-2024-mon-red-flag-free-tyres", "prec-2024-sao-red-flag-tyres"]}
+{"qid": "S05", "type": "semantic", "query": "Does a stop made under the safety car count as serving an outstanding time penalty?", "gold": ["2025-54.3-abc", "2025-54.4-ab"], "label_note": "54.4-ab added in the single label audit: 54.4b) governs serving penalties under SC/VSC"}
+{"qid": "S06", "type": "semantic", "query": "Our car was let go from the pit box straight into the path of another car in the pit lane", "gold": ["2025-34.14-abcd"]}
+{"qid": "S07", "type": "semantic", "query": "How fast are cars allowed to drive through the pit lane?", "gold": ["2025-34.7"]}
+{"qid": "S08", "type": "semantic", "query": "Race control shut the pit entrance for safety reasons. Can we still make our stop this lap?", "gold": ["2025-34.15", "prec-pit-entry-closed"]}
+{"qid": "S09", "type": "semantic", "query": "What happens if a drive-through is handed out in the final three laps of the race?", "gold": ["2025-54.3-defghi"]}
+{"qid": "S10", "type": "semantic", "query": "It rained and we used intermediates. Do we still need to run two different slick compounds?", "gold": ["2025-30.5-m", "prec-wet-tyre-exemption"]}
+{"qid": "S11", "type": "semantic", "query": "When can lapped cars pass the leaders and the safety car to unlap themselves?", "gold": ["2025-55.14"]}
+{"qid": "S12", "type": "semantic", "query": "Driver continued racing even though he knew the car had been released unsafely", "gold": ["2025-34.14-e"]}
+{"qid": "S13", "type": "semantic", "query": "Are drivers allowed to overtake each other while the virtual safety car is deployed?", "gold": ["2025-56.6"]}
+{"qid": "S14", "type": "semantic", "query": "How long must the car remain stationary in its pit box for a ten second time penalty?", "gold": ["2025-54.3-abc", "prec-2024-mex-ver-10s-penalties"]}
+{"qid": "S15", "type": "semantic", "query": "Mercedes double-stacked both cars for fresh mediums under the VSC in Singapore", "gold": ["prec-2023-sin-vsc-cheap-stop"]}
+{"qid": "S16", "type": "semantic", "query": "Alonso's penalty was served while the rear jack touched the car", "gold": ["prec-2023-sau-alo-penalty-service"]}
+{"qid": "S17", "type": "semantic", "query": "Which drivers got a free tyre change from the red flag in Brazil 2024?", "gold": ["prec-2024-sao-red-flag-tyres"]}
+{"qid": "S18", "type": "semantic", "query": "How much time do we lose pitting under a safety car compared with green-flag running?", "gold": ["prec-pit-lane-loss-sc-vsc"]}
+{"qid": "S19", "type": "semantic", "query": "Bearman was given a 10 second penalty for causing a collision at Interlagos", "gold": ["notice-9636-25"]}
+{"qid": "S20", "type": "semantic", "query": "After a suspension, how is the race restarted when the track is too wet for a standing start?", "gold": ["2025-58.12"]}
