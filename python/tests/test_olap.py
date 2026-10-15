@@ -20,7 +20,7 @@ def test_views_and_row_counts(lh):
     assert lh.sessions() == [9165]
     n = lh.query("SELECT count(*) FROM telemetry").rows[0][0]
     laps = lh.query("SELECT count(*) FROM laps").rows[0][0]
-    assert n == 113_771  # every replayed event landed in Parquet exactly once
+    assert n == 113_469  # every replayed event landed in Parquet exactly once (62 laps, no cool-down lap)
     assert 1000 < laps < 1200
 
 
@@ -56,11 +56,32 @@ def test_safety_car_laps_are_not_clean(lh):
     assert {20, 21}.issubset({x[0] for x in sc_laps})  # real 2023 Singapore SC
 
 
-def test_driver_state_and_field(lh):
-    s = lh.driver_state(9165, 44, 43)  # Hamilton before the lap-44 VSC stop
-    assert s["compound"] == "HARD" and s["compounds_used"] == ["HARD", "MEDIUM"]
-    field = lh.field_at_lap(9165, 43)
-    assert len(field) >= 15 and field[0]["position"] == 1
+def test_decision_state_is_before_the_pit_lane(lh):
+    """Hamilton pitted at the end of lap 44 (Singapore 2023). The lap-44 lap
+    record carries his position from inside the pit lane (P5); the decision
+    state must be taken before the final sector, where he was P4."""
+    at = lh.decision_point(9165, 44, 44)
+    s = lh.decision_state(at, 44)
+    assert s["position"] == 4 and s["compound"] == "HARD" and s["tyre_age_laps"] == 23
+    assert s["track_status"] == "VSC" and s["compounds_used"] == ["HARD", "MEDIUM"]
+    lap_record = lh.query("SELECT position FROM laps WHERE driver_number = 44 AND lap_number = 44").rows[0][0]
+    assert lap_record == 5  # the end-of-lap row is post-pit-entry, which is why it is not used
+    field = lh.field_at(at, exclude_driver=44)
+    assert len(field) >= 15 and all(f["driver_number"] != 44 for f in field)
+    later = lh.query("SELECT min(ts_ms) FROM telemetry WHERE driver_number = 44 AND lap_number = 45").rows[0][0]
+    assert at.ts_ms < later
+
+
+def test_scoped_sql_cannot_see_the_future(lh):
+    at = lh.decision_point(9165, 44, 44)
+    r = lh.safe_query("SELECT max(lap_number) AS l, max(ts_ms) AS t FROM laps", as_of=at).records()[0]
+    assert r["l"] == 43  # only completed laps
+    t = lh.safe_query("WITH x AS (SELECT * FROM telemetry) SELECT max(ts_ms) AS t, count(DISTINCT session_key) AS s FROM x", as_of=at).records()[0]
+    assert t["t"] <= at.ts_ms and t["s"] == 1
+    tr = lh.safe_query("SELECT count(*) AS n FROM triggers WHERE ts_ms > " + str(at.ts_ms), as_of=at).records()[0]
+    assert tr["n"] == 0
+    stints = lh.stint_summary(9165, 44, before_lap=44).records()
+    assert max(s["last_lap"] for s in stints) == 43
 
 
 def test_stint_summary_and_leaderboard(lh):

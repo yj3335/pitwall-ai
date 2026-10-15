@@ -34,7 +34,8 @@ const fieldSchema = `{
     "properties": {
       "driver_number": {"type": "integer"}, "driver_code": {"type": "string"}, "position": {"type": "integer"},
       "gap_to_leader_ms": {"type": "number"}, "compound": {"type": "string"}, "tyre_age_laps": {"type": "integer"},
-      "base_lap_ms": {"type": "number"}, "planned_stop_lap": {"type": "integer"}
+      "base_lap_ms": {"type": "number"}, "planned_stop_lap": {"type": "integer"},
+      "deg_slope_ms_per_lap": {"type": "number", "description": "observed degradation of the rival's current set"}
     }
   }
 }`

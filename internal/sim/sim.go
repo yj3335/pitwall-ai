@@ -278,10 +278,16 @@ func newPlanner(req *Request) *plannerCtx {
 		if _, ok := Compounds[comp]; !ok {
 			comp = "MEDIUM"
 		}
+		firstSet := true // the observed degradation applies to the set fitted now
+		weatherStop := false
 		for k := 0; k < c.n; k++ {
 			lap := req.CurrentLap + k
 			m := Compounds[comp]
-			t := f.BaseLapMs + m.DegMs*float64(age) - FuelEffectMsPerLap*float64(k)
+			deg := m.DegMs
+			if firstSet && f.DegSlopeMsPerLap != nil {
+				deg = math.Max(0, *f.DegSlopeMsPerLap)
+			}
+			t := f.BaseLapMs + deg*float64(age) - FuelEffectMsPerLap*float64(k)
 			w := c.wetness(lap)
 			if m.Dry {
 				t += m.PaceMs * (1 - w)
@@ -290,9 +296,16 @@ func newPlanner(req *Request) *plannerCtx {
 			if age > m.CliffLap {
 				t += m.CliffMs * float64(age-m.CliffLap)
 			}
-			if f.PlannedStopLap == lap {
+			// rivals react to the weather too: slicks on a wet track or wet
+			// tyres on a dry one trigger a crossover stop (once)
+			crossover := !weatherStop && ((m.Dry && w >= SlickToInterWetness) || (!m.Dry && w <= InterToSlickWetness))
+			if f.PlannedStopLap == lap || crossover {
 				t += req.PitLossGreenS * 1000
-				comp, age = otherDry(comp), -1
+				comp, age = fieldNextCompound(comp, w), -1
+				firstSet = false
+				if crossover {
+					weatherStop = true
+				}
 			}
 			age++
 			cum += t
@@ -329,6 +342,17 @@ func autoStopLap(f FieldCar, current, total int) int {
 		return 0
 	}
 	return lap
+}
+
+// fieldNextCompound is the tyre a projected rival fits at a stop.
+func fieldNextCompound(current string, wetness float64) string {
+	if wetness >= SlickToInterWetness {
+		return "INTERMEDIATE"
+	}
+	if !Compounds[current].Dry {
+		return "MEDIUM"
+	}
+	return otherDry(current)
 }
 
 func otherDry(c string) string {

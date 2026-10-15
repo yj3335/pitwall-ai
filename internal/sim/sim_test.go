@@ -248,3 +248,45 @@ func TestOvertakingDifficultyValuesTrackPosition(t *testing.T) {
 		t.Fatal("harder overtaking must worsen the finishing position after a stop")
 	}
 }
+
+// A rival's observed degradation must change the projection: with 140 ms/lap
+// of wear the car ahead is much easier to beat than with the default model.
+func TestFieldDegradationIsUsed(t *testing.T) {
+	mk := func(deg *float64) *Result {
+		req := baseRequest()
+		req.Field[1].DegSlopeMsPerLap = deg // NOR, the car directly ahead of LEC
+		req.Strategies = []string{"PIT_NOW_HARD"}
+		r, err := Simulate(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	base, worn := mk(nil), mk(f64(140))
+	if outcome(t, worn, "PIT_NOW_HARD").PGainPosition <= outcome(t, base, "PIT_NOW_HARD").PGainPosition {
+		t.Fatalf("a heavily degrading rival should be easier to beat: %.2f vs %.2f",
+			outcome(t, worn, "PIT_NOW_HARD").PGainPosition, outcome(t, base, "PIT_NOW_HARD").PGainPosition)
+	}
+}
+
+// When rain arrives, rivals on slicks also switch to intermediates in the
+// projection instead of losing 7 s a lap to the flag.
+func TestFieldReactsToWeather(t *testing.T) {
+	req := baseRequest()
+	req.TrackWetness = 0.6
+	req.Car.Compound, req.Car.CompoundsUsed = "SOFT", []string{"SOFT"}
+	c := newPlanner(&req)
+	for _, f := range c.field {
+		dry := Compounds[canonical(f.car.Compound)].Dry
+		if !dry {
+			continue
+		}
+		// first lap on slicks in the rain carries the crossover stop, later laps are on inters
+		if f.lapMs[1] > f.lapMs[0] {
+			t.Fatalf("%s stayed on slicks in the rain: %.0f -> %.0f", f.car.DriverCode, f.lapMs[0], f.lapMs[1])
+		}
+		if f.lapMs[1] > req.Car.BaseLapMs+wetPenaltyMs("INTERMEDIATE", 0.6)+2000 {
+			t.Fatalf("%s not on intermediates after the crossover: %.0f", f.car.DriverCode, f.lapMs[1])
+		}
+	}
+}

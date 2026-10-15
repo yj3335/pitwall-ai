@@ -32,11 +32,12 @@ build:
 ## data --------------------------------------------------------------------
 data:
 	$(PY) scripts/fetch-openf1.py
-	$(PY) scripts/build-fia-corpus.py
+	$(PY) scripts/build-fia-corpus.py   # add --include-2026 for the (new-formula) 2026 regulations
 
 lakehouse: build
 	rm -rf data/lakehouse/telemetry data/lakehouse/laps data/lakehouse/triggers
 	$(ENV) for f in data/races/session_*_events.jsonl.gz; do ./bin/processor -from-file $$f -out data/lakehouse; done
+	$(PY) scripts/measure-pit-loss.py
 
 index:
 	$(ENV) cd python && $(PY) -m pitwall.rag.indexer

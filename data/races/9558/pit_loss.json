@@ -1,0 +1,22 @@
+{
+  "session_key": 9558,
+  "green_s": 24.2,
+  "green_n": 7,
+  "green_iqr_s": [
+    21.0,
+    30.9
+  ],
+  "green_stops": [
+    "ZHO L12",
+    "LEC L19",
+    "PER L19",
+    "OCO L19",
+    "ZHO L19",
+    "OCO L21",
+    "SAI L50"
+  ],
+  "use_measured": true,
+  "neutral_s": 14.7,
+  "neutral_basis": "assumption: 0.606 x green (13.2/21.8); SC/VSC gap data too noisy to measure",
+  "method": "field-relative gap change across in-lap + out-lap, green-flag stops only"
+}

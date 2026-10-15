@@ -29,8 +29,9 @@ def load_queries(path: Path | None = None) -> list[dict]:
 
 
 def evaluate(retriever: HybridRetriever, queries: list[dict], modes=MODES, k_eval: int = 10, warmup: bool = True) -> dict:
-    # current-season filter: the 2026 Section B duplicates many 2025 articles
-    qfilter = HybridRetriever.make_filter(exclude_season=2026)
+    # the queries are written against the 2025 regulations (Issue 5); earlier
+    # editions repeat most articles and are excluded, context documents are kept
+    qfilter = HybridRetriever.edition_filter("2025-i5")
     t = time.perf_counter()
     vecs = retriever.embedder.embed([q["query"] for q in queries])
     embed_ms_per_query = (time.perf_counter() - t) * 1000 / len(queries)

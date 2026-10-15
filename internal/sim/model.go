@@ -28,6 +28,10 @@ const (
 	// DefaultOvertakeDifficulty suits a typical permanent circuit; street
 	// circuits such as Singapore or Monaco sit at 0.8-0.95.
 	DefaultOvertakeDifficulty = 0.3
+	// Wetness levels at which projected rivals switch tyres. The pace model's
+	// slick/intermediate crossover is at w = 0.27; rivals react with a margin.
+	SlickToInterWetness = 0.35
+	InterToSlickWetness = 0.15
 )
 
 // Compound is the tyre model for one specification.
@@ -87,6 +91,8 @@ type FieldCar struct {
 	TyreAgeLaps    int     `json:"tyre_age_laps"`
 	BaseLapMs      float64 `json:"base_lap_ms,omitempty"`
 	PlannedStopLap int     `json:"planned_stop_lap,omitempty"` // 0 = no further stop expected
+	// observed fuel-corrected degradation of the rival's current set (ms/lap)
+	DegSlopeMsPerLap *float64 `json:"deg_slope_ms_per_lap,omitempty"`
 }
 
 // Request is the input of simulate_pit_strategies.

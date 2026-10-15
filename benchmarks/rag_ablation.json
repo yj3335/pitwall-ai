@@ -1,0 +1,172 @@
+{
+  "queries": 40,
+  "embed_ms_per_query": 18.39,
+  "modes": {
+    "dense": {
+      "recall_at_1": 0.8,
+      "recall_at_3": 0.9,
+      "recall_at_5": 0.925,
+      "mrr_at_10": 0.8629,
+      "recall_at_3_exact": 1.0,
+      "recall_at_3_semantic": 0.8,
+      "qdrant_p50_ms": 1.66,
+      "qdrant_p95_ms": 2.22,
+      "end_to_end_p50_ms": 20.05,
+      "end_to_end_p95_ms": 20.61,
+      "misses_at_3": [
+        {
+          "qid": "S01",
+          "rank": 10,
+          "top3": [
+            "prec-pit-entry-closed",
+            "2025-i5-54.3-a",
+            "2025-i5-30.5-n"
+          ]
+        },
+        {
+          "qid": "S04",
+          "rank": 6,
+          "top3": [
+            "prec-pit-entry-closed",
+            "2025-i5-30.5-n",
+            "2025-i5-54.4-d"
+          ]
+        },
+        {
+          "qid": "S06",
+          "rank": 4,
+          "top3": [
+            "2025-i5-34.8",
+            "2025-i5-34.5",
+            "2025-i5-34.2"
+          ]
+        },
+        {
+          "qid": "S09",
+          "rank": null,
+          "top3": [
+            "2025-i5-54.3-c",
+            "2025-i5-59.3",
+            "2025-i5-55.17"
+          ]
+        }
+      ]
+    },
+    "sparse": {
+      "recall_at_1": 0.575,
+      "recall_at_3": 0.875,
+      "recall_at_5": 0.925,
+      "mrr_at_10": 0.7208,
+      "recall_at_3_exact": 1.0,
+      "recall_at_3_semantic": 0.75,
+      "qdrant_p50_ms": 1.19,
+      "qdrant_p95_ms": 1.26,
+      "end_to_end_p50_ms": 1.19,
+      "end_to_end_p95_ms": 1.26,
+      "misses_at_3": [
+        {
+          "qid": "S01",
+          "rank": 4,
+          "top3": [
+            "prec-2024-aut-nor-track-limits",
+            "prec-pit-entry-closed",
+            "2025-i5-54.3-a"
+          ]
+        },
+        {
+          "qid": "S05",
+          "rank": 4,
+          "top3": [
+            "prec-2023-sau-alo-penalty-service",
+            "prec-2024-mex-ver-10s-penalties",
+            "prec-2024-aut-nor-track-limits"
+          ]
+        },
+        {
+          "qid": "S07",
+          "rank": null,
+          "top3": [
+            "2025-i5-54.3-c",
+            "2025-i5-55.11",
+            "2025-i5-34.9"
+          ]
+        },
+        {
+          "qid": "S09",
+          "rank": null,
+          "top3": [
+            "2025-i5-54.3-c",
+            "2025-i5-45.1-bc",
+            "2025-i5-44.1"
+          ]
+        },
+        {
+          "qid": "S20",
+          "rank": null,
+          "top3": [
+            "2025-i5-15.3",
+            "prec-wet-tyre-exemption",
+            "2025-i5-58.4"
+          ]
+        }
+      ]
+    },
+    "hybrid": {
+      "recall_at_1": 0.775,
+      "recall_at_3": 0.95,
+      "recall_at_5": 0.975,
+      "mrr_at_10": 0.8592,
+      "recall_at_3_exact": 1.0,
+      "recall_at_3_semantic": 0.9,
+      "qdrant_p50_ms": 2.65,
+      "qdrant_p95_ms": 2.96,
+      "end_to_end_p50_ms": 21.05,
+      "end_to_end_p95_ms": 21.36,
+      "misses_at_3": [
+        {
+          "qid": "S01",
+          "rank": 5,
+          "top3": [
+            "prec-pit-entry-closed",
+            "2025-i5-54.3-a",
+            "prec-2024-aut-nor-track-limits"
+          ]
+        },
+        {
+          "qid": "S09",
+          "rank": null,
+          "top3": [
+            "2025-i5-54.3-c",
+            "2025-i5-45.1-bc",
+            "2025-i5-59.3"
+          ]
+        }
+      ]
+    },
+    "hybrid_rerank": {
+      "recall_at_1": 0.75,
+      "recall_at_3": 0.975,
+      "recall_at_5": 0.975,
+      "mrr_at_10": 0.85,
+      "recall_at_3_exact": 1.0,
+      "recall_at_3_semantic": 0.95,
+      "qdrant_p50_ms": 3.35,
+      "qdrant_p95_ms": 6.33,
+      "end_to_end_p50_ms": 167.81,
+      "end_to_end_p95_ms": 276.63,
+      "misses_at_3": [
+        {
+          "qid": "S09",
+          "rank": null,
+          "top3": [
+            "2025-i5-54.3-c",
+            "2025-i5-55.17",
+            "2025-i5-44.1"
+          ]
+        }
+      ]
+    }
+  },
+  "reranker": "Xenova/ms-marco-MiniLM-L-12-v2",
+  "embed_model": "bge-m3"
+}

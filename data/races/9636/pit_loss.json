@@ -1,0 +1,16 @@
+{
+  "session_key": 9636,
+  "green_s": 24.5,
+  "green_n": 1,
+  "green_iqr_s": [
+    24.5,
+    24.5
+  ],
+  "green_stops": [
+    "LEC L24"
+  ],
+  "use_measured": false,
+  "neutral_s": 14.8,
+  "neutral_basis": "assumption: 0.606 x green (13.2/21.8); SC/VSC gap data too noisy to measure",
+  "method": "field-relative gap change across in-lap + out-lap, green-flag stops only"
+}

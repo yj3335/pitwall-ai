@@ -143,11 +143,28 @@ def track_status_series(rc: list[dict]) -> tuple[Series, list[tuple[int, int, in
     return Series([(0, "GREEN")] + rows), yellow_spans
 
 
+def race_length(t: dict[str, list[dict]]) -> int:
+    """Scheduled-or-shortened race distance: the lap on which the chequered
+    flag was shown. OpenF1 also records the podium finishers' cool-down lap
+    (e.g. a "lap 63" for three cars at the 62-lap 2023 Singapore GP), so the
+    maximum lap number is not the race length."""
+    chq = [m["lap_number"] for m in t["race_control"] if (m.get("flag") or "").upper() == "CHEQUERED" and m.get("lap_number")]
+    if chq:
+        return max(chq)
+    counts: dict[int, int] = {}
+    for lp in t["laps"]:
+        counts[lp["lap_number"]] = counts.get(lp["lap_number"], 0) + 1
+    return max(n for n, c in counts.items() if c >= 3)
+
+
 def build_events(key: int, t: dict[str, list[dict]], sample_ms: int) -> list[dict]:
     drivers = {d["driver_number"]: d["name_acronym"] for d in t["drivers"]}
+    total = race_length(t)
     # ---- laps: reconstruct absolute start times (lap 1 start is often missing)
     laps_by_driver: dict[int, list[dict]] = {}
     for lap in t["laps"]:
+        if lap["lap_number"] > total:
+            continue  # cool-down lap after the chequered flag
         laps_by_driver.setdefault(lap["driver_number"], []).append(lap)
     lap_index: dict[int, tuple[list[int], list[dict]]] = {}
     race_start, race_end = None, None
@@ -292,7 +309,7 @@ def fetch_session(key: int, sample_ms: int) -> None:
     for name, rows in tables.items():
         write_gz(out / f"{name}.json.gz", rows)
     pit_lane = sorted(p["lane_duration"] for p in tables["pit"] if p.get("lane_duration") and 15 < p["lane_duration"] < 40)
-    laps_total = max((lp["lap_number"] for lp in tables["laps"]), default=0)
+    laps_total = race_length(tables)
     meta_out = {
         "session_key": key,
         "meeting_key": meta["meeting_key"],

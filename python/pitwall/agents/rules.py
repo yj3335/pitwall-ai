@@ -9,6 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from pitwall.regulations import DEFAULT_EDITION, article_ref
+
 DRY = {"SOFT", "MEDIUM", "HARD"}
 WET = {"INTERMEDIATE", "WET"}
 ACTIONS = ["PIT_NOW_HARD", "PIT_NOW_MEDIUM", "PIT_NOW_SOFT", "PIT_NOW_INTER", "STAY_OUT_EXTEND", "OPPOSITE_AHEAD"]
@@ -45,6 +47,11 @@ class Constraints:
     track_wetness: float = 0.0
     forbid_compounds: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    edition: str = DEFAULT_EDITION
+
+    def art(self, clause: str) -> str:
+        """Article reference of a clause in the edition in force (e.g. 30.5(n) in 2023)."""
+        return article_ref(self.edition, clause)
 
     @property
     def wet_used(self) -> bool:
@@ -59,24 +66,27 @@ class Constraints:
         return not self.wet_used and len(self.dry_used) < 2
 
     def describe(self) -> list[str]:
-        out = []
+        tc = self.art("two_compound")
+        out = [f"Regulations: FIA Sporting Regulations edition {self.edition} (the issue in force on the race date)."]
         if self.needs_second_dry:
-            out.append(f"Art. 30.5(m): only {'/'.join(sorted(self.dry_used)) or 'one'} dry spec used so far, a DIFFERENT dry compound "
+            out.append(f"Art. {tc}: only {'/'.join(sorted(self.dry_used)) or 'one'} dry spec used so far, a DIFFERENT dry compound "
                        f"must still be fitted before the flag (no intermediates used).")
         elif self.wet_used:
-            out.append("Art. 30.5(m): intermediates/wets used, so the two dry-compound requirement no longer applies.")
+            out.append(f"Art. {tc}: intermediates/wets used, so the two dry-compound requirement no longer applies.")
         else:
-            out.append(f"Art. 30.5(m): satisfied ({'+'.join(sorted(self.dry_used))} used).")
+            out.append(f"Art. {tc}: satisfied ({'+'.join(sorted(self.dry_used))} used).")
         if self.penalty_s:
-            out.append(f"Art. 54.3/54.4(c): pending {self.penalty_s:.0f}s time penalty. At the next stop the car must be stationary "
-                       f"for {self.penalty_s:.0f}s before anyone touches it (+{self.penalty_s:.1f}s to the stop); with no further stop it is added to race time.")
+            out.append(f"Art. {self.art('penalty_at_neutral_stop')} / {self.art('penalty_hold')}: pending {self.penalty_s:.0f}s time penalty. "
+                       f"At the next stop the car must be stationary for {self.penalty_s:.0f}s before anyone touches it "
+                       f"(+{self.penalty_s:.1f}s to the stop); with no further stop it is added to race time.")
         if self.pit_entry_closed:
-            out.append("Art. 34.15: PIT ENTRY CLOSED. No stop is allowed this lap.")
+            out.append(f"Art. {self.art('pit_entry_closed')}: PIT ENTRY CLOSED. Entering for tyres is penalised; no stop this lap.")
         if self.track_status in ("SC", "VSC"):
-            out.append(f"Art. {'55.12' if self.track_status == 'SC' else '56.4'}: {self.track_status} deployed, cars may pit to change tyres; "
-                       "pit-lane time loss is roughly 13 s instead of 22 s (cheap stop).")
+            clause = "sc_pit_entry" if self.track_status == "SC" else "vsc_pit_entry"
+            out.append(f"Art. {self.art(clause)}: {self.track_status} deployed, cars may enter the pits to change tyres; "
+                       "the field is slowed, so a stop costs less time than under green flag.")
         if self.track_status == "RED":
-            out.append("Art. 57.4(b)(vii): race suspended, wheels and tyres may be changed in the pit lane at no time cost.")
+            out.append(f"Art. {self.art('red_flag_tyres')}: race suspended, wheels and tyres may be changed in the pit lane at no time cost.")
         if self.track_wetness >= 0.35:
             out.append(f"Track wetness {self.track_wetness:.2f}: slicks are not viable, intermediates/wets required.")
         elif self.track_wetness <= 0.15 and canonical(self.compound) in WET:
@@ -119,16 +129,17 @@ def check(proposal: dict, c: Constraints, traffic: dict | None = None) -> list[V
     dry = {canonical(x) for x in used if canonical(x) in DRY}
     if not wet and len(dry) < 2:
         v.append(Violation("TWO_COMPOUND", f"finishing a dry race on {'+'.join(sorted(dry)) or 'one compound'} only violates the "
-                           f"mandatory use of two different dry-weather specifications (disqualification)", "30.5(m)"))
+                           f"mandatory use of two different dry-weather specifications (disqualification)", c.art("two_compound")))
     if stops and pit_lap == c.current_lap and c.pit_entry_closed:
-        v.append(Violation("PIT_ENTRY_CLOSED", "the pit entry is closed this lap; entering the pit lane is penalised", "34.15"))
+        v.append(Violation("PIT_ENTRY_CLOSED", "the pit entry is closed this lap; entering the pit lane for tyres is penalised",
+                           c.art("pit_entry_closed")))
     if stops and comp in [canonical(x) for x in c.forbid_compounds]:
         v.append(Violation("NO_SETS", f"no {comp} sets available"))
     if stops and c.penalty_s > 0:
         held = float(proposal.get("penalty_hold_s") or 0)
         if abs(held - c.penalty_s) > 0.5:
             v.append(Violation("PENALTY_HOLD", f"the pending {c.penalty_s:.0f}s penalty adds a {c.penalty_s:.0f}s stationary hold "
-                               f"to this stop (no work on the car until it has elapsed); proposal accounts {held:.0f}s", "54.4(c)"))
+                               f"to this stop (no work on the car until it has elapsed); proposal accounts {held:.0f}s", c.art("penalty_hold")))
     # physics: tyre choice vs track wetness at the stop
     if stops and comp in DRY and c.track_wetness >= 0.35:
         v.append(Violation("SLICKS_ON_WET", f"slicks on a wet track (wetness {c.track_wetness:.2f})", severity="hard"))
@@ -154,4 +165,5 @@ def constraints_from(scn: dict[str, Any]) -> Constraints:
         penalty_s=float(car.get("penalty_s") or 0), track_status=(scn.get("track_status") or "GREEN").upper(),
         pit_entry_closed=bool(scn.get("pit_entry_closed")), track_wetness=float(scn.get("track_wetness") or 0),
         forbid_compounds=[canonical(x) for x in scn.get("forbid_compounds", [])],
+        edition=scn.get("edition") or DEFAULT_EDITION,
     )

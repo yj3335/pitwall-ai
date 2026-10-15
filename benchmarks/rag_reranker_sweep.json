@@ -1,0 +1,56 @@
+[
+  {
+    "reranker": "Xenova/ms-marco-MiniLM-L-12-v2",
+    "candidates": 10,
+    "recall_at_1": 0.75,
+    "recall_at_3": 0.975,
+    "mrr_at_10": 0.85,
+    "end_to_end_p50_ms": 183.12,
+    "end_to_end_p95_ms": 282.77
+  },
+  {
+    "reranker": "Xenova/ms-marco-MiniLM-L-12-v2",
+    "candidates": 20,
+    "recall_at_1": 0.75,
+    "recall_at_3": 0.95,
+    "mrr_at_10": 0.8479,
+    "end_to_end_p50_ms": 351.82,
+    "end_to_end_p95_ms": 561.07
+  },
+  {
+    "reranker": "jinaai/jina-reranker-v1-turbo-en",
+    "candidates": 20,
+    "recall_at_1": 0.675,
+    "recall_at_3": 0.875,
+    "mrr_at_10": 0.7698,
+    "end_to_end_p50_ms": 232.63,
+    "end_to_end_p95_ms": 361.43
+  },
+  {
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "candidates": 10,
+    "recall_at_1": 0.775,
+    "recall_at_3": 0.95,
+    "mrr_at_10": 0.8633,
+    "end_to_end_p50_ms": 1538.44,
+    "end_to_end_p95_ms": 2428.08
+  },
+  {
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "candidates": 15,
+    "recall_at_1": 0.775,
+    "recall_at_3": 0.925,
+    "mrr_at_10": 0.8598,
+    "end_to_end_p50_ms": 2260.04,
+    "end_to_end_p95_ms": 3642.42
+  },
+  {
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "candidates": 20,
+    "recall_at_1": 0.775,
+    "recall_at_3": 0.925,
+    "mrr_at_10": 0.8598,
+    "end_to_end_p50_ms": 2921.83,
+    "end_to_end_p95_ms": 4549.77
+  }
+]

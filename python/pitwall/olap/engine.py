@@ -147,20 +147,28 @@ class Lakehouse:
             cur.close()
         return QueryResult(cols, rows, (time.perf_counter() - t0) * 1000)
 
-    def safe_query(self, sql: str, max_rows: int = 200) -> QueryResult:
-        return self.query(guard_sql(sql, max_rows))
+    def safe_query(self, sql: str, max_rows: int = 200, as_of: "AsOf | None" = None) -> QueryResult:
+        """Run model-written SQL. With ``as_of`` the laps / telemetry / triggers
+        names are shadowed by CTEs restricted to one session and to data that
+        existed at the decision instant, so the query cannot see the future."""
+        q = guard_sql(sql, max_rows)
+        if as_of is not None:
+            q = as_of.wrap(q)
+        return self.query(q)
 
     # ------------------------------------------------------------ analytics
     def sessions(self) -> list[int]:
         return [r[0] for r in self.query("SELECT DISTINCT session_key FROM laps ORDER BY 1").rows]
 
-    def stint_summary(self, session: int, driver: int | None = None) -> QueryResult:
-        """Per-stint pace and fuel-corrected degradation (REGR_SLOPE over clean laps)."""
+    def stint_summary(self, session: int, driver: int | None = None, before_lap: int | None = None) -> QueryResult:
+        """Per-stint pace and fuel-corrected degradation (REGR_SLOPE over clean
+        laps), optionally using only laps completed before ``before_lap``."""
         return self.query(
             """
             WITH l AS (
               SELECT *, lap_number - tyre_age_laps AS stint_start
               FROM laps WHERE session_key = ? AND (? IS NULL OR driver_number = ?)
+                AND (? IS NULL OR lap_number < ?)
             )
             SELECT driver_number, any_value(driver_code) AS driver_code, compound, min(lap_number) AS first_lap,
                    max(lap_number) AS last_lap, count(*) AS laps, count(*) FILTER (is_clean) AS clean_laps,
@@ -170,7 +178,7 @@ class Lakehouse:
             FROM l GROUP BY driver_number, compound, stint_start
             ORDER BY driver_number, first_lap
             """,
-            [session, driver, driver],
+            [session, driver, driver, before_lap, before_lap],
         )
 
     def degradation_leaderboard(self, session: int, at_lap: int) -> QueryResult:
@@ -218,43 +226,84 @@ class Lakehouse:
             [session, lap, *drivers],
         )
 
-    def driver_state(self, session: int, driver: int, lap: int) -> dict[str, Any] | None:
-        """Race state of one car at the end of a lap (for the strategy agent)."""
+    def decision_point(self, session: int, driver: int, lap: int) -> "AsOf":
+        """The instant a pit call for ``lap`` is made: the car's last telemetry
+        sample before it enters the final sector (pit entry is in the last
+        sector at these circuits), so nothing from the in-lap's pit lane or
+        later leaks into the state."""
         r = self.query(
             """
-            WITH hist AS (
-              SELECT * FROM laps WHERE session_key = ? AND driver_number = ? AND lap_number <= ?
-            )
-            SELECT h.driver_number, h.driver_code, h.lap_number, h.compound, h.tyre_age_laps, h.position,
-                   h.gap_to_leader_ms, h.interval_ahead_ms, h.interval_behind_ms,
-                   (SELECT deg_slope_ms_per_lap FROM hist WHERE deg_slope_ms_per_lap IS NOT NULL
-                      ORDER BY lap_number DESC LIMIT 1) AS deg_slope_ms_per_lap,
-                   (SELECT list(DISTINCT compound ORDER BY compound) FROM hist WHERE compound <> 'UNKNOWN') AS compounds_used,
-                   (SELECT median(lap_time_ms) FROM hist WHERE is_clean AND lap_number > ? - 6) AS recent_pace_ms
-            FROM hist h ORDER BY h.lap_number DESC LIMIT 1
-            """,
-            [session, driver, lap, lap],
-        )
-        recs = r.records()
-        return recs[0] if recs else None
+            SELECT coalesce(max(ts_ms) FILTER (sector <= 2), min(ts_ms)) FROM telemetry
+            WHERE session_key = ? AND driver_number = ? AND lap_number = ?
+            """, [session, driver, lap]).rows
+        if not r or r[0][0] is None:
+            raise LookupError(f"no telemetry for car {driver} on lap {lap} of session {session}")
+        return AsOf(session=session, ts_ms=int(r[0][0]), lap=lap)
 
-    def field_at_lap(self, session: int, lap: int) -> list[dict[str, Any]]:
-        """Every car's position, gap, compound and age at a lap (MCP 'field' input)."""
+    def decision_state(self, at: "AsOf", driver: int) -> dict[str, Any]:
+        """Car state at the decision instant plus history from completed laps."""
+        car = self.query(
+            """
+            SELECT driver_number, driver_code, lap_number, position, compound, tyre_age_laps, gap_to_leader_ms,
+                   interval_ahead_ms, interval_behind_ms, track_status, rainfall, track_temp_c, ts_ms
+            FROM telemetry WHERE session_key = ? AND driver_number = ? AND ts_ms <= ?
+            ORDER BY ts_ms DESC LIMIT 1
+            """, [at.session, driver, at.ts_ms]).records()[0]
+        hist = self.query(
+            """
+            SELECT
+              (SELECT deg_slope_ms_per_lap FROM laps WHERE session_key = ? AND driver_number = ? AND lap_number < ?
+                 AND deg_slope_ms_per_lap IS NOT NULL ORDER BY lap_number DESC LIMIT 1) AS deg_slope_ms_per_lap,
+              (SELECT median(lap_time_ms) FROM laps WHERE session_key = ? AND driver_number = ? AND is_clean
+                 AND lap_number BETWEEN ? - 6 AND ? - 1) AS recent_pace_ms,
+              (SELECT list(DISTINCT compound ORDER BY compound) FROM telemetry WHERE session_key = ? AND driver_number = ?
+                 AND ts_ms <= ? AND compound <> 'UNKNOWN') AS compounds_used
+            """, [at.session, driver, at.lap, at.session, driver, at.lap, at.lap, at.session, driver, at.ts_ms]).records()[0]
+        # the deg slope is only meaningful for the set currently fitted
+        deg_row = self.query(
+            """
+            SELECT compound, tyre_age_laps, lap_number FROM laps WHERE session_key = ? AND driver_number = ? AND lap_number < ?
+              AND deg_slope_ms_per_lap IS NOT NULL ORDER BY lap_number DESC LIMIT 1
+            """, [at.session, driver, at.lap]).records()
+        same_set = bool(deg_row) and deg_row[0]["compound"] == car["compound"] and \
+            car["tyre_age_laps"] - deg_row[0]["tyre_age_laps"] == car["lap_number"] - deg_row[0]["lap_number"]
+        return {**car, **hist, "deg_slope_ms_per_lap": hist["deg_slope_ms_per_lap"] if same_set else None}
+
+    def field_at(self, at: "AsOf", exclude_driver: int | None = None, stale_ms: int = 60_000) -> list[dict[str, Any]]:
+        """Every other running car's latest state at the decision instant."""
         return self.query(
             """
-            SELECT driver_number, driver_code, position, gap_to_leader_ms, compound, tyre_age_laps,
-                   lap_time_ms AS last_lap_ms
-            FROM laps WHERE session_key = ? AND lap_number = ? ORDER BY position
-            """,
-            [session, lap],
-        ).records()
+            SELECT driver_number, driver_code, position, gap_to_leader_ms, compound, tyre_age_laps, lap_number, track_status
+            FROM telemetry
+            WHERE session_key = ? AND ts_ms <= ? AND ts_ms > ? AND (? IS NULL OR driver_number <> ?)
+            QUALIFY row_number() OVER (PARTITION BY driver_number ORDER BY ts_ms DESC) = 1
+            ORDER BY position
+            """, [at.session, at.ts_ms, at.ts_ms - stale_ms, exclude_driver, exclude_driver]).records()
 
-    def recent_triggers(self, session: int, lap: int, driver: int | None = None, limit: int = 20) -> list[dict]:
+    def recent_triggers(self, at: "AsOf", driver: int | None = None, limit: int = 20) -> list[dict]:
         return self.query(
             """
             SELECT lap_number, driver_code, kind, detail, value FROM triggers
-            WHERE session_key = ? AND lap_number <= ? AND (? IS NULL OR driver_number = ?)
+            WHERE session_key = ? AND ts_ms <= ? AND (? IS NULL OR driver_number = ?)
             ORDER BY ts_ms DESC LIMIT ?
             """,
-            [session, lap, driver, driver, limit],
+            [at.session, at.ts_ms, driver, driver, limit],
         ).records()
+
+
+@dataclass(frozen=True)
+class AsOf:
+    """A decision instant inside one session."""
+
+    session: int
+    ts_ms: int
+    lap: int
+
+    def wrap(self, sql: str) -> str:
+        ctes = (f"laps AS (SELECT * FROM main.laps WHERE session_key = {int(self.session)} AND lap_number < {int(self.lap)}), "
+                f"telemetry AS (SELECT * FROM main.telemetry WHERE session_key = {int(self.session)} AND ts_ms <= {int(self.ts_ms)}), "
+                f"triggers AS (SELECT * FROM main.triggers WHERE session_key = {int(self.session)} AND ts_ms <= {int(self.ts_ms)})")
+        m = re.match(r"^\s*with\s+(recursive\s+)?", sql, re.IGNORECASE)
+        if m:
+            return f"WITH {m.group(1) or ''}{ctes}, " + sql[m.end():]
+        return f"WITH {ctes} {sql}"

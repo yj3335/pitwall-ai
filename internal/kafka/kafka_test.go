@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -61,6 +62,12 @@ func TestKafkaPerDriverOrdering(t *testing.T) {
 	if err := EnsureTopics(ctx, bl); err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() { // do not leave per-run topics on the shared broker
+		if admin, err := kgo.NewClient(kgo.SeedBrokers(bl...)); err == nil {
+			kadm.NewClient(admin).DeleteTopics(context.Background(), topic)
+			admin.Close()
+		}
+	})
 	if n, err := TopicPartitions(ctx, bl, topic); err != nil || n != TelemetryPartitions {
 		t.Fatalf("partitions=%d err=%v", n, err)
 	}

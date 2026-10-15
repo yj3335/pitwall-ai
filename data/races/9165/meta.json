@@ -6,7 +6,7 @@
   "country": "Singapore",
   "circuit": "Singapore",
   "date_start": "2023-09-17T12:00:00+00:00",
-  "total_laps": 63,
+  "total_laps": 62,
   "median_pit_lane_s": 30.4,
   "source": "https://api.openf1.org/v1 (session_key=9165)"
 }

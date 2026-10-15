@@ -15,6 +15,7 @@ import json
 import os
 import time
 import uuid
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -26,11 +27,12 @@ from pitwall.rag.embed import OllamaEmbedder
 from pitwall.rag.sparse import BM25Encoder
 
 MODES = ("dense", "sparse", "hybrid", "hybrid_rerank")
-# bge-reranker-v2-m3 was the most accurate cross-encoder in the benchmark
-# ablation (docs/BENCHMARKS.md); PITWALL_RERANKER=Xenova/ms-marco-MiniLM-L-12-v2
-# trades ~5 points of Recall@3 for ~6x lower rerank latency.
-DEFAULT_RERANKER = os.environ.get("PITWALL_RERANKER", "BAAI/bge-reranker-v2-m3")
-DEFAULT_RERANK_K = int(os.environ.get("PITWALL_RERANK_K", "15"))
+# On the 40-query benchmark every cross-encoder lands within one or two
+# queries of plain RRF (docs/BENCHMARKS.md), so the cheapest one is the
+# default: ms-marco-MiniLM-L-12 over 10 candidates (~0.2 s). bge-reranker-v2-m3
+# is ~10x slower with no measurable gain on this set.
+DEFAULT_RERANKER = os.environ.get("PITWALL_RERANKER", "Xenova/ms-marco-MiniLM-L-12-v2")
+DEFAULT_RERANK_K = int(os.environ.get("PITWALL_RERANK_K", "10"))
 
 
 def load_corpus(directory: Path | None = None) -> list[dict]:
@@ -57,6 +59,13 @@ def doc_text(d: dict) -> str:
     return " - ".join(head) + "\n" + d["text"]
 
 
+def with_dates(d: dict) -> dict:
+    """Ensure dated documents carry an integer ``date_ts`` for range filters."""
+    if d.get("date") and "date_ts" not in d:
+        d = {**d, "date_ts": int(datetime.fromisoformat(d["date"][:10]).replace(tzinfo=timezone.utc).timestamp())}
+    return d
+
+
 def point_id(chunk_id: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"pitwall/{chunk_id}"))
 
@@ -74,7 +83,7 @@ class Hit:
         p = self.payload
         if p.get("kind") == "regulation":
             para = f"({p['paragraphs']})" if p.get("paragraphs") and len(p["paragraphs"]) == 1 else ""
-            return f"FIA {p['season']} Sporting Regulations Art. {p['article']}{para}"
+            return f"FIA {p['season']} Sporting Regulations (Issue {p.get('issue', '?')}) Art. {p['article']}{para}"
         return p.get("title") or p.get("id", "")
 
 
@@ -116,7 +125,11 @@ class HybridRetriever:
             )
             for fieldname, schema in (("season", models.PayloadSchemaType.INTEGER),
                                       ("kind", models.PayloadSchemaType.KEYWORD),
-                                      ("article", models.PayloadSchemaType.KEYWORD)):
+                                      ("edition", models.PayloadSchemaType.KEYWORD),
+                                      ("article", models.PayloadSchemaType.KEYWORD),
+                                      ("date_ts", models.PayloadSchemaType.INTEGER),
+                                      ("session_key", models.PayloadSchemaType.INTEGER),
+                                      ("lap", models.PayloadSchemaType.INTEGER)):
                 self.client.create_payload_index(self.collection, fieldname, field_schema=schema)
 
     def index(self, docs: list[dict], recreate: bool = True, batch: int = 32, log=print) -> dict:
@@ -136,7 +149,7 @@ class HybridRetriever:
             points.append(models.PointStruct(
                 id=point_id(d["id"]),
                 vector={"dense": vec, "sparse": models.SparseVector(indices=sp.indices, values=sp.values)},
-                payload={**d, "indexed_text": text},
+                payload={**with_dates(d), "indexed_text": text},
             ))
         for i in range(0, len(points), 128):
             self.client.upsert(self.collection, points=points[i : i + 128], wait=True)
@@ -145,20 +158,35 @@ class HybridRetriever:
                 "embed_s": round(embed_s, 2), "total_s": round(time.perf_counter() - t0, 2)}
 
     # --------------------------------------------------------------- search
+    CONTEXT_KINDS = ["precedent_digest", "operational_note", "steward_notice"]
+
     @staticmethod
-    def make_filter(season: int | Iterable[int] | None = None, exclude_season: int | None = None,
-                    kinds: list[str] | None = None) -> models.Filter | None:
-        must, must_not = [], []
-        if season is not None:
-            seasons = [season] if isinstance(season, int) else list(season)
-            must.append(models.FieldCondition(key="season", match=models.MatchAny(any=seasons)))
-        if exclude_season is not None:
-            must_not.append(models.FieldCondition(key="season", match=models.MatchValue(value=exclude_season)))
-        if kinds:
-            must.append(models.FieldCondition(key="kind", match=models.MatchAny(any=kinds)))
-        if not must and not must_not:
-            return None
-        return models.Filter(must=must or None, must_not=must_not or None)
+    def edition_filter(edition: str) -> models.Filter:
+        """One regulation edition plus every non-regulation document (benchmark scope)."""
+        return models.Filter(should=[
+            models.Filter(must=[models.FieldCondition(key="kind", match=models.MatchValue(value="regulation")),
+                                models.FieldCondition(key="edition", match=models.MatchValue(value=edition))]),
+            models.Filter(must=[models.FieldCondition(key="kind", match=models.MatchAny(any=HybridRetriever.CONTEXT_KINDS))]),
+        ])
+
+    @staticmethod
+    def as_of_filter(edition: str, before_ts: int, session_key: int | None = None, lap: int | None = None) -> models.Filter:
+        """What a pit wall could know at a decision point: the regulation edition
+        in force, precedents and notes dated before the race, and race-control
+        notices of the same race from laps before the decision lap."""
+        should = [
+            models.Filter(must=[models.FieldCondition(key="kind", match=models.MatchValue(value="regulation")),
+                                models.FieldCondition(key="edition", match=models.MatchValue(value=edition))]),
+            models.Filter(must=[models.FieldCondition(key="kind", match=models.MatchAny(any=HybridRetriever.CONTEXT_KINDS)),
+                                models.FieldCondition(key="date_ts", range=models.Range(lt=before_ts))]),
+        ]
+        if session_key is not None and lap is not None:
+            should.append(models.Filter(must=[
+                models.FieldCondition(key="kind", match=models.MatchValue(value="steward_notice")),
+                models.FieldCondition(key="session_key", match=models.MatchValue(value=session_key)),
+                models.FieldCondition(key="lap", range=models.Range(lt=lap)),
+            ]))
+        return models.Filter(should=should)
 
     def _reranker_model(self):
         if self._reranker is None:
