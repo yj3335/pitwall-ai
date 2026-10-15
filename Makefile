@@ -35,7 +35,8 @@ data:
 	$(PY) scripts/build-fia-corpus.py
 
 lakehouse: build
-	$(ENV) ./bin/processor -from-file data/races/session_$(SESSION)_events.jsonl.gz -out data/lakehouse
+	rm -rf data/lakehouse/telemetry data/lakehouse/laps data/lakehouse/triggers
+	$(ENV) for f in data/races/session_*_events.jsonl.gz; do ./bin/processor -from-file $$f -out data/lakehouse; done
 
 index:
 	$(ENV) cd python && $(PY) -m pitwall.rag.indexer

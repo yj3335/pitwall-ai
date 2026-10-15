@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import gzip
+import io
 import json
 import re
 import sys
@@ -66,9 +67,15 @@ def ts(s: str | None) -> int | None:
     return int(datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp() * 1000)
 
 
-def write_gz(path: Path, obj) -> None:
+def open_gz(path: Path):
+    """gzip writer with a zeroed mtime header so re-runs are byte-identical."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with gzip.open(path, "wt", compresslevel=9) as f:
+    raw = gzip.GzipFile(filename="", mode="wb", compresslevel=9, fileobj=open(path, "wb"), mtime=0)
+    return io.TextIOWrapper(raw, encoding="utf-8")
+
+
+def write_gz(path: Path, obj) -> None:
+    with open_gz(path) as f:
         json.dump(obj, f, separators=(",", ":"))
 
 
@@ -166,11 +173,16 @@ def build_events(key: int, t: dict[str, list[dict]], sample_ms: int) -> list[dic
         stints.setdefault(s["driver_number"], []).append(s)
 
     def stint_for(dn: int, lap_no: int) -> tuple[str, int]:
+        # OpenF1 stints sometimes end a lap before the chequered flag; the car
+        # is still on the tyres of the latest stint that started before lap_no
+        best = None
         for s in stints.get(dn, []):
-            if s.get("lap_start") and s.get("lap_end") and s["lap_start"] <= lap_no <= s["lap_end"]:
-                comp = (s.get("compound") or "UNKNOWN").upper()
-                return comp, (s.get("tyre_age_at_start") or 0) + lap_no - s["lap_start"]
-        return "UNKNOWN", 0
+            if s.get("lap_start") and s["lap_start"] <= lap_no and (best is None or s["lap_start"] > best["lap_start"]):
+                best = s
+        if best is None:
+            return "UNKNOWN", 0
+        comp = (best.get("compound") or "UNKNOWN").upper()
+        return comp, (best.get("tyre_age_at_start") or 0) + lap_no - best["lap_start"]
 
     intervals: dict[int, Series] = {}
     by_dn: dict[int, list] = {}
@@ -296,7 +308,7 @@ def fetch_session(key: int, sample_ms: int) -> None:
     (out / "meta.json").write_text(json.dumps(meta_out, indent=2) + "\n")
     events = build_events(key, tables, sample_ms)
     path = RACES / f"session_{key}_events.jsonl.gz"
-    with gzip.open(path, "wt", compresslevel=9) as f:
+    with open_gz(path) as f:
         for e in events:
             f.write(json.dumps(e, separators=(",", ":")) + "\n")
     print(f"  wrote {len(events)} events -> {path.relative_to(ROOT)}", file=sys.stderr)

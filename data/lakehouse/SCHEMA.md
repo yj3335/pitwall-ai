@@ -2,7 +2,8 @@
 
 The Go stream processor (`cmd/processor`) writes immutable Apache Parquet files
 (ZSTD, one row group per file) with a write-to-temp + `rename(2)` commit, so a
-reader never observes a partially written file:
+reader never observes a partially written file. In-flight files are named
+`.tmp-batch_*.parquet.inprogress` so no `*.parquet` glob can match them:
 
 ```
 data/lakehouse/
@@ -32,7 +33,7 @@ DuckDB reads them with hive partitioning:
 | gap_to_leader_ms, interval_ahead_ms, interval_behind_ms | INT64 | -1 when unknown |
 | track_temp_c | DOUBLE | |
 | track_status | STRING | GREEN, YELLOW, SC, VSC, RED |
-| ingest_ms | INT64 | processor receive time (for stream latency) |
+| ingest_ms | INT64 | time the replayer produced the record to Kafka (stream latency origin) |
 
 ## laps
 
