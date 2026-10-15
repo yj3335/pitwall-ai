@@ -1,0 +1,12 @@
+{
+  "session_key": 9636,
+  "meeting_key": 1249,
+  "year": 2024,
+  "location": "S\u00e3o Paulo",
+  "country": "Brazil",
+  "circuit": "Interlagos",
+  "date_start": "2024-11-03T15:30:00+00:00",
+  "total_laps": 69,
+  "median_pit_lane_s": 25.4,
+  "source": "https://api.openf1.org/v1 (session_key=9636)"
+}

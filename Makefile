@@ -2,7 +2,7 @@ SHELL := /bin/bash
 ROOT  := $(shell pwd)
 ENV   := source $(ROOT)/.venv/env.sh &&
 PY    := $(ROOT)/.venv/bin/python
-SESSION ?= 9158
+SESSION ?= 9558
 MODELS := qwen2.5-coder:14b llama3.2:3b bge-m3
 
 .PHONY: venv ollama-pull services-up services-down status build data lakehouse index \
@@ -31,7 +31,8 @@ build:
 
 ## data --------------------------------------------------------------------
 data:
-	$(PY) scripts/fetch-openf1.py --session $(SESSION)
+	$(PY) scripts/fetch-openf1.py
+	$(PY) scripts/build-fia-corpus.py
 
 lakehouse: build
 	$(ENV) ./bin/processor -from-file data/races/session_$(SESSION)_events.jsonl.gz -out data/lakehouse

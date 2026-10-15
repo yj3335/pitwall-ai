@@ -29,3 +29,5 @@ web/next-env.d.ts
 
 .DS_Store
 .qdrant-initialized
+data/races/.cache/
+data/fia_regulations/.pdf/

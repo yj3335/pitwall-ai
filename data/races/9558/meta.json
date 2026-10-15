@@ -1,0 +1,12 @@
+{
+  "session_key": 9558,
+  "meeting_key": 1240,
+  "year": 2024,
+  "location": "Silverstone",
+  "country": "United Kingdom",
+  "circuit": "Silverstone",
+  "date_start": "2024-07-07T14:00:00+00:00",
+  "total_laps": 52,
+  "median_pit_lane_s": 29.3,
+  "source": "https://api.openf1.org/v1 (session_key=9558)"
+}
