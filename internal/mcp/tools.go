@@ -58,6 +58,7 @@ func RegisterSimTools(s *Server, board *stream.Board) {
     "pit_loss_green_s": {"type": "number"}, "pit_loss_neutral_s": {"type": "number"},
     "pit_entry_closed": {"type": "boolean"},
     "sc_hazard_per_lap": {"type": "number"},
+    "overtake_difficulty": {"type": "number", "minimum": 0, "maximum": 1, "description": "0.3 typical, 0.85 Singapore/Monaco"},
     "lap_sigma_ms": {"type": "number"},
     "car": ` + carSchema + `,
     "field": ` + fieldSchema + `,

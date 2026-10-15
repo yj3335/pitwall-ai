@@ -25,6 +25,9 @@ const (
 	StopNoiseSigmaMs       = 350.0
 	DefaultRollouts        = 10_000
 	DefaultExtendLaps      = 8
+	// DefaultOvertakeDifficulty suits a typical permanent circuit; street
+	// circuits such as Singapore or Monaco sit at 0.8-0.95.
+	DefaultOvertakeDifficulty = 0.3
 )
 
 // Compound is the tyre model for one specification.
@@ -88,24 +91,25 @@ type FieldCar struct {
 
 // Request is the input of simulate_pit_strategies.
 type Request struct {
-	TotalLaps        int        `json:"total_laps"`
-	CurrentLap       int        `json:"current_lap"`
-	TrackStatus      string     `json:"track_status"`
-	TrackWetness     float64    `json:"track_wetness"`
-	WetnessTrend     float64    `json:"wetness_trend_per_lap"`
-	PitLossGreenS    float64    `json:"pit_loss_green_s"`
-	PitLossNeutralS  float64    `json:"pit_loss_neutral_s"`
-	PitEntryClosed   bool       `json:"pit_entry_closed"`
-	SCHazardPerLap   *float64   `json:"sc_hazard_per_lap,omitempty"`
-	LapSigmaMs       float64    `json:"lap_sigma_ms"`
-	Car              CarState   `json:"car"`
-	Field            []FieldCar `json:"field"`
-	Strategies       []string   `json:"strategies"`
-	Rollouts         int        `json:"rollouts"`
-	ExtendLaps       int        `json:"extend_laps"`
-	Seed             uint64     `json:"seed"`
-	ForbidCompounds  []string   `json:"forbid_compounds,omitempty"` // e.g. no sets left
-	RedFlagFreeTyres bool       `json:"-"`
+	TotalLaps          int        `json:"total_laps"`
+	CurrentLap         int        `json:"current_lap"`
+	TrackStatus        string     `json:"track_status"`
+	TrackWetness       float64    `json:"track_wetness"`
+	WetnessTrend       float64    `json:"wetness_trend_per_lap"`
+	PitLossGreenS      float64    `json:"pit_loss_green_s"`
+	PitLossNeutralS    float64    `json:"pit_loss_neutral_s"`
+	PitEntryClosed     bool       `json:"pit_entry_closed"`
+	SCHazardPerLap     *float64   `json:"sc_hazard_per_lap,omitempty"`
+	OvertakeDifficulty *float64   `json:"overtake_difficulty,omitempty"`
+	LapSigmaMs         float64    `json:"lap_sigma_ms"`
+	Car                CarState   `json:"car"`
+	Field              []FieldCar `json:"field"`
+	Strategies         []string   `json:"strategies"`
+	Rollouts           int        `json:"rollouts"`
+	ExtendLaps         int        `json:"extend_laps"`
+	Seed               uint64     `json:"seed"`
+	ForbidCompounds    []string   `json:"forbid_compounds,omitempty"` // e.g. no sets left
+	RedFlagFreeTyres   bool       `json:"-"`
 }
 
 // AllStrategies is the default candidate set.

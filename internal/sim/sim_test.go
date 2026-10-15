@@ -91,6 +91,7 @@ func TestWetRaceWaivesTwoCompoundRule(t *testing.T) {
 
 func TestPenaltyHoldAndVSCDiscount(t *testing.T) {
 	req := baseRequest()
+	req.Field = nil // isolate the pit-stop arithmetic from track-position effects
 	req.Strategies = []string{"PIT_NOW_HARD"}
 	clean, _ := Simulate(req)
 	req.Car.PenaltyS = 5
@@ -212,5 +213,38 @@ func TestLatencyBudget(t *testing.T) {
 	t.Logf("10,000 rollouts of one strategy: %s", per)
 	if per > 15*time.Millisecond {
 		t.Fatalf("10k rollouts took %s (budget 15ms)", per)
+	}
+}
+
+// A leader on old hards under a VSC at a street circuit: fresh tyres are
+// faster, but rejoining behind four cars that cannot be passed loses the
+// race. The same situation on an easy-overtaking circuit favours the stop.
+func TestOvertakingDifficultyValuesTrackPosition(t *testing.T) {
+	mk := func(difficulty float64) *Result {
+		req := Request{TotalLaps: 62, CurrentLap: 44, TrackStatus: "VSC", Seed: 3, OvertakeDifficulty: &difficulty,
+			Strategies: []string{"PIT_NOW_MEDIUM", "STAY_OUT_EXTEND"},
+			Car: CarState{DriverCode: "SAI", Position: 1, Compound: "HARD", TyreAgeLaps: 23, BaseLapMs: 99000,
+				CompoundsUsed: []string{"MEDIUM", "HARD"}, DegSlopeMsPerLap: f64(40)},
+			Field: []FieldCar{
+				{DriverCode: "NOR", Position: 2, GapToLeaderMs: 2000, Compound: "HARD", TyreAgeLaps: 23},
+				{DriverCode: "LEC", Position: 3, GapToLeaderMs: 4600, Compound: "HARD", TyreAgeLaps: 23},
+				{DriverCode: "VER", Position: 4, GapToLeaderMs: 7000, Compound: "HARD", TyreAgeLaps: 23},
+				{DriverCode: "HAM", Position: 5, GapToLeaderMs: 9500, Compound: "HARD", TyreAgeLaps: 23},
+			}}
+		r, err := Simulate(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	street, open := mk(0.9), mk(0.0)
+	if street.Recommended != "STAY_OUT_EXTEND" {
+		t.Fatalf("street circuit should keep track position, got %s", street.Recommended)
+	}
+	if open.Recommended != "PIT_NOW_MEDIUM" {
+		t.Fatalf("easy-overtaking circuit should take the cheap VSC stop, got %s", open.Recommended)
+	}
+	if outcome(t, street, "PIT_NOW_MEDIUM").ExpectedFinish <= outcome(t, open, "PIT_NOW_MEDIUM").ExpectedFinish {
+		t.Fatal("harder overtaking must worsen the finishing position after a stop")
 	}
 }
