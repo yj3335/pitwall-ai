@@ -26,6 +26,19 @@ def sh(*cmd: str) -> str:
         return ""
 
 
+# files the benchmark itself writes: they do not make the measured code dirty
+BENCH_OUTPUTS = ("benchmarks/", "docs/BENCHMARKS.md")
+
+
+def code_version() -> tuple[str, list[str]]:
+    """Commit the benchmarks ran on, marked -dirty only when code differs from it."""
+    sha = sh("git", "rev-parse", "--short", "HEAD")
+    changed = (sh("git", "diff", "--name-only", "HEAD").splitlines()
+               + sh("git", "ls-files", "--others", "--exclude-standard").splitlines())
+    dirty = [p for p in changed if not p.startswith(BENCH_OUTPUTS)]
+    return (sha + "-dirty" if dirty else sha), dirty
+
+
 def machine() -> dict:
     return {
         "cpu": sh("sysctl", "-n", "machdep.cpu.brand_string") or platform.processor(),
@@ -45,9 +58,11 @@ def main() -> None:
     rag = json.loads((BENCH / "rag_ablation.json").read_text())
     agent = json.loads((BENCH / "agent_eval.json").read_text())
     rm = rag["modes"]
+    commit, dirty = code_version()
     results = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "git_commit": sh("git", "describe", "--always", "--dirty"),
+        "git_commit": commit,
+        "uncommitted_code": dirty,
         "machine": machine(),
         "stream": {
             "events": stream["events"],
