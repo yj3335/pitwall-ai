@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
@@ -93,7 +94,9 @@ def create_app(services: Services | None = None) -> FastAPI:
             await svc.runs.shutdown()
 
     app = FastAPI(title="PitWall AI control plane", version="0.1.0", lifespan=lifespan)
-    app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    # the dashboard runs on loopback (dev on :3000, e2e on :3100); extra origins via env
+    extra = [o.strip() for o in os.environ.get("PITWALL_CORS_ORIGINS", "").split(",") if o.strip()]
+    app.add_middleware(CORSMiddleware, allow_origins=extra, allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
                        allow_methods=["*"], allow_headers=["*"])
 
     def svc(request: Request) -> Services:

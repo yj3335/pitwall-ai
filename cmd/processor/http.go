@@ -27,7 +27,7 @@ func newHandler(p *pipeline.Pipeline, publish publishFunc) http.Handler {
 		_ = json.NewEncoder(w).Encode(v)
 	}
 	mux.HandleFunc("GET /v1/tower", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]any{"drivers": p.Board.All(), "stats": p.Stats()})
+		writeJSON(w, http.StatusOK, map[string]any{"drivers": p.Board.Active(), "stats": p.Stats()})
 	})
 	mux.HandleFunc("GET /v1/driver/{n}", func(w http.ResponseWriter, r *http.Request) {
 		n, _ := strconv.Atoi(r.PathValue("n"))
@@ -69,7 +69,7 @@ func newHandler(p *pipeline.Pipeline, publish publishFunc) http.Handler {
 			m.Category = "Other"
 		}
 		if m.SessionKey == 0 { // default to the session currently streaming
-			if all := p.Board.All(); len(all) > 0 {
+			if all := p.Board.Active(); len(all) > 0 {
 				m.SessionKey = all[0].SessionKey
 			}
 		}

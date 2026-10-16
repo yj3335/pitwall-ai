@@ -281,3 +281,64 @@ async def test_trigger_round_trips_through_kafka(binaries, tmp_path):
         await client.aclose()
         proc.terminate()
         proc.wait(timeout=10)
+
+
+@pytest.mark.skipif(not port_open("127.0.0.1", 9092), reason="Kafka not running on :9092")
+async def test_sigterm_leaves_group_and_flushes(binaries, tmp_path):
+    """`make stop` sends SIGTERM. The processor must leave its consumer group
+    (so a replacement is assigned partitions immediately, not after the 45 s
+    session timeout) and flush buffered Parquet batches on the way out."""
+    import signal
+
+    group = f"pytest-sigterm-{time.time_ns()}"
+
+    def start(port: int, out) -> subprocess.Popen:
+        return subprocess.Popen([str(binaries / "processor"), "-group", group, "-out", str(out), "-http", f"127.0.0.1:{port}",
+                                 "-flush-rows", "1000000"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def free_port() -> int:
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            return s.getsockname()[1]
+
+    async def wait_events(client: ProcessorClient, n: int, timeout: float) -> int:
+        deadline = time.monotonic() + timeout
+        got = 0
+        while time.monotonic() < deadline:
+            try:
+                got = (await client.tower())["stats"]["events"]
+            except httpx.HTTPError:
+                got = 0
+            if got >= n:
+                break
+            await asyncio.sleep(0.2)
+        return got
+
+    p1, port1 = start(port := free_port(), tmp_path / "a"), port
+    c1 = ProcessorClient(f"http://127.0.0.1:{port1}")
+    try:
+        await asyncio.sleep(3.0)  # first member joins and takes all partitions
+        replay = [str(binaries / "replayer"), "-file", str(ROOT / "data/races/session_9165_events.jsonl.gz"), "-speed", "0"]
+        subprocess.run([*replay, "-limit", "3000"], check=True, capture_output=True)
+        assert await wait_events(c1, 3000, 20) >= 3000
+        p1.send_signal(signal.SIGTERM)
+        assert p1.wait(timeout=15) == 0
+        # flushed on exit although the batch size (1M rows) was never reached
+        assert list((tmp_path / "a").glob("telemetry/session=*/*.parquet"))
+    finally:
+        await c1.aclose()
+        if p1.poll() is None:
+            p1.kill()
+    port2 = free_port()
+    p2 = start(port2, tmp_path / "b")
+    c2 = ProcessorClient(f"http://127.0.0.1:{port2}")
+    try:
+        t0 = time.monotonic()
+        await asyncio.sleep(1.0)
+        subprocess.run([*replay, "-limit", "2000"], check=True, capture_output=True)
+        assert await wait_events(c2, 2000, 20) >= 2000
+        assert time.monotonic() - t0 < 20, "replacement waited for the dead member's session timeout"
+    finally:
+        await c2.aclose()
+        p2.terminate()
+        p2.wait(timeout=15)

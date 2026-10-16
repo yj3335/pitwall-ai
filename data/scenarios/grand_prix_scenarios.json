@@ -2,205 +2,1194 @@
   "description": "20 Grand Prix strategy scenarios. 'real' scenarios are rebuilt from the Parquet lakehouse (OpenF1 data) at the decision instant: the car's last telemetry sample before the final sector of the decision lap, the field at that same instant, and history from completed laps only. They are judged against the FIA Sporting Regulations issue in force on the race date. 'synthetic' scenarios are set in the 2025 season (the last season of the car generation the simulator models) and judged against the 2025 regulations, Issue 5. Field rows are [code, number, position, gap_to_leader_ms, compound, tyre_age_laps(, planned_stop_lap)] or objects with the same keys plus an optional observed deg_slope_ms_per_lap. ground_truth.acceptable lists every defensible call; ground_truth.forbidden lists calls that break the regulations (not merely slower ones). For real scenarios ground truth is what the team did and how it worked out; for synthetic ones it follows from the regulations and race situation, reasoned independently of the simulator.",
   "scenarios": [
     {
-      "id": "GP01", "kind": "real", "category": "sc_cheap_stop",
+      "id": "GP01",
+      "kind": "real",
+      "category": "sc_cheap_stop",
       "title": "2023 Singapore GP, lap 20: safety car with one dry compound used",
-      "source": {"session_key": 9165, "driver_number": 4, "lap": 20},
-      "overrides": {"overtake_difficulty": 0.85},
+      "source": {
+        "session_key": 9165,
+        "driver_number": 4,
+        "lap": 20
+      },
+      "overrides": {
+        "overtake_difficulty": 0.85
+      },
       "race_control": "SAFETY CAR DEPLOYED",
       "question": "Safety car deployed on lap 20. Norris is P4 on 19-lap-old mediums and has used only the medium so far. Do we box?",
-      "ground_truth": {"acceptable": ["PIT_NOW_HARD"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "Norris boxed for hards at the end of lap 20 under the safety car and ran to the flag; he finished second."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "Norris boxed for hards at the end of lap 20 under the safety car and ran to the flag; he finished second."
+      }
     },
     {
-      "id": "GP02", "kind": "real", "category": "vsc_cheap_stop",
+      "id": "GP02",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
       "title": "2023 Singapore GP, lap 44: VSC, Hamilton on 23-lap-old hards",
-      "source": {"session_key": 9165, "driver_number": 44, "lap": 44},
-      "overrides": {"overtake_difficulty": 0.6},
+      "source": {
+        "session_key": 9165,
+        "driver_number": 44,
+        "lap": 44
+      },
+      "overrides": {
+        "overtake_difficulty": 0.6
+      },
       "race_control": "VIRTUAL SAFETY CAR DEPLOYED",
       "question": "VSC deployed on lap 44 with 18 laps to go. Hamilton is P4 on 23-lap-old hards, 0.5 s behind Norris. He has used mediums and hards. New mediums and softs are available.",
-      "ground_truth": {"acceptable": ["PIT_NOW_MEDIUM", "PIT_NOW_SOFT"], "forbidden": [], "historical": "Mercedes pitted Hamilton and Russell for new mediums under the VSC; Hamilton finished third."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_MEDIUM",
+          "PIT_NOW_SOFT"
+        ],
+        "forbidden": [],
+        "historical": "Mercedes pitted Hamilton and Russell for new mediums under the VSC; Hamilton finished third."
+      }
     },
     {
-      "id": "GP03", "kind": "real", "category": "track_position",
+      "id": "GP03",
+      "kind": "real",
+      "category": "track_position",
       "title": "2023 Singapore GP, lap 44: VSC, Sainz leading on 23-lap-old hards",
-      "source": {"session_key": 9165, "driver_number": 55, "lap": 44},
-      "overrides": {"overtake_difficulty": 0.9},
+      "source": {
+        "session_key": 9165,
+        "driver_number": 55,
+        "lap": 44
+      },
+      "overrides": {
+        "overtake_difficulty": 0.9
+      },
       "race_control": "VIRTUAL SAFETY CAR DEPLOYED",
       "question": "VSC deployed on lap 44 with 18 laps to go. Sainz leads on 23-lap-old hards with the cars behind within a few seconds. Singapore is a street circuit where overtaking is difficult.",
-      "ground_truth": {"acceptable": ["STAY_OUT_EXTEND"], "forbidden": [], "historical": "Sainz stayed out, controlled the pace and won."}
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND"
+        ],
+        "forbidden": [],
+        "historical": "Sainz stayed out, controlled the pace and won."
+      }
     },
     {
-      "id": "GP04", "kind": "real", "category": "wet_crossover",
+      "id": "GP04",
+      "kind": "real",
+      "category": "wet_crossover",
       "title": "2024 British GP, lap 27: rain on 26-lap-old mediums",
-      "source": {"session_key": 9558, "driver_number": 44, "lap": 27},
-      "overrides": {"track_wetness": 0.55, "wetness_trend_per_lap": 0.01},
+      "source": {
+        "session_key": 9558,
+        "driver_number": 44,
+        "lap": 27
+      },
+      "overrides": {
+        "track_wetness": 0.55,
+        "wetness_trend_per_lap": 0.01
+      },
       "wetness_basis": "analyst estimate from decision-time evidence: weather station rainfall flag on, Hamilton's lap times 91.1 s (lap 23) -> 95.0 s (lap 25) -> 100.8 s (lap 26) on slicks",
       "race_control": "",
       "question": "Rain is falling. Hamilton is P3 on 26-lap-old mediums, the only compound he has used; his last two laps were 95.0 s and 100.8 s against 91 s in the dry.",
-      "ground_truth": {"acceptable": ["PIT_NOW_INTER"], "forbidden": [], "historical": "Hamilton pitted for intermediates at the end of lap 27."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_INTER"
+        ],
+        "forbidden": [],
+        "historical": "Hamilton pitted for intermediates at the end of lap 27."
+      }
     },
     {
-      "id": "GP05", "kind": "real", "category": "drying_crossover",
+      "id": "GP05",
+      "kind": "real",
+      "category": "drying_crossover",
       "title": "2024 British GP, lap 38: drying track on intermediates",
-      "source": {"session_key": 9558, "driver_number": 44, "lap": 38},
-      "overrides": {"track_wetness": 0.1, "wetness_trend_per_lap": -0.03},
+      "source": {
+        "session_key": 9558,
+        "driver_number": 44,
+        "lap": 38
+      },
+      "overrides": {
+        "track_wetness": 0.1,
+        "wetness_trend_per_lap": -0.03
+      },
       "wetness_basis": "analyst estimate from decision-time evidence: Hamilton's intermediate lap times falling 102.8 s (lap 34) -> 99.7 s (lap 37) and one car already on slicks; the weather station rainfall flag was still on",
       "race_control": "",
       "question": "Hamilton is P2 on 10-lap-old intermediates, 2.0 s behind Norris (also on intermediates). His lap times have fallen from 102.8 s to 99.7 s over four laps and one car has already switched to slicks.",
-      "ground_truth": {"acceptable": ["PIT_NOW_SOFT", "PIT_NOW_MEDIUM"], "forbidden": [], "historical": "Hamilton pitted for softs at the end of lap 38, a lap before Norris, took the lead and won."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_SOFT",
+          "PIT_NOW_MEDIUM"
+        ],
+        "forbidden": [],
+        "historical": "Hamilton pitted for softs at the end of lap 38, a lap before Norris, took the lead and won."
+      }
     },
     {
-      "id": "GP06", "kind": "real", "category": "red_flag",
+      "id": "GP06",
+      "kind": "real",
+      "category": "red_flag",
       "title": "2024 Sao Paulo GP, lap 32: red flag, Verstappen yet to stop",
-      "source": {"session_key": 9636, "driver_number": 1, "lap": 32},
-      "overrides": {"track_wetness": 0.75},
+      "source": {
+        "session_key": 9636,
+        "driver_number": 1,
+        "lap": 32
+      },
+      "overrides": {
+        "track_wetness": 0.75
+      },
       "wetness_basis": "analyst estimate: wet race throughout, rainfall flag on, whole field on intermediates",
       "race_control": "RED FLAG",
       "question": "The race is suspended. Verstappen is P2 on 31-lap-old intermediates and has not pitted. Teams may work on the cars in the pit lane during the suspension.",
-      "ground_truth": {"acceptable": ["PIT_NOW_INTER"], "forbidden": [], "historical": "Red Bull fitted new intermediates during the suspension at no time cost; Verstappen won."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_INTER"
+        ],
+        "forbidden": [],
+        "historical": "Red Bull fitted new intermediates during the suspension at no time cost; Verstappen won."
+      }
     },
     {
-      "id": "GP07", "kind": "real", "category": "vsc_cheap_stop",
+      "id": "GP07",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
       "title": "2024 Sao Paulo GP, lap 28: VSC on worn intermediates",
-      "source": {"session_key": 9636, "driver_number": 4, "lap": 28},
-      "overrides": {"track_wetness": 0.7},
+      "source": {
+        "session_key": 9636,
+        "driver_number": 4,
+        "lap": 28
+      },
+      "overrides": {
+        "track_wetness": 0.7
+      },
       "wetness_basis": "analyst estimate: wet race throughout, rainfall flag on, whole field on intermediates",
       "race_control": "VIRTUAL SAFETY CAR DEPLOYED",
       "question": "VSC deployed on lap 28. Norris is P2, 0.4 s behind Russell, on intermediates aged 31 laps; his lap times rose from 84.0 s to 86.9 s over the last four green laps.",
-      "ground_truth": {"acceptable": ["PIT_NOW_INTER"], "forbidden": [], "historical": "McLaren pitted Norris for new intermediates under the VSC. A red flag four laps later gave the cars that had not stopped a free change, but with the information available at lap 28 the stop was the standard call."}
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_INTER"
+        ],
+        "forbidden": [],
+        "historical": "McLaren pitted Norris for new intermediates under the VSC. A red flag four laps later gave the cars that had not stopped a free change, but with the information available at lap 28 the stop was the standard call."
+      }
     },
     {
-      "id": "GP08", "kind": "synthetic", "category": "two_compound_trap",
+      "id": "GP08",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
       "title": "Dry race, lap 32/53: medium-only car tempted by new mediums",
       "race_control": "",
       "question": "Leclerc started on mediums and has not stopped. New mediums would be the fastest tyre for the last 21 laps. What do we fit?",
-      "state": {"total_laps": 53, "current_lap": 32, "track_status": "GREEN",
-                "car": {"driver_code": "LEC", "driver_number": 16, "position": 5, "compound": "MEDIUM", "tyre_age_laps": 31, "deg_slope_ms_per_lap": 55, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 14000, "base_lap_ms": 82000},
-                "field": [["VER", 1, 1, 0, "HARD", 12], ["NOR", 4, 2, 3500, "HARD", 14], ["PIA", 81, 3, 7000, "HARD", 13], ["HAM", 44, 4, 10500, "HARD", 15], ["RUS", 63, 6, 40000, "HARD", 15], ["SAI", 55, 7, 44000, "MEDIUM", 20]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_SOFT", "PIT_NOW_HARD"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "Two-compound trap: medium to medium finishes a dry race on one specification (Art. 30.5(m), disqualification). Extending is not defensible on mediums already past their life."}
+      "state": {
+        "total_laps": 53,
+        "current_lap": 32,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "LEC",
+          "driver_number": 16,
+          "position": 5,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 31,
+          "deg_slope_ms_per_lap": 55,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 14000,
+          "base_lap_ms": 82000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            12
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            3500,
+            "HARD",
+            14
+          ],
+          [
+            "PIA",
+            81,
+            3,
+            7000,
+            "HARD",
+            13
+          ],
+          [
+            "HAM",
+            44,
+            4,
+            10500,
+            "HARD",
+            15
+          ],
+          [
+            "RUS",
+            63,
+            6,
+            40000,
+            "HARD",
+            15
+          ],
+          [
+            "SAI",
+            55,
+            7,
+            44000,
+            "MEDIUM",
+            20
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_SOFT",
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "Two-compound trap: medium to medium finishes a dry race on one specification (Art. 30.5(m), disqualification). Extending is not defensible on mediums already past their life."
+      }
     },
     {
-      "id": "GP09", "kind": "synthetic", "category": "two_compound_trap",
+      "id": "GP09",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
       "title": "Dry race, lap 49/53: hard-only car with four laps left",
       "race_control": "",
       "question": "Albon started on hards and has not stopped; he is P7 with four laps to go after this one. Can we bring it home without stopping?",
-      "state": {"total_laps": 53, "current_lap": 49, "track_status": "GREEN",
-                "car": {"driver_code": "ALB", "driver_number": 23, "position": 7, "compound": "HARD", "tyre_age_laps": 48, "deg_slope_ms_per_lap": 70, "compounds_used": ["HARD"], "gap_to_leader_ms": 52000, "base_lap_ms": 82000},
-                "field": [["VER", 1, 1, 0, "HARD", 20], ["NOR", 4, 2, 4000, "HARD", 20], ["PIA", 81, 3, 9000, "HARD", 21], ["HAM", 44, 4, 20000, "HARD", 18], ["RUS", 63, 5, 31000, "HARD", 18], ["SAI", 55, 6, 40000, "MEDIUM", 15], ["GAS", 10, 8, 70000, "MEDIUM", 16], ["OCO", 31, 9, 76000, "MEDIUM", 16]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_SOFT", "PIT_NOW_MEDIUM"], "forbidden": [], "historical": "Finishing on hards only is a disqualification (Art. 30.5(m)); the stop is mandatory and is cheapest now, on tyres well past their life. A no-stop plan is illegal and is caught by the rule check."}
+      "state": {
+        "total_laps": 53,
+        "current_lap": 49,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "ALB",
+          "driver_number": 23,
+          "position": 7,
+          "compound": "HARD",
+          "tyre_age_laps": 48,
+          "deg_slope_ms_per_lap": 70,
+          "compounds_used": [
+            "HARD"
+          ],
+          "gap_to_leader_ms": 52000,
+          "base_lap_ms": 82000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            20
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            4000,
+            "HARD",
+            20
+          ],
+          [
+            "PIA",
+            81,
+            3,
+            9000,
+            "HARD",
+            21
+          ],
+          [
+            "HAM",
+            44,
+            4,
+            20000,
+            "HARD",
+            18
+          ],
+          [
+            "RUS",
+            63,
+            5,
+            31000,
+            "HARD",
+            18
+          ],
+          [
+            "SAI",
+            55,
+            6,
+            40000,
+            "MEDIUM",
+            15
+          ],
+          [
+            "GAS",
+            10,
+            8,
+            70000,
+            "MEDIUM",
+            16
+          ],
+          [
+            "OCO",
+            31,
+            9,
+            76000,
+            "MEDIUM",
+            16
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_SOFT",
+          "PIT_NOW_MEDIUM"
+        ],
+        "forbidden": [],
+        "historical": "Finishing on hards only is a disqualification (Art. 30.5(m)); the stop is mandatory and is cheapest now, on tyres well past their life. A no-stop plan is illegal and is caught by the rule check."
+      }
     },
     {
-      "id": "GP10", "kind": "synthetic", "category": "penalty_hold_trap",
+      "id": "GP10",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
       "title": "Lap 28/57: undercut attempt with a 5 s penalty pending",
       "race_control": "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 63 (RUS) - CAUSING A COLLISION",
       "question": "Russell is P4, 1.6 s behind Hamilton, whose mediums are degrading 120 ms/lap. We want to undercut. Russell has a 5 s time penalty pending.",
-      "state": {"total_laps": 57, "current_lap": 28, "track_status": "GREEN",
-                "car": {"driver_code": "RUS", "driver_number": 63, "position": 4, "compound": "MEDIUM", "tyre_age_laps": 20, "deg_slope_ms_per_lap": 60, "compounds_used": ["HARD", "MEDIUM"], "penalty_s": 5, "gap_to_leader_ms": 12600, "base_lap_ms": 95000},
-                "field": [["VER", 1, 1, 0, "HARD", 8], ["NOR", 4, 2, 5000, "HARD", 9],
-                          {"driver_code": "HAM", "driver_number": 44, "position": 3, "gap_to_leader_ms": 11000, "compound": "MEDIUM", "tyre_age_laps": 24, "deg_slope_ms_per_lap": 120},
-                          ["SAI", 55, 5, 40000, "HARD", 10], ["ALO", 14, 6, 46000, "HARD", 11]]},
-      "ground_truth": {"acceptable": ["STAY_OUT_EXTEND", "OPPOSITE_AHEAD"], "forbidden": [], "historical": "The 5 s stationary hold (Art. 54.4(c)) is larger than the 2-lap undercut gain, so the undercut fails; Hamilton's fading mediums mean staying out and letting him stop first keeps the position. Any stop must include the 5 s hold."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 28,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "RUS",
+          "driver_number": 63,
+          "position": 4,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 20,
+          "deg_slope_ms_per_lap": 60,
+          "compounds_used": [
+            "HARD",
+            "MEDIUM"
+          ],
+          "penalty_s": 5,
+          "gap_to_leader_ms": 12600,
+          "base_lap_ms": 95000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            8
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            5000,
+            "HARD",
+            9
+          ],
+          {
+            "driver_code": "HAM",
+            "driver_number": 44,
+            "position": 3,
+            "gap_to_leader_ms": 11000,
+            "compound": "MEDIUM",
+            "tyre_age_laps": 24,
+            "deg_slope_ms_per_lap": 120
+          },
+          [
+            "SAI",
+            55,
+            5,
+            40000,
+            "HARD",
+            10
+          ],
+          [
+            "ALO",
+            14,
+            6,
+            46000,
+            "HARD",
+            11
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND",
+          "OPPOSITE_AHEAD",
+          "PIT_NOW_MEDIUM",
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [],
+        "historical": "The trap is the 5 s stationary hold (Art. 54.4(c)): any stop must include it, and the 2-lap undercut gain is smaller than the hold, so the undercut cannot win the position. The car needs a stop either way, and stopping now versus extending is close to a tie on tyre wear (about 22.3 s vs 23.1 s of cumulative degradation by hand calculation), so every legal plan that accounts for the hold is acceptable; softs for 29 laps are not."
+      }
     },
     {
-      "id": "GP11", "kind": "synthetic", "category": "penalty_hold_trap",
+      "id": "GP11",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
       "title": "Lap 35/58: 10 s penalty and a mandatory stop still to make",
       "race_control": "FIA STEWARDS: 10 SECOND TIME PENALTY FOR CAR 14 (ALO) - UNSAFE RELEASE",
       "question": "Alonso is P6 on 34-lap-old hards (he started on hards) with a 10 s penalty pending. He still has to stop. What is the stop and what does it cost?",
-      "state": {"total_laps": 58, "current_lap": 35, "track_status": "GREEN",
-                "car": {"driver_code": "ALO", "driver_number": 14, "position": 6, "compound": "HARD", "tyre_age_laps": 34, "deg_slope_ms_per_lap": 45, "compounds_used": ["HARD"], "penalty_s": 10, "gap_to_leader_ms": 30000, "base_lap_ms": 88000},
-                "field": [["VER", 1, 1, 0, "HARD", 14], ["NOR", 4, 2, 3000, "HARD", 14], ["LEC", 16, 3, 9000, "HARD", 15], ["PIA", 81, 4, 15000, "HARD", 13], ["HAM", 44, 5, 22000, "HARD", 13], ["STR", 18, 7, 42000, "HARD", 12], ["TSU", 22, 8, 47000, "HARD", 12]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_MEDIUM", "STAY_OUT_EXTEND"], "forbidden": ["PIT_NOW_HARD"], "historical": "Hard to hard breaks Art. 30.5(m). Mediums cover the remaining 23 laps (softs would not); the stop must carry the 10 s stationary hold (Art. 54.4(c))."}
+      "state": {
+        "total_laps": 58,
+        "current_lap": 35,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "ALO",
+          "driver_number": 14,
+          "position": 6,
+          "compound": "HARD",
+          "tyre_age_laps": 34,
+          "deg_slope_ms_per_lap": 45,
+          "compounds_used": [
+            "HARD"
+          ],
+          "penalty_s": 10,
+          "gap_to_leader_ms": 30000,
+          "base_lap_ms": 88000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            14
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            3000,
+            "HARD",
+            14
+          ],
+          [
+            "LEC",
+            16,
+            3,
+            9000,
+            "HARD",
+            15
+          ],
+          [
+            "PIA",
+            81,
+            4,
+            15000,
+            "HARD",
+            13
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            22000,
+            "HARD",
+            13
+          ],
+          [
+            "STR",
+            18,
+            7,
+            42000,
+            "HARD",
+            12
+          ],
+          [
+            "TSU",
+            22,
+            8,
+            47000,
+            "HARD",
+            12
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_MEDIUM",
+          "STAY_OUT_EXTEND"
+        ],
+        "forbidden": [
+          "PIT_NOW_HARD"
+        ],
+        "historical": "Hard to hard breaks Art. 30.5(m). Mediums cover the remaining 23 laps (softs would not); the stop must carry the 10 s stationary hold (Art. 54.4(c))."
+      }
     },
     {
-      "id": "GP12", "kind": "synthetic", "category": "vsc_cheap_stop",
+      "id": "GP12",
+      "kind": "synthetic",
+      "category": "vsc_cheap_stop",
       "title": "Lap 30/58: VSC five laps before the planned stop",
       "race_control": "VIRTUAL SAFETY CAR DEPLOYED",
       "question": "VSC just deployed. Piastri is P3 on 22-lap-old mediums (mediums only so far) and was due to stop on lap 35.",
-      "state": {"total_laps": 58, "current_lap": 30, "track_status": "VSC",
-                "car": {"driver_code": "PIA", "driver_number": 81, "position": 3, "compound": "MEDIUM", "tyre_age_laps": 22, "deg_slope_ms_per_lap": 65, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 6000, "base_lap_ms": 90000},
-                "field": [["VER", 1, 1, 0, "MEDIUM", 23], ["NOR", 4, 2, 2500, "MEDIUM", 22], ["LEC", 16, 4, 9000, "MEDIUM", 21], ["HAM", 44, 5, 15000, "HARD", 10], ["RUS", 63, 6, 18000, "HARD", 10]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_HARD"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "A neutralised stop costs less than a green one; hards satisfy Art. 30.5(m) and cover the remaining 28 laps (softs would not)."}
+      "state": {
+        "total_laps": 58,
+        "current_lap": 30,
+        "track_status": "VSC",
+        "car": {
+          "driver_code": "PIA",
+          "driver_number": 81,
+          "position": 3,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 22,
+          "deg_slope_ms_per_lap": 65,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 6000,
+          "base_lap_ms": 90000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "MEDIUM",
+            23
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            2500,
+            "MEDIUM",
+            22
+          ],
+          [
+            "LEC",
+            16,
+            4,
+            9000,
+            "MEDIUM",
+            21
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            15000,
+            "HARD",
+            10
+          ],
+          [
+            "RUS",
+            63,
+            6,
+            18000,
+            "HARD",
+            10
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "A neutralised stop costs less than a green one; hards satisfy Art. 30.5(m) and cover the remaining 28 laps (softs would not)."
+      }
     },
     {
-      "id": "GP13", "kind": "synthetic", "category": "pit_entry_closed",
+      "id": "GP13",
+      "kind": "synthetic",
+      "category": "pit_entry_closed",
       "title": "Lap 25/57: safety car with the pit entry closed",
       "race_control": "SAFETY CAR DEPLOYED. PIT ENTRY CLOSED",
       "question": "Safety car just deployed for a crash at the pit entry, which is closed. Norris is P2 on 20-lap-old mediums (mediums only so far).",
-      "state": {"total_laps": 57, "current_lap": 25, "track_status": "SC", "pit_entry_closed": true,
-                "car": {"driver_code": "NOR", "driver_number": 4, "position": 2, "compound": "MEDIUM", "tyre_age_laps": 20, "deg_slope_ms_per_lap": 55, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 3000, "base_lap_ms": 92000},
-                "field": [["VER", 1, 1, 0, "MEDIUM", 20], ["LEC", 16, 3, 6000, "MEDIUM", 20], ["PIA", 81, 4, 9000, "HARD", 6], ["HAM", 44, 5, 13000, "MEDIUM", 20]]},
-      "ground_truth": {"acceptable": ["STAY_OUT_EXTEND", "OPPOSITE_AHEAD"], "forbidden": ["PIT_NOW_HARD", "PIT_NOW_MEDIUM", "PIT_NOW_SOFT", "PIT_NOW_INTER"], "historical": "Entering a closed pit lane for tyres is penalised with a stop-and-go (Art. 34.15 / 54.3(d)); stop once the pit entry reopens."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 25,
+        "track_status": "SC",
+        "pit_entry_closed": true,
+        "car": {
+          "driver_code": "NOR",
+          "driver_number": 4,
+          "position": 2,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 20,
+          "deg_slope_ms_per_lap": 55,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 3000,
+          "base_lap_ms": 92000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "MEDIUM",
+            20
+          ],
+          [
+            "LEC",
+            16,
+            3,
+            6000,
+            "MEDIUM",
+            20
+          ],
+          [
+            "PIA",
+            81,
+            4,
+            9000,
+            "HARD",
+            6
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            13000,
+            "MEDIUM",
+            20
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND",
+          "OPPOSITE_AHEAD"
+        ],
+        "forbidden": [
+          "PIT_NOW_HARD",
+          "PIT_NOW_MEDIUM",
+          "PIT_NOW_SOFT",
+          "PIT_NOW_INTER"
+        ],
+        "historical": "Entering a closed pit lane for tyres is penalised with a stop-and-go (Art. 34.15 / 54.3(d)); stop once the pit entry reopens."
+      }
     },
     {
-      "id": "GP14", "kind": "synthetic", "category": "wet_crossover",
+      "id": "GP14",
+      "kind": "synthetic",
+      "category": "wet_crossover",
       "title": "Lap 15/52: heavy rain on softs",
       "race_control": "",
       "question": "Rain is intensifying. Sainz is P4 on 14-lap-old softs and losing several seconds a lap. Intermediates and wets are available.",
-      "state": {"total_laps": 52, "current_lap": 15, "track_status": "GREEN", "track_wetness": 0.6, "wetness_trend_per_lap": 0.01,
-                "car": {"driver_code": "SAI", "driver_number": 55, "position": 4, "compound": "SOFT", "tyre_age_laps": 14, "deg_slope_ms_per_lap": 80, "compounds_used": ["SOFT"], "gap_to_leader_ms": 9000, "base_lap_ms": 89000},
-                "field": [["VER", 1, 1, 0, "INTERMEDIATE", 1], ["NOR", 4, 2, 4000, "SOFT", 14], ["LEC", 16, 3, 6500, "SOFT", 14], ["HAM", 44, 5, 13000, "SOFT", 14]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_INTER"], "forbidden": [], "historical": "Slicks on a wet track are several seconds a lap slower; intermediates are the physical answer, and using them also waives the two dry-compound requirement."}
+      "state": {
+        "total_laps": 52,
+        "current_lap": 15,
+        "track_status": "GREEN",
+        "track_wetness": 0.6,
+        "wetness_trend_per_lap": 0.01,
+        "car": {
+          "driver_code": "SAI",
+          "driver_number": 55,
+          "position": 4,
+          "compound": "SOFT",
+          "tyre_age_laps": 14,
+          "deg_slope_ms_per_lap": 80,
+          "compounds_used": [
+            "SOFT"
+          ],
+          "gap_to_leader_ms": 9000,
+          "base_lap_ms": 89000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "INTERMEDIATE",
+            1
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            4000,
+            "SOFT",
+            14
+          ],
+          [
+            "LEC",
+            16,
+            3,
+            6500,
+            "SOFT",
+            14
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            13000,
+            "SOFT",
+            14
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_INTER"
+        ],
+        "forbidden": [],
+        "historical": "Slicks on a wet track are several seconds a lap slower; intermediates are the physical answer, and using them also waives the two dry-compound requirement."
+      }
     },
     {
-      "id": "GP15", "kind": "synthetic", "category": "drying_crossover",
+      "id": "GP15",
+      "kind": "synthetic",
+      "category": "drying_crossover",
       "title": "Lap 40/52: dry line on 12-lap-old intermediates",
       "race_control": "",
       "question": "The track has dried. Russell is P3 on 12-lap-old intermediates that are overheating; cars on slicks are lapping faster.",
-      "state": {"total_laps": 52, "current_lap": 40, "track_status": "GREEN", "track_wetness": 0.08, "wetness_trend_per_lap": -0.02,
-                "car": {"driver_code": "RUS", "driver_number": 63, "position": 3, "compound": "INTERMEDIATE", "tyre_age_laps": 12, "deg_slope_ms_per_lap": 160, "compounds_used": ["SOFT", "INTERMEDIATE"], "gap_to_leader_ms": 8000, "base_lap_ms": 89000},
-                "field": [["VER", 1, 1, 0, "MEDIUM", 2], ["NOR", 4, 2, 3000, "INTERMEDIATE", 12], ["LEC", 16, 4, 14000, "INTERMEDIATE", 12], ["HAM", 44, 5, 20000, "SOFT", 1]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_SOFT", "PIT_NOW_MEDIUM"], "forbidden": [], "historical": "Once the line is dry the first car onto slicks gains (2024 British GP); 12 laps suit softs or mediums."}
+      "state": {
+        "total_laps": 52,
+        "current_lap": 40,
+        "track_status": "GREEN",
+        "track_wetness": 0.08,
+        "wetness_trend_per_lap": -0.02,
+        "car": {
+          "driver_code": "RUS",
+          "driver_number": 63,
+          "position": 3,
+          "compound": "INTERMEDIATE",
+          "tyre_age_laps": 12,
+          "deg_slope_ms_per_lap": 160,
+          "compounds_used": [
+            "SOFT",
+            "INTERMEDIATE"
+          ],
+          "gap_to_leader_ms": 8000,
+          "base_lap_ms": 89000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "MEDIUM",
+            2
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            3000,
+            "INTERMEDIATE",
+            12
+          ],
+          [
+            "LEC",
+            16,
+            4,
+            14000,
+            "INTERMEDIATE",
+            12
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            20000,
+            "SOFT",
+            1
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_SOFT",
+          "PIT_NOW_MEDIUM"
+        ],
+        "forbidden": [],
+        "historical": "Once the line is dry the first car onto slicks gains (2024 British GP); 12 laps suit softs or mediums."
+      }
     },
     {
-      "id": "GP16", "kind": "synthetic", "category": "drs_train_trap",
+      "id": "GP16",
+      "kind": "synthetic",
+      "category": "drs_train_trap",
       "title": "Lap 22/57: a stop now rejoins in a four-car DRS train",
       "race_control": "",
       "question": "Leclerc is P3 on 21-lap-old mediums (mediums only so far). A green stop now rejoins him behind a train of four cars running within a second of each other, all due to stop within three laps.",
-      "state": {"total_laps": 57, "current_lap": 22, "track_status": "GREEN", "extend_laps": 4,
-                "car": {"driver_code": "LEC", "driver_number": 16, "position": 3, "compound": "MEDIUM", "tyre_age_laps": 21, "deg_slope_ms_per_lap": 45, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 8000, "base_lap_ms": 92000},
-                "field": [["VER", 1, 1, 0, "HARD", 6], ["NOR", 4, 2, 4000, "HARD", 6], ["ALO", 14, 4, 28500, "MEDIUM", 21, 24], ["STR", 18, 5, 29100, "MEDIUM", 21, 24], ["GAS", 10, 6, 29700, "MEDIUM", 21, 25], ["OCO", 31, 7, 30300, "MEDIUM", 21, 25], ["TSU", 22, 8, 52000, "HARD", 5]]},
-      "ground_truth": {"acceptable": ["STAY_OUT_EXTEND"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "Rejoining within 1.2 s of a DRS train costs several tenths a lap; waiting for the train to stop gives clear air. OPPOSITE_AHEAD is not acceptable here because the car ahead is on fresher tyres, so it resolves to stopping now, into the train."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 22,
+        "track_status": "GREEN",
+        "extend_laps": 4,
+        "car": {
+          "driver_code": "LEC",
+          "driver_number": 16,
+          "position": 3,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 21,
+          "deg_slope_ms_per_lap": 45,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 8000,
+          "base_lap_ms": 92000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            6
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            4000,
+            "HARD",
+            6
+          ],
+          [
+            "ALO",
+            14,
+            4,
+            28500,
+            "MEDIUM",
+            21,
+            24
+          ],
+          [
+            "STR",
+            18,
+            5,
+            29100,
+            "MEDIUM",
+            21,
+            24
+          ],
+          [
+            "GAS",
+            10,
+            6,
+            29700,
+            "MEDIUM",
+            21,
+            25
+          ],
+          [
+            "OCO",
+            31,
+            7,
+            30300,
+            "MEDIUM",
+            21,
+            25
+          ],
+          [
+            "TSU",
+            22,
+            8,
+            52000,
+            "HARD",
+            5
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "Rejoining within 1.2 s of a DRS train costs several tenths a lap; waiting for the train to stop gives clear air. OPPOSITE_AHEAD is not acceptable here because the car ahead is on fresher tyres, so it resolves to stopping now, into the train."
+      }
     },
     {
-      "id": "GP17", "kind": "synthetic", "category": "undercut",
+      "id": "GP17",
+      "kind": "synthetic",
+      "category": "undercut",
       "title": "Lap 18/57: undercut on a rival with fading mediums",
       "race_control": "",
       "question": "Hamilton is P4, 1.4 s behind Russell, whose mediums are degrading 140 ms/lap. There is 25 s of clear air behind.",
-      "state": {"total_laps": 57, "current_lap": 18, "track_status": "GREEN",
-                "car": {"driver_code": "HAM", "driver_number": 44, "position": 4, "compound": "MEDIUM", "tyre_age_laps": 17, "deg_slope_ms_per_lap": 60, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 11400, "base_lap_ms": 93000},
-                "field": [["VER", 1, 1, 0, "MEDIUM", 17], ["NOR", 4, 2, 5000, "MEDIUM", 17],
-                          {"driver_code": "RUS", "driver_number": 63, "position": 3, "gap_to_leader_ms": 10000, "compound": "MEDIUM", "tyre_age_laps": 19, "deg_slope_ms_per_lap": 140},
-                          ["SAI", 55, 5, 36500, "HARD", 6], ["ALO", 14, 6, 41000, "HARD", 6]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_HARD"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "Classic undercut: a new-tyre out-lap beats a fading tyre by more than the 1.4 s gap; hards cover the remaining 39 laps (softs would not) and satisfy Art. 30.5(m)."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 18,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "HAM",
+          "driver_number": 44,
+          "position": 4,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 17,
+          "deg_slope_ms_per_lap": 60,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 11400,
+          "base_lap_ms": 93000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "MEDIUM",
+            17
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            5000,
+            "MEDIUM",
+            17
+          ],
+          {
+            "driver_code": "RUS",
+            "driver_number": 63,
+            "position": 3,
+            "gap_to_leader_ms": 10000,
+            "compound": "MEDIUM",
+            "tyre_age_laps": 19,
+            "deg_slope_ms_per_lap": 140
+          },
+          [
+            "SAI",
+            55,
+            5,
+            36500,
+            "HARD",
+            6
+          ],
+          [
+            "ALO",
+            14,
+            6,
+            41000,
+            "HARD",
+            6
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "Classic undercut: a new-tyre out-lap beats a fading tyre by more than the 1.4 s gap; hards cover the remaining 39 laps (softs would not) and satisfy Art. 30.5(m)."
+      }
     },
     {
-      "id": "GP18", "kind": "synthetic", "category": "late_sc",
+      "id": "GP18",
+      "kind": "synthetic",
+      "category": "late_sc",
       "title": "Lap 49/57: late safety car, both compounds already used",
       "race_control": "SAFETY CAR DEPLOYED",
       "question": "Late safety car. Verstappen is P2 on 30-lap-old hards and has used mediums and hards; the car behind is 16 s back. The leader is staying out on 36-lap-old hards.",
-      "state": {"total_laps": 57, "current_lap": 49, "track_status": "SC",
-                "car": {"driver_code": "VER", "driver_number": 1, "position": 2, "compound": "HARD", "tyre_age_laps": 30, "deg_slope_ms_per_lap": 45, "compounds_used": ["MEDIUM", "HARD"], "gap_to_leader_ms": 3000, "base_lap_ms": 87000},
-                "field": [["HAM", 44, 1, 0, "HARD", 36], ["PER", 11, 3, 19000, "HARD", 28], ["SAI", 55, 4, 24000, "HARD", 28]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_SOFT", "PIT_NOW_MEDIUM"], "forbidden": [], "historical": "A stop under the safety car costs less than the gap to the car behind, so it is free; new softs for the restart attack a leader on old tyres (2021 Abu Dhabi GP)."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 49,
+        "track_status": "SC",
+        "car": {
+          "driver_code": "VER",
+          "driver_number": 1,
+          "position": 2,
+          "compound": "HARD",
+          "tyre_age_laps": 30,
+          "deg_slope_ms_per_lap": 45,
+          "compounds_used": [
+            "MEDIUM",
+            "HARD"
+          ],
+          "gap_to_leader_ms": 3000,
+          "base_lap_ms": 87000
+        },
+        "field": [
+          [
+            "HAM",
+            44,
+            1,
+            0,
+            "HARD",
+            36
+          ],
+          [
+            "PER",
+            11,
+            3,
+            19000,
+            "HARD",
+            28
+          ],
+          [
+            "SAI",
+            55,
+            4,
+            24000,
+            "HARD",
+            28
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_SOFT",
+          "PIT_NOW_MEDIUM"
+        ],
+        "forbidden": [],
+        "historical": "A stop under the safety car costs less than the gap to the car behind, so it is free; new softs for the restart attack a leader on old tyres (2021 Abu Dhabi GP)."
+      }
     },
     {
-      "id": "GP19", "kind": "synthetic", "category": "red_flag",
+      "id": "GP19",
+      "kind": "synthetic",
+      "category": "red_flag",
       "title": "Lap 20/57: red flag before the first stop",
       "race_control": "RED FLAG",
       "question": "The race is red-flagged on lap 20. Piastri is P3 on 19-lap-old mediums and has not stopped. Teams may change tyres during the suspension.",
-      "state": {"total_laps": 57, "current_lap": 20, "track_status": "RED",
-                "car": {"driver_code": "PIA", "driver_number": 81, "position": 3, "compound": "MEDIUM", "tyre_age_laps": 19, "deg_slope_ms_per_lap": 50, "compounds_used": ["MEDIUM"], "gap_to_leader_ms": 4500, "base_lap_ms": 90000},
-                "field": [["VER", 1, 1, 0, "MEDIUM", 19], ["LEC", 16, 2, 2000, "MEDIUM", 19], ["NOR", 4, 4, 6000, "HARD", 19], ["SAI", 55, 5, 9000, "HARD", 19]]},
-      "ground_truth": {"acceptable": ["PIT_NOW_HARD"], "forbidden": ["PIT_NOW_MEDIUM"], "historical": "A tyre change during a suspension costs no time (Art. 57.4(b)); hards satisfy Art. 30.5(m) and cover the remaining 37 laps, removing the need for a green-flag stop (2024 Monaco GP, 2024 Sao Paulo GP)."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 20,
+        "track_status": "RED",
+        "car": {
+          "driver_code": "PIA",
+          "driver_number": 81,
+          "position": 3,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 19,
+          "deg_slope_ms_per_lap": 50,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 4500,
+          "base_lap_ms": 90000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "MEDIUM",
+            19
+          ],
+          [
+            "LEC",
+            16,
+            2,
+            2000,
+            "MEDIUM",
+            19
+          ],
+          [
+            "NOR",
+            4,
+            4,
+            6000,
+            "HARD",
+            19
+          ],
+          [
+            "SAI",
+            55,
+            5,
+            9000,
+            "HARD",
+            19
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "A tyre change during a suspension costs no time (Art. 57.4(b)); hards satisfy Art. 30.5(m) and cover the remaining 37 laps, removing the need for a green-flag stop (2024 Monaco GP, 2024 Sao Paulo GP)."
+      }
     },
     {
-      "id": "GP20", "kind": "synthetic", "category": "no_stop",
+      "id": "GP20",
+      "kind": "synthetic",
+      "category": "no_stop",
       "title": "Lap 50/57: both compounds used, gap behind smaller than a stop",
       "race_control": "",
       "question": "Gasly is P8 on 22-lap-old hards (mediums used earlier), degrading slowly. P9 is 8 s behind. Is a stop for softs worth it?",
-      "state": {"total_laps": 57, "current_lap": 50, "track_status": "GREEN",
-                "car": {"driver_code": "GAS", "driver_number": 10, "position": 8, "compound": "HARD", "tyre_age_laps": 22, "deg_slope_ms_per_lap": 25, "compounds_used": ["MEDIUM", "HARD"], "gap_to_leader_ms": 60000, "base_lap_ms": 92000},
-                "field": [["STR", 18, 7, 52000, "HARD", 24], ["OCO", 31, 9, 68000, "HARD", 22], ["TSU", 22, 10, 71000, "HARD", 23]]},
-      "ground_truth": {"acceptable": ["STAY_OUT_EXTEND"], "forbidden": [], "historical": "With the rule satisfied and seven laps left, a full green-flag stop costs two positions for a few seconds of tyre gain."}
+      "state": {
+        "total_laps": 57,
+        "current_lap": 50,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "GAS",
+          "driver_number": 10,
+          "position": 8,
+          "compound": "HARD",
+          "tyre_age_laps": 22,
+          "deg_slope_ms_per_lap": 25,
+          "compounds_used": [
+            "MEDIUM",
+            "HARD"
+          ],
+          "gap_to_leader_ms": 60000,
+          "base_lap_ms": 92000
+        },
+        "field": [
+          [
+            "STR",
+            18,
+            7,
+            52000,
+            "HARD",
+            24
+          ],
+          [
+            "OCO",
+            31,
+            9,
+            68000,
+            "HARD",
+            22
+          ],
+          [
+            "TSU",
+            22,
+            10,
+            71000,
+            "HARD",
+            23
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND"
+        ],
+        "forbidden": [],
+        "historical": "With the rule satisfied and seven laps left, a full green-flag stop costs two positions for a few seconds of tyre gain."
+      }
     }
   ]
 }

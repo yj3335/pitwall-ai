@@ -6,7 +6,7 @@ SESSION ?= 9558
 MODELS := qwen2.5-coder:14b llama3.2:3b bge-m3
 
 .PHONY: venv ollama-pull services-up services-down status build data lakehouse index \
-        run stop mcp-sim api processor replay web-dev test test-go test-py test-web bench smoke clean
+        run stop mcp-sim api processor replay web-dev test test-go test-py test-web test-web-live bench smoke clean
 
 ## toolchain ---------------------------------------------------------------
 venv:
@@ -74,7 +74,10 @@ test-py:
 	$(ENV) cd python && $(PY) -m pytest -q
 
 test-web:
-	$(ENV) cd web && npx tsc --noEmit && npm test -- --ci && npm run build && npx playwright test
+	$(ENV) cd web && npx tsc --noEmit && npm test -- --ci && npm run build && PW_NO_BUILD=1 npx playwright test
+
+test-web-live:   # real stack + real models: needs `make run` and a replay
+	$(ENV) cd web && npm run build && PW_NO_BUILD=1 PITWALL_E2E_LIVE=1 npx playwright test e2e/live.spec.ts
 
 bench: build
 	bash scripts/bench.sh

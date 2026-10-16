@@ -49,6 +49,17 @@ make stop     # stops them and waits for the ports to close (Kafka shuts down gr
 
 Ollama must already be running (`ollama serve`). Logs and pids are in `.run/`.
 
+The dashboard runs separately:
+
+```bash
+make web-dev                       # http://localhost:3000 (NEXT_PUBLIC_API_URL defaults to http://127.0.0.1:8080)
+cd web && npm run build && npx next start -p 3000   # production build
+```
+
+All processes handle SIGTERM: on `make stop` the processor leaves its consumer group
+and flushes buffered Parquet batches, so a restart is assigned partitions within
+seconds rather than after Kafka's 45 s session timeout.
+
 ```bash
 make replay SESSION=9165                                    # stream Singapore 2023 into Kafka at 20x
 curl -s localhost:8080/api/status | jq

@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -31,7 +32,9 @@ func main() {
 	loop := flag.Bool("loop", false, "restart from the beginning when the file ends")
 	flag.Parse()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	// SIGTERM too (make stop, containers): a clean exit leaves the consumer group
+	// and flushes pending Parquet batches instead of losing them
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	bl := strings.Split(*brokers, ",")
 	if err := kafka.EnsureTopics(ctx, bl); err != nil {

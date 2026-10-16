@@ -77,6 +77,38 @@ actually hit while building and verifying the system, with how it was found.
 - **`make stop` reported success while Kafka was still running.** It now waits for the
   ports to close.
 
+### Added in milestone 9 (dashboard)
+- Next.js pit-wall dashboard: stream KPIs, live timing tower with lettered tyre badges
+  and degradation bars, Monte Carlo strategy distribution (emphasis dot + P10-P90 with
+  tooltip and table view), undercut decomposition, rejoin traffic window, live
+  LangGraph trace with revision cycles, Qdrant citations, scenario runner (agent or
+  single-pass, injectable faults), and a race-control console.
+- Jest and Playwright suites driven by payloads recorded from the real system, plus a
+  live Playwright test on the real stack and models (`make test-web-live`).
+
+### Fixed in milestone 9
+- **The processor ignored SIGTERM.** `make stop` killed it without leaving its consumer
+  group or flushing buffered Parquet batches (data loss), and a restart waited about
+  40 s for Kafka's session timeout before consuming. All Go commands now handle
+  SIGTERM; a test checks the flush and a fast re-assignment.
+- **Retired cars stayed on the live tower.** The 2023 Singapore lap-1 retirement showed
+  as "P19 TSU" for the whole race. The tower now lists only cars updated within 60 s of
+  race time in the current session, which also keeps them out of live scenarios.
+- **The API only accepted the dashboard on port 3000.** CORS now admits any loopback
+  origin plus `PITWALL_CORS_ORIGINS`.
+- **The "live" indicator tracked the socket, not the data.** It now reports freshness
+  (a tower update in the last 5 s).
+- **One absurd plan flattened the strategy axis.** Intermediates on a dry track
+  (+134 s) squeezed the contenders into a fifth of the chart. Outliers are now excluded
+  from the domain and labelled off-scale.
+- **The undercut chart was illegible** in a half-width column (6 px labels). It now has
+  its own full-width card.
+- **GP10 ground truth was too narrow.** It accepted only extending, but stopping now
+  versus extending is close to a tie on tyre wear (about 22.3 s vs 23.1 s by hand).
+  The trap in that scenario is the 5 s hold, which compliance measures. Found after a
+  development run disagreed; the acceptable set is now every legal plan that accounts
+  for the hold.
+
 ### Fixed during the first build
 - **Kafka 4.4 refused to format KRaft storage.** `kafka-storage.sh format --standalone`
   rejects a static `controller.quorum.voters`; switched to
@@ -217,6 +249,9 @@ reranker moved from bge-reranker-v2-m3 (about 2.3 s) to ms-marco-MiniLM-L-12 ove
 candidates (about 0.2 s).
 
 ### Measured, not hidden
+- The engineer radio message is free text from the model and is not checked by the
+  guardrail; in a GP10 run it mentioned undercutting a rival that the same run's
+  numbers show cannot be undercut.
 - Ground truth for the synthetic scenarios is reasoned from the regulations, not taken
   from the simulator, but the agent is told to prefer the simulator's best legal plan.
   Agreement on synthetic scenarios therefore partly measures whether the simulator's

@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -31,7 +32,9 @@ func main() {
 	quiet := flag.Bool("quiet", false, "do not log tool calls")
 	flag.Parse()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	// SIGTERM too (make stop, containers): a clean exit leaves the consumer group
+	// and flushes pending Parquet batches instead of losing them
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	log.SetOutput(os.Stderr) // stdout is the protocol channel in stdio mode
 

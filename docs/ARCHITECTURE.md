@@ -10,6 +10,7 @@ It has four layers, each with a single job:
 | Knowledge | Python: DuckDB, Qdrant | analytical SQL over the lakehouse, retrieval over the FIA regulations |
 | Decision | Python: LangGraph + Ollama | combine the above into a legal, verified strategy call |
 | Control plane | Python: FastAPI (:8080) | stream runs over SSE, proxy live timing, turn race-control messages into runs |
+| Dashboard | Next.js + TypeScript + Tailwind (:3000) | the pit wall: live tower, strategy distribution, undercut, live LangGraph and Qdrant trace |
 
 ```mermaid
 flowchart LR
@@ -267,6 +268,36 @@ the Monte Carlo already prices rejoin traffic and track position. If a call stil
 violates a hard check after two revisions, `finalize` takes the best simulator plan
 that passes every hard check, and otherwise reports the violations as unresolved. It
 never claims an override that changed nothing.
+
+## 6. Dashboard (Next.js, :3000)
+
+`web/` is a client-rendered App Router app talking to the control plane directly
+(CORS admits any loopback origin). Two `EventSource` streams drive it:
+- **Live stream** (`/api/live/stream`): the timing tower, de-duplicated stream triggers,
+  and race-control messages. The "live" indicator reflects data freshness (a tower
+  update in the last 5 s), not socket state.
+- **Run stream** (`/api/strategy/runs/{id}/events`): reduced by a pure, idempotent
+  reducer (`lib/run.ts`), so a reconnect that replays events changes nothing.
+
+Panels:
+
+| Panel | Form | Notes |
+|---|---|---|
+| Stream health | stat tiles | events, live throughput, trigger p99, triggers, lakehouse files |
+| Timing tower | table | lettered tyre badges; fuel-corrected degradation as a thin single-hue bar on a fixed 0-200 ms/lap scale; negative slopes are muted (lap times improving, not wear); retired cars are dropped by the processor |
+| Monte Carlo distribution | dot + P10-P90 interval, emphasis | best legal plan in the accent colour, other plans grey, illegal plans hollow and labelled; outliers (more than 3× the median legal delta, 20 s minimum) are clipped with an off-scale label so they do not flatten the axis; hover/focus tooltip; table-view twin with finish position, overtake probability and rejoin |
+| Undercut | diverging bars (blue gain / red loss, grey zero) | lap 1, lap 2, penalty hold, net; verdict with icon + label |
+| Rejoin traffic | definition list | rejoin position, car ahead, cars within 1.2 s, DRS train, clear-air laps |
+| LangGraph trace | ordered rows with duration bars | revision cycles marked; verifier outcome as a status pill |
+| Regulations | list | citations with RRF rank and rerank score; the derived constraints for the edition in force |
+| Race control | form | presets (VSC, SC with pit entry closed, red flag, time penalty) for any car on the tower |
+
+Colours follow the validated reference palette (dark steps). Status colours are
+reserved for state and always carry an icon and a label. The tyre colours follow the
+Pirelli convention: the white hard and pale-yellow medium fail the categorical
+lightness and chroma checks by design. They pass colour-vision separation (worst
+pair ΔE 8.1, tritan 6.9 in the band that requires secondary encoding), so a compound
+is only ever drawn as a badge carrying its letter, never as an unlabelled fill.
 
 ## Scenarios
 

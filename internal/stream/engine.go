@@ -107,6 +107,30 @@ func (b *Board) All() []*Snapshot {
 	return out
 }
 
+// StaleAfterMs is how long (race time) a car may go without an update before
+// it is considered out of the race: retired cars stop producing telemetry.
+const StaleAfterMs = 60_000
+
+// Active returns the cars still running in the most recent session, ordered
+// by position: cars from older sessions, and cars with no update for
+// StaleAfterMs of race time relative to the newest sample, are dropped.
+func (b *Board) Active() []*Snapshot {
+	all := b.All()
+	var latest *Snapshot
+	for _, s := range all {
+		if latest == nil || s.TsMs > latest.TsMs {
+			latest = s
+		}
+	}
+	out := all[:0:0]
+	for _, s := range all {
+		if latest != nil && s.SessionKey == latest.SessionKey && latest.TsMs-s.TsMs <= StaleAfterMs {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
 // Events is the number of events applied to the board.
 func (b *Board) Events() int64 { return b.events.Load() }
 

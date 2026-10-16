@@ -1,0 +1,1 @@
+{"mcp_sim":true,"qdrant":true,"ollama":true,"processor":true,"lakehouse_sessions":[9165,9558,9636],"models":{"primary":"qwen2.5-coder:14b","verifier":"llama3.2:3b","embedding":"bge-m3"},"runs":{"total":0,"active":0}}

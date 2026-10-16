@@ -217,7 +217,8 @@ async def fia_regulation_rag_node(state: PitWallState, config) -> dict:
                    "pit_entry_closed": c.pit_entry_closed, "track_status": c.track_status}
     return {"regulations": regs, "constraints": constraints,
             "trace": _event(deps, "fia_regulation_rag", t0, f"{len(regs)} citations from Qdrant hybrid RRF + rerank",
-                            citations=[r["citation"] for r in regs], queries_ms=timings, constraints=constraints["lines"])}
+                            citations=[r["citation"] for r in regs], queries_ms=timings, constraints=constraints["lines"],
+                            hits=[{k: r[k] for k in ("id", "citation", "query", "rrf_rank", "rerank_score", "text")} for r in regs])}
 
 
 def pit_loss_for_lap(s: dict, pit_lap: int) -> float:
@@ -277,7 +278,8 @@ async def monte_carlo_mcp_node(state: PitWallState, config) -> dict:
     return {"simulation": out, "trace": _event(
         deps, "monte_carlo_mcp", t0,
         f"Go MCP: {sim['total_trajectories']:,} trajectories in {sim['elapsed_ms']:.1f} ms on {sim['workers']} workers, best legal {sim['recommended']}",
-        table=table, undercut=out.get("undercut", {}).get("explanation"), traffic=out.get("traffic", {}).get("verdict"))}
+        table=table, rollouts=sim["rollouts_per_strategy"], recommended=sim["recommended"],
+        undercut=out.get("undercut"), traffic=out.get("traffic"))}
 
 
 SYSTEM_STRATEGIST = """You are the race strategist on a Formula 1 pit wall. Decide the pit call for our car.

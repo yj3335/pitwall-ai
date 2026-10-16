@@ -236,3 +236,28 @@ func TestConcurrentEnginesSharedBoard(t *testing.T) {
 		t.Fatalf("board has %d cars", len(board.All()))
 	}
 }
+
+// A car that retired early (no telemetry for over a minute of race time) and
+// cars from a previously replayed session must not appear on the live tower.
+func TestActiveDropsRetiredAndOldSessionCars(t *testing.T) {
+	b := NewBoard()
+	eng := NewEngine(b)
+	mk := func(session, dn int32, code string, pos int32, ts int64) Event {
+		return Event{TsMs: ts, SessionKey: session, DriverNumber: dn, DriverCode: code, LapNumber: 5, Position: pos,
+			Compound: "HARD", TrackStatus: StatusGreen, IntervalAheadMs: Unknown}
+	}
+	eng.Process(mk(9558, 44, "HAM", 1, 1_000))             // older session
+	eng.Process(mk(9165, 22, "TSU", 19, 2_000_000))        // retired on lap 1
+	eng.Process(mk(9165, 55, "SAI", 1, 2_000_000+300_000)) // running
+	eng.Process(mk(9165, 4, "NOR", 2, 2_000_000+299_500))
+	var codes []string
+	for _, s := range b.Active() {
+		codes = append(codes, s.DriverCode)
+	}
+	if len(codes) != 2 || codes[0] != "SAI" || codes[1] != "NOR" {
+		t.Fatalf("active cars %v, want [SAI NOR]", codes)
+	}
+	if len(b.All()) != 4 {
+		t.Fatalf("All() must still return every car seen")
+	}
+}
