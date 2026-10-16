@@ -28,12 +28,18 @@ jobs:
           --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
           --health-interval 5s --health-timeout 10s --health-retries 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - run: go vet ./...
-      - run: go test -race -count=1 ./...
+      - name: go test -race
+        run: go test -race -count=1 ./... 2>&1 | tee go-test.log
+        shell: bash -o pipefail {0}
+      - name: Report failing tests as an annotation
+        if: failure()
+        run: |
+          echo "::error title=go test failures::$(grep -E -- '--- FAIL|_test\.go:[0-9]+:|panic:|^FAIL|Error' go-test.log | head -60 | awk '{printf "%s%%0A", $0}')"
 
   python:
     runs-on: ubuntu-latest
@@ -45,11 +51,11 @@ jobs:
           --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"
           --health-interval 5s --health-timeout 10s --health-retries 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
           cache: pip
@@ -65,7 +71,12 @@ jobs:
           for f in data/races/session_*_events.jsonl.gz; do ./bin/processor -from-file "$f" -out data/lakehouse; done
       - name: pytest
         working-directory: python
-        run: python -m pytest -q -rs
+        run: python -m pytest -q -rs -rf 2>&1 | tee ../pytest.log
+        shell: bash -o pipefail {0}
+      - name: Report failing tests as an annotation
+        if: failure()
+        run: |
+          echo "::error title=pytest failures::$(grep -E '^(FAILED|ERROR) |Error|assert' pytest.log | head -60 | awk '{printf "%s%%0A", $0}')"
 
   web:
     runs-on: ubuntu-latest
@@ -73,8 +84,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
