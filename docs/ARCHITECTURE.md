@@ -270,7 +270,10 @@ exist:
    two-compound rule, the penalty hold, pit entry, tyres against track wetness,
    internal consistency, and a DRS-train rejoin (via MCP). llama3.2:3b reviews the call
    as an advisory critic. A hard violation routes back to the synthesizer with the
-   exact feedback (`reflection_count += 1`, at most 2). Each cited article is also
+   exact feedback (`reflection_count += 1`, at most 2). Every rejected plan is
+   recorded with its violation codes (`rejections`), and the revision prompt lists
+   them all. A revision that proposes a plan already rejected goes straight to
+   `finalize` instead of spending another cycle. Each cited article is also
    looked up in the edition in force (`regulations.check_citations`): a citation
    that does not exist goes into the feedback as an advisory and never blocks a
    call. The check proves existence only, not that the article is the right one.

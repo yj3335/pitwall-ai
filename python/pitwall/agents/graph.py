@@ -70,6 +70,7 @@ class PitWallState(TypedDict, total=False):
     proposal: dict
     proposals: Annotated[list, operator.add]
     verdict: dict
+    rejections: Annotated[list, operator.add]  # every plan the verifier rejected, with its violation codes
     reflection_count: int
     final: dict
     trace: Annotated[list, operator.add]
@@ -346,6 +347,10 @@ def _synth_prompt(state: PitWallState) -> list[dict]:
     if state.get("verdict") and state["verdict"].get("feedback"):
         parts.append("YOUR PREVIOUS PROPOSAL WAS REJECTED BY THE VERIFIER. Fix every issue:\n"
                      + json.dumps(state.get("proposal", {}), indent=None)[:900] + "\n" + state["verdict"]["feedback"])
+    if state.get("rejections"):
+        parts.append("PLANS ALREADY REJECTED BY THE VERIFIER (proposing one again ends the revision):\n" + "\n".join(
+            f"- {r['plan'][0]} pit_lap={r['plan'][1]} compound={r['plan'][2]}: {', '.join(r['codes'])}"
+            for r in state["rejections"]))
     return [{"role": "system", "content": strategist_prompt(_constraints(s))}, {"role": "user", "content": "\n\n".join(parts)}]
 
 
@@ -410,7 +415,11 @@ async def verifier_node(state: PitWallState, config) -> dict:
         except Exception as e:  # noqa: BLE001 - the deterministic guardrail still decides
             critic = {"ok": True, "issues": [], "error": str(e)}
     cycle = state.get("reflection_count", 0)
-    revise = bool(hard) and cycle < MAX_REFLECTIONS
+    # a revision that repeats a plan already rejected will not converge: skip the
+    # remaining cycles and let finalize take the best legal simulator plan
+    plan = [(p.get("recommended_action") or "").upper(), *rules.plan_of(p, c)]
+    repeated = bool(hard) and plan in [r["plan"] for r in state.get("rejections", [])]
+    revise = bool(hard) and cycle < MAX_REFLECTIONS and not repeated
     fb = rules.feedback(hard)
     if soft:
         fb += ("\n" if fb else "") + "Advisory: " + rules.feedback(soft)
@@ -423,11 +432,15 @@ async def verifier_node(state: PitWallState, config) -> dict:
                                        + ", ".join(cites["invalid"]))
     verdict = {"ok": not hard, "violations": [v.as_dict() for v in hard], "advisories": [v.as_dict() for v in soft],
                "critic": critic, "feedback": fb, "citations": cites,
-               "traffic": traffic.get("verdict") if traffic else None, "revise": revise}
+               "traffic": traffic.get("verdict") if traffic else None, "revise": revise,
+               "repeated_rejected_plan": repeated}
     update: dict[str, Any] = {"verdict": verdict}
+    if hard:
+        update["rejections"] = [{"plan": plan, "codes": [v.code for v in hard]}]
     if revise:
         update["reflection_count"] = cycle + 1
     summary = ("PASS" if not hard else f"{len(hard)} violation(s): " + ", ".join(v.code for v in hard)) + \
+              (" (repeats a rejected plan)" if repeated else "") + \
               (f" (advisory: {', '.join(v.code for v in soft)})" if soft else "") + \
               (f"; critic ({critic.get('model')}): {'ok' if critic['ok'] else '; '.join(critic['issues'])}" if critic.get("model") else "")
     update["trace"] = _event(deps, "verifier", t0, summary + (" -> REVISE" if revise else ""), violations=verdict["violations"],
@@ -516,7 +529,8 @@ async def run_agent(scenario: dict, deps: AgentDeps, graph=None, thread_id: str 
     cfg = {"configurable": {"thread_id": thread_id or f"{scenario['id']}-{time.time_ns()}", "deps": deps},
            "recursion_limit": 25}
     t0 = time.perf_counter()
-    final_state = await graph.ainvoke({"scenario": scenario, "reflection_count": 0, "trace": [], "proposals": []}, cfg)
+    final_state = await graph.ainvoke({"scenario": scenario, "reflection_count": 0, "trace": [], "proposals": [],
+                                       "rejections": []}, cfg)
     final_state["elapsed_ms"] = round((time.perf_counter() - t0) * 1000, 1)
     return final_state
 

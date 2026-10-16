@@ -52,6 +52,7 @@ class ScriptedChat:
         self.synth = list(synth)
         self.fail_models = set(fail_models)
         self.calls: list[tuple[str, str]] = []
+        self.last_synth_messages: list[dict] = []
 
     async def chat(self, model, messages, schema=None, **kw):
         sys_prompt = messages[0]["content"]
@@ -64,6 +65,7 @@ class ScriptedChat:
             return json.dumps({"ok": True, "issues": []}), {}
         if role == "sql":
             return json.dumps({"sql": "SELECT lap_number FROM laps LIMIT 1"}), {}
+        self.last_synth_messages = messages
         p = self.synth.pop(0) if len(self.synth) > 1 else self.synth[0]
         return json.dumps(p), {}
 
@@ -99,15 +101,33 @@ async def test_cyclic_self_correction_on_two_compound_trap(stdio_mcp):
 
 
 async def test_reflection_budget_then_guardrail_override(stdio_mcp):
-    scn = materialise(SCN["GP13"])  # pit entry closed under SC
-    chat = ScriptedChat([proposal("PIT_NOW_HARD", "HARD", 25)])  # keeps proposing the illegal stop
+    scn = materialise(SCN["GP13"])  # pit entry closed under SC: every stop this lap is illegal
+    chat = ScriptedChat([proposal("PIT_NOW_HARD", "HARD", 25), proposal("PIT_NOW_MEDIUM", "MEDIUM", 25),
+                         proposal("PIT_NOW_SOFT", "SOFT", 25)])  # three different illegal stops
     deps = AgentDeps(llm=FailoverLLM(chat=chat), mcp=stdio_mcp)
     st = await run_agent(scn, deps)
     assert sum(e["node"] == "strategy_synthesizer" for e in st["trace"]) == 3  # 1 + 2 revisions
+    assert [r["plan"][0] for r in st["rejections"]] == ["PIT_NOW_HARD", "PIT_NOW_MEDIUM", "PIT_NOW_SOFT"]
     assert st["final"]["guardrail_override"] is True
     assert not st["final"]["recommended_action"].startswith("PIT_NOW")
     c = rules.constraints_from(scn["state"])
     assert rules.check(st["final"], c) == []
+
+
+async def test_repeating_a_rejected_plan_goes_straight_to_the_guardrail(stdio_mcp):
+    """A revision that proposes an already-rejected plan cannot converge: the
+    remaining cycle is skipped (about 10 s on the real model) and the guardrail
+    takes the best legal plan. The revision prompt lists every rejected plan."""
+    scn = materialise(SCN["GP13"])
+    chat = ScriptedChat([proposal("PIT_NOW_HARD", "HARD", 25)])  # repeats the same illegal stop
+    deps = AgentDeps(llm=FailoverLLM(chat=chat), mcp=stdio_mcp)
+    st = await run_agent(scn, deps)
+    assert sum(e["node"] == "strategy_synthesizer" for e in st["trace"]) == 2  # 1 + 1 revision, not 2
+    assert st["verdict"]["repeated_rejected_plan"] is True and st["reflection_count"] == 1
+    assert st["final"]["guardrail_override"] is True
+    assert rules.check(st["final"], rules.constraints_from(scn["state"])) == []
+    assert any("PLANS ALREADY REJECTED" in m["content"] and "PIT_NOW_HARD pit_lap=25" in m["content"]
+               for m in chat.last_synth_messages)
 
 
 async def test_penalty_hold_is_enforced(stdio_mcp):

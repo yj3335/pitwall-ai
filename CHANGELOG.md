@@ -18,6 +18,13 @@ actually hit while building and verifying the system, with how it was found.
   reports invalid citations as an advisory, and the benchmark reports citation
   validity for each arm. It checks existence, not relevance.
 
+- **Revision stops when it repeats itself.** The verifier records every rejected
+  plan with its violation codes, and the revision prompt lists all of them, not
+  only the last. A revision that proposes an already-rejected plan cannot
+  converge, so the graph skips the remaining cycle and the guardrail takes the
+  best legal simulator plan. Each skipped cycle saves about 10 s on the real model.
+  In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
+
 ### Fixed in the handoff audit
 - **Kafka offsets were committed before their Parquet rows were durable.** An
   offset was marked as soon as the engine had handled the record, while its rows
