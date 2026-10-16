@@ -53,11 +53,13 @@ class ScriptedChat:
         self.fail_models = set(fail_models)
         self.calls: list[tuple[str, str]] = []
         self.last_synth_messages: list[dict] = []
+        self.sampling: dict[str, list[dict]] = {}
 
     async def chat(self, model, messages, schema=None, **kw):
         sys_prompt = messages[0]["content"]
         role = "critic" if "reviewer" in sys_prompt else "sql" if "DuckDB" in sys_prompt else "synth"
         self.calls.append((model, role))
+        self.sampling.setdefault(role, []).append({k: kw[k] for k in ("temperature", "seed") if k in kw})
         if model in self.fail_models:
             import httpx
             raise httpx.ConnectError("model down")
@@ -250,3 +252,18 @@ async def test_sim_only_arm_takes_the_simulators_best_legal_plan(mcp_server):
     assert final["recommended_action"] == "PIT_NOW_HARD" and final["target_compound"] == "HARD"
     assert final["pit_lap"] == scn["state"]["current_lap"] and final["penalty_hold_s"] == 0
     assert rules.check(final, rules.constraints_from(scn["state"])) == []
+
+
+async def test_sampling_reaches_only_the_decision_calls(stdio_mcp, lakehouse):
+    """The robustness study raises the temperature of the synthesizer and the
+    single pass; the SQL writer and the critic must stay greedy."""
+    from pitwall.olap import Lakehouse
+
+    chat = ScriptedChat([proposal("PIT_NOW_HARD", "HARD", 32)])
+    deps = AgentDeps(llm=FailoverLLM(chat=chat), mcp=stdio_mcp, lakehouse=Lakehouse(lakehouse),
+                     decision_sampling={"temperature": 0.7, "seed": 3})
+    await run_agent(materialise(SCN["GP01"], Lakehouse(lakehouse)), deps)
+    await run_single_pass(materialise(SCN["GP08"]), deps)
+    assert chat.sampling["synth"] and all(s == {"temperature": 0.7, "seed": 3} for s in chat.sampling["synth"])
+    assert chat.sampling["sql"] and all(s == {} for s in chat.sampling["sql"])
+    assert chat.sampling["critic"] and all(s == {} for s in chat.sampling["critic"])

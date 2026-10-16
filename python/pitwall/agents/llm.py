@@ -78,10 +78,10 @@ class OllamaChat:
         self._http = httpx.AsyncClient(timeout=timeout)
 
     async def chat(self, model: str, messages: list[dict], schema: dict | None = None,
-                   temperature: float = 0.0, num_predict: int = 768, num_ctx: int = 8192) -> tuple[str, dict]:
+                   temperature: float = 0.0, num_predict: int = 768, num_ctx: int = 8192, seed: int = 42) -> tuple[str, dict]:
         body: dict[str, Any] = {
             "model": model, "messages": messages, "stream": False, "keep_alive": "30m",
-            "options": {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx, "seed": 42},
+            "options": {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx, "seed": seed},
         }
         if schema is not None:
             body["format"] = schema

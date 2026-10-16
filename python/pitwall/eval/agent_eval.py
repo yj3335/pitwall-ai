@@ -89,9 +89,11 @@ async def run_sim_only(scn: dict, deps: AgentDeps) -> dict:
             "fia_article_citations": []}
 
 
-async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat) -> dict:
-    seed = zlib.crc32(f"{scn['id']}|{mode}".encode())
-    llm = FailoverLLM(chat=chat, faults=FaultInjector(rate=FAULT_RATE, seed=seed))
+async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat,
+                  fault_rate: float = FAULT_RATE, fault_seed: int = 0) -> dict:
+    # fault seed 0 keeps the original placement; other seeds move the faults
+    key = f"{scn['id']}|{mode}" + (f"|{fault_seed}" if fault_seed else "")
+    llm = FailoverLLM(chat=chat, faults=FaultInjector(rate=fault_rate, seed=zlib.crc32(key.encode())))
     deps = AgentDeps(llm=llm, **deps_base)
     t0 = time.perf_counter()
     rec: dict = {"id": scn["id"], "kind": scn["kind"], "category": scn["category"], "mode": mode,
@@ -201,25 +203,30 @@ def summarise(rows: list[dict]) -> dict:
     return out
 
 
-async def main_async(out: Path, only: list[str] | None, modes: tuple[str, ...] = MODES) -> None:
+async def main_async(out: Path, only: list[str] | None, modes: tuple[str, ...] = MODES, fault_rate: float = FAULT_RATE,
+                     fault_seed: int = 0, temperature: float | None = None, seed: int = 42) -> None:
     lh = Lakehouse()
     mcp = HTTPMCPClient()
     await mcp.initialize()
-    deps_base = {"mcp": mcp, "retriever": HybridRetriever(), "lakehouse": lh}
+    sampling = {} if temperature is None else {"temperature": temperature, "seed": seed}
+    deps_base = {"mcp": mcp, "retriever": HybridRetriever(), "lakehouse": lh, "decision_sampling": sampling}
     chat = OllamaChat()
     graph = build_graph()
     scenarios = [materialise(s, lh) for s in load_scenarios() if not only or s["id"] in only]
     rows: list[dict] = []
     for scn in scenarios:
         for mode in modes:
-            rec = await run_one(scn, mode, deps_base, graph, chat)
+            rec = await run_one(scn, mode, deps_base, graph, chat, fault_rate=fault_rate, fault_seed=fault_seed)
             rows.append(rec)
             flag = "OK " if rec["compliant"] else "ILLEGAL"
             print(f"{scn['id']} {mode:11} {flag} {'agree' if rec['agrees'] else 'differ':6} "
                   f"{(rec['final'] or {}).get('recommended_action')!s:16} {rec['latency_ms'] / 1000:6.1f}s "
                   f"faults={rec['llm']['faults']} recovered={rec['llm']['recovered']} {rec['error'] or ''}", flush=True)
     report = {
-        "fault_rate": FAULT_RATE,
+        "fault_rate": fault_rate,
+        "fault_seed": fault_seed,
+        # sampling of the decision calls; None = the production setting (greedy, seed 42)
+        "decision_sampling": sampling or None,
         "models": {"primary": config.PRIMARY_MODEL, "fast": config.VERIFIER_MODEL, "embedding": config.EMBED_MODEL},
         "scenarios": len(scenarios),
         **{m: summarise([r for r in rows if r["mode"] == m]) for m in modes},
@@ -236,8 +243,13 @@ def main() -> None:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--modes", nargs="*", choices=MODES, default=list(MODES))
+    ap.add_argument("--fault-rate", type=float, default=FAULT_RATE)
+    ap.add_argument("--fault-seed", type=int, default=0, help="0 = the original fault placement")
+    ap.add_argument("--temperature", type=float, default=None, help="decision calls only (synthesizer, single pass)")
+    ap.add_argument("--seed", type=int, default=42, help="sampling seed of the decision calls")
     args = ap.parse_args()
-    asyncio.run(main_async(args.out, args.only, tuple(args.modes)))
+    asyncio.run(main_async(args.out, args.only, tuple(args.modes), args.fault_rate, args.fault_seed,
+                           args.temperature, args.seed))
 
 
 if __name__ == "__main__":

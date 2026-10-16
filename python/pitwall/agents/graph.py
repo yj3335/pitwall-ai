@@ -16,7 +16,7 @@ import asyncio
 import json
 import operator
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Annotated, Any, Callable, TypedDict
 
 from langgraph.checkpoint.memory import MemorySaver
@@ -84,6 +84,9 @@ class AgentDeps:
     lakehouse: Lakehouse | None = None
     use_critic: bool = True
     on_event: Callable[[dict], None] | None = None
+    # sampling for the decision calls only (synthesizer, single pass), e.g.
+    # {"temperature": 0.7, "seed": 3} in the robustness study; SQL and critic stay greedy
+    decision_sampling: dict = field(default_factory=dict)
 
 
 def _deps(config) -> AgentDeps:
@@ -374,7 +377,8 @@ def _normalise(p: dict, s: dict) -> dict:
 async def strategy_synthesizer_node(state: PitWallState, config) -> dict:
     deps, t0 = _deps(config), time.perf_counter()
     s = state["scenario"]["state"]
-    obj, rec = await deps.llm.complete_json("synthesizer", _synth_prompt(state), PROPOSAL_SCHEMA, num_predict=700)
+    obj, rec = await deps.llm.complete_json("synthesizer", _synth_prompt(state), PROPOSAL_SCHEMA, num_predict=700,
+                                            **deps.decision_sampling)
     p = _normalise(obj, s)
     p["_model"], p["_failover"], p["_ms"] = rec.model, rec.failover, round(rec.ms)
     cycle = state.get("reflection_count", 0)
@@ -541,7 +545,7 @@ async def run_single_pass(scenario: dict, deps: AgentDeps) -> dict:
     s = scenario["state"]
     msgs = [{"role": "system", "content": strategist_prompt(_constraints(s), SYSTEM_SINGLE)},
             {"role": "user", "content": f"SITUATION\n{situation_text(s)}\n\nQUESTION\n{scenario.get('question', '')}"}]
-    obj, rec = await deps.llm.complete_json("single_pass", msgs, PROPOSAL_SCHEMA, num_predict=600)
+    obj, rec = await deps.llm.complete_json("single_pass", msgs, PROPOSAL_SCHEMA, num_predict=600, **deps.decision_sampling)
     p = _normalise(obj, s)
     return {"final": {k: v for k, v in p.items() if not k.startswith("_")}, "model": rec.model, "failover": rec.failover,
             "elapsed_ms": round((time.perf_counter() - t0) * 1000, 1)}
