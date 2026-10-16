@@ -280,6 +280,25 @@ exist:
 6. **finalize**: a call still illegal after two revisions is replaced by the
    simulator's best legal plan and flagged `guardrail_override`.
 
+**Sampling: temperature 0, seed 42.** Every model call is greedy, for four reasons:
+1. **Reproducible comparisons.** The same input gives the same call, so a
+   difference between the benchmark arms comes from the architecture, not from one
+   arm drawing a lucky sample.
+2. **A decision task.** The model reads a computed simulator table and the rules,
+   then picks and justifies a plan. Variety has no value here.
+3. **Uncertainty is modelled elsewhere.** Race uncertainty (safety cars, lap noise,
+   failed overtakes) is sampled explicitly by the Monte Carlo simulator. The model
+   acts as a consistent selector over that analysis.
+4. **Auditability.** Replaying a situation should give the same call.
+
+The costs:
+- **Loops.** Greedy decoding can loop inside a string until the token limit. The
+  bounded output schemas contain that.
+- **Hidden uncertainty.** One answer says nothing about whether the model was
+  nearly split between two plans.
+- **Unproven reproducibility.** Determinism on this hardware is assumed, not
+  measured. The robustness study in `docs/BENCHMARKS.md` tests both points.
+
 **Failover.** `FailoverLLM` retries any primary failure (timeout, HTTP error, invalid
 JSON, or an injected fault) on llama3.2:3b. After `trip_after` consecutive failures the
 circuit opens until the cooldown passes. `FaultInjector` makes a seeded fraction of
