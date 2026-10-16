@@ -332,3 +332,30 @@ func TestSoftOnlyPaysWhenItStaysOffTheCliff(t *testing.T) {
 		t.Errorf("10-lap soft stint %.1f s slower than mediums", (s-m)/1000)
 	}
 }
+
+// A leader on older tyres with a car about 1 s/lap faster close behind: where
+// passing is easy the chaser always gets by; on a street circuit it must still
+// pass on track, under the same per-lap model our car faces when attacking
+// (about half the time here, over 11 laps). Before the defence model the
+// faster car behind finished ahead whatever the overtaking difficulty.
+func TestLeaderDefendsOnAHardToPassCircuit(t *testing.T) {
+	finish := func(difficulty float64) float64 {
+		req := Request{TotalLaps: 62, CurrentLap: 50, TrackStatus: "GREEN", Seed: 5, OvertakeDifficulty: &difficulty,
+			Strategies: []string{"STAY_OUT_EXTEND"},
+			Car: CarState{DriverCode: "SAI", Position: 1, Compound: "HARD", TyreAgeLaps: 29, BaseLapMs: 99000,
+				CompoundsUsed: []string{"MEDIUM", "HARD"}},
+			Field: []FieldCar{{DriverCode: "NOR", Position: 2, GapToLeaderMs: 900, Compound: "MEDIUM", TyreAgeLaps: 6}}}
+		r, err := Simulate(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return outcome(t, r, "STAY_OUT_EXTEND").ExpectedFinish
+	}
+	street, open := finish(0.9), finish(0.0)
+	if open < 1.9 {
+		t.Fatalf("with easy passing the faster chaser should get by (expected finish %.2f)", open)
+	}
+	if street > open-0.3 {
+		t.Fatalf("overtaking difficulty must protect the leader: expected finish %.2f street vs %.2f open", street, open)
+	}
+}

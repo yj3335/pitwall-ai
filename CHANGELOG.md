@@ -26,6 +26,15 @@ actually hit while building and verifying the system, with how it was found.
   In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
 
 ### Fixed in the handoff audit
+- **Defending cost nothing to the attacker.** The simulator applied overtaking
+  difficulty only when our car attacked. A faster rival behind us finished ahead
+  on raw race time, as if passing were free, so on a street circuit staying out in
+  the lead was undervalued. In GP03 (Sainz leading Singapore 2023 under the VSC)
+  staying out was projected to finish P5. A rival behind now has to pass on track
+  under the same model, or gets by through a stop of its own.
+  `TestLeaderDefendsOnAHardToPassCircuit` fails without the change. Found by
+  reading the simulator's output for GP03, the one real scenario the agent and
+  the simulator both got wrong.
 - **Kafka offsets were committed before their Parquet rows were durable.** An
   offset was marked as soon as the engine had handled the record, while its rows
   waited up to 2 s in the sink buffers. On shutdown the processor also committed

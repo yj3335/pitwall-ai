@@ -416,6 +416,7 @@ func Simulate(req Request) (*Result, error) {
 				fieldNoise := make([]float64, len(c.field))
 				fieldU := make([]float64, len(c.field))
 				scratch := make([]int, 0, len(c.field))
+				isAhead := make([]bool, len(c.field))
 				for r := lo; r < hi; r++ {
 					// common random numbers shared by every plan in this rollout
 					for k := range noise {
@@ -432,7 +433,7 @@ func Simulate(req Request) (*Result, error) {
 					}
 					passU := rng.Float64()
 					for pi := range plans {
-						t, fin, gain, rejoin, traffic, trafMs, pitLoss := c.rollout(&plans[pi], noise, scStart, fieldNoise, fieldU, scratch, stopNoise, passU)
+						t, fin, gain, rejoin, traffic, trafMs, pitLoss := c.rollout(&plans[pi], noise, scStart, fieldNoise, fieldU, scratch, isAhead, stopNoise, passU)
 						times[pi][r] = float32(t)
 						a := &local[pi]
 						a.sum += t
@@ -529,7 +530,7 @@ func Simulate(req Request) (*Result, error) {
 // rollout simulates one trajectory of one plan. It returns the remaining race
 // time, finishing position, whether we beat the car ahead, rejoin position,
 // whether we rejoined in traffic, the traffic loss and the pit loss applied.
-func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNoise, fieldU []float64, ahead []int,
+func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNoise, fieldU []float64, ahead []int, isAhead []bool,
 	stopNoise, passU float64) (float64, float64, float64, float64, float64, float64, float64) {
 	req := c.req
 	comp, age := req.Car.Compound, req.Car.TyreAgeLaps
@@ -640,14 +641,26 @@ func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNois
 		t += req.Car.PenaltyS * 1000 // added to race time when not served in the pits
 	}
 	t = c.trackPosition(t, tRef, ahead, rejoinK, fieldNoise, fieldU)
+	for j := range isAhead {
+		isAhead[j] = false
+	}
+	for _, j := range ahead {
+		isAhead[j] = true
+	}
 	finish, gain := 1.0, 0.0
 	if len(c.field) > 0 {
 		for j := range c.field {
 			fj := c.field[j].finish + fieldNoise[j]*req.LapSigmaMs*math.Sqrt(float64(c.n))
-			if fj < t {
+			beats := fj < t
+			if beats && !isAhead[j] {
+				// it is behind us on track at the reference point: being faster
+				// is not enough, it has to get past
+				beats = c.passesUs(j, t, fj, tRef, rejoinK, fieldNoise, fieldU)
+			}
+			if beats {
 				finish++
 			}
-			if j == c.ahead && t < fj {
+			if j == c.ahead && !beats {
 				gain = 1
 			}
 		}
@@ -655,6 +668,31 @@ func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNois
 		finish = float64(req.Car.Position)
 	}
 	return t, finish, gain, rejoinPos, traffic, trafficMs, pitLoss
+}
+
+// passesUs is the defending mirror of trackPosition: rival j, behind us on
+// track at the reference point and faster to the flag, gets past only through
+// a stop of its own after that point (the pass happens in the pits) or on
+// track, with the same catch-up and per-lap pass model that our car faces when
+// it attacks. A failed pass leaves it behind us at the flag.
+func (c *plannerCtx) passesUs(j int, t, fj, tRef float64, fromK int, fieldNoise, fieldU []float64) bool {
+	req := c.req
+	f := c.field[j]
+	if f.car.PlannedStopLap > req.CurrentLap+fromK {
+		return true
+	}
+	lapsAfter := float64(c.n - fromK - 1)
+	if lapsAfter <= 0 {
+		return false
+	}
+	gap0 := math.Max(0, f.cum[fromK]+fieldNoise[j]*req.LapSigmaMs*math.Sqrt(float64(fromK+1))-tRef)
+	adv := (gap0 + (t - fj)) / lapsAfter // its pace advantage, ms/lap
+	attempts := lapsAfter - math.Ceil(gap0/math.Max(adv, 1))
+	if attempts < 1 {
+		return false
+	}
+	pLap := (1 - c.overtake) * math.Min(0.7, math.Max(0.05, 0.1+adv/2000))
+	return fieldU[j] < 1-math.Pow(1-pLap, attempts)
 }
 
 // trackPosition enforces that a faster car must still overtake on track. For

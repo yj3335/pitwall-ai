@@ -164,7 +164,12 @@ trajectories each by default.
 - **Traffic and track position:** rejoining within 1.2 s behind a slower car costs
   0.45 s/lap until a pass succeeds. Each car that must be re-passed on track costs
   pass attempts whose probability falls with the circuit's `overtake_difficulty`, and
-  a failed pass pins the finish behind that car.
+  a failed pass pins the finish behind that car. Defence uses the same model:
+  - **Rivals behind us.** A rival behind us at the reference point (the start, or
+    our rejoin) that is faster to the flag must pass us on track with the same
+    catch-up and per-lap probability. If it fails, it finishes behind.
+  - **Rivals still to stop.** A rival with a stop still to make gets by in the pits
+    instead.
 - **Regulation checks:** Art. 30.5 two dry compounds, pit entry closed, and compound
   availability. Illegal plans are reported but never recommended.
 
