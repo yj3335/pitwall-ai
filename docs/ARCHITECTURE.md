@@ -65,6 +65,12 @@ chequered-flag lap, because OpenF1 also records the podium cars' cool-down lap.
 car always lands on the same one of the 20 partitions and its events stay totally
 ordered. `TestKafkaPerDriverOrdering` checks both properties against the real broker.
 
+**Producer.** `kafka.NewProducer` (the replayer, the processor's trigger and
+race-control publishing, the benchmark) batches with a 2 ms linger and LZ4 compression.
+It retries metadata after 100 ms instead of franz-go's default 5 s. With the default,
+a partition without a leader (a topic just created, a leader moving) holds every
+buffered record for 5 s (`TestProducerDoesNotStallOnANewTopic`).
+
 **Per-partition ownership.** `kafka.Run` starts one goroutine per assigned partition,
 and each goroutine owns a `stream.Engine`, so driver state needs no locks. Offsets are
 committed only after the handler returns (`AutoCommitMarks`, at-least-once).
@@ -221,7 +227,14 @@ exist:
    a rival is within 3.5 s and `validate_physics_and_traffic` for the best plan (not
    under a red flag, where every car changes tyres in the pit lane).
 4. **strategy_synthesizer**: qwen2.5-coder:14b produces a schema-constrained JSON call
-   (Ollama structured outputs). The prompt carries the edition's article numbers.
+   (Ollama structured outputs). The prompt carries the edition's article numbers, and
+   the situation text includes any race-control message and team radio.
+   - Every free-text field and array in the proposal, critic and SQL schemas has a
+     `maxLength` or `maxItems`, which Ollama enforces in the sampling grammar.
+     Without them qwen2.5-coder could loop inside a string until the token limit.
+   - The SQL bound stays under the length at which Ollama fails to compile the
+     grammar, between 1,500 and 2,000 characters. A live test sends every schema to
+     both models.
 5. **verifier**: the deterministic guardrail (`agents/rules.py`) checks the
    two-compound rule, the penalty hold, pit entry, tyres against track wetness,
    internal consistency, and a DRS-train rejoin (via MCP). llama3.2:3b reviews the call
@@ -238,8 +251,9 @@ primary calls fail.
 **Baseline.** `run_single_pass` makes one qwen2.5-coder:14b call. It gets the same
 situation text and the same system-prompt rules and output contract as the agent's
 synthesiser (two compounds, penalty hold, pit entry, and the action-to-compound
-mapping, with article numbers from the edition in force). It gets no lakehouse SQL,
-retrieval, simulator or verifier. Both arms are scored by the same rule checker.
+mapping, with article numbers from the edition in force), including any team radio.
+It gets no lakehouse SQL, retrieval, simulator or verifier. Both arms are scored by
+the same rule checker and the same MCP traffic check.
 
 ## 5. Control plane (FastAPI, :8080)
 
