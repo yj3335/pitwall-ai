@@ -6,6 +6,19 @@ actually hit while building and verifying the system, with how it was found.
 ## Unreleased
 
 ### Fixed in the handoff audit
+- **Kafka offsets were committed before their Parquet rows were durable.** An
+  offset was marked as soon as the engine had handled the record, while its rows
+  waited up to 2 s in the sink buffers. On shutdown the processor also committed
+  before it flushed. So a hard crash lost the buffered rows from the lakehouse, and
+  the writer did not fsync the directory after the rename.
+  - **Barriers.** Each partition handler now queues a barrier behind its rows in
+    every sink, and the batch's offsets are marked only when all sinks have
+    committed those rows. That includes a directory fsync after each rename.
+  - **Failed writes.** After a failed write no barrier runs again, so offsets never
+    pass lost rows.
+  - **Shutdown order.** Flush, commit, then leave the group.
+  - **Proof.** A live-broker test shows nothing committed while rows are buffered.
+    It fails if records are acknowledged immediately.
 - **Model SQL could read the future.** The point-in-time scope shadowed `laps`,
   `telemetry` and `triggers` with CTEs over the full views. A schema-qualified name
   went around the CTE:

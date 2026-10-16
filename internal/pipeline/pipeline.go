@@ -113,7 +113,8 @@ func (p *Pipeline) Apply(eng *stream.Engine, ev stream.Event) {
 // gets its own handler and goroutine, so engines never share state.
 func (p *Pipeline) PartitionHandler(topic string, _ int32) kafka.Handler {
 	if topic == kafka.TopicRaceControl {
-		return func(_ int32, recs []*kgo.Record) {
+		return func(_ int32, recs []*kgo.Record, done func()) {
+			defer done() // kept in memory only: nothing to make durable
 			for _, r := range recs {
 				if m, err := decodeRC(r.Value); err == nil {
 					p.mu.Lock()
@@ -127,7 +128,8 @@ func (p *Pipeline) PartitionHandler(topic string, _ int32) kafka.Handler {
 		}
 	}
 	eng := p.NewEngine()
-	return func(_ int32, recs []*kgo.Record) {
+	return func(_ int32, recs []*kgo.Record, done func()) {
+		defer p.Durable(done)
 		for _, r := range recs {
 			ev, err := stream.DecodeEvent(r.Value)
 			if err != nil {
@@ -206,6 +208,33 @@ func (p *Pipeline) Stats() Stats {
 
 // ResetClock restarts the throughput clock (used by benchmarks).
 func (p *Pipeline) ResetClock() { p.started = time.Now() }
+
+// Durable calls fn once every row this goroutine has handed to the sinks is
+// committed to disk: a barrier goes to each active sink and fn runs after the
+// last one passes. With no lakehouse configured it runs immediately.
+func (p *Pipeline) Durable(fn func()) {
+	type barrier interface{ Barrier(func()) }
+	var sinks []barrier
+	if p.telemetry != nil {
+		sinks = append(sinks, p.telemetry)
+	}
+	if p.laps != nil {
+		sinks = append(sinks, p.laps, p.triggers)
+	}
+	if len(sinks) == 0 {
+		fn()
+		return
+	}
+	var left atomic.Int32
+	left.Store(int32(len(sinks)))
+	for _, s := range sinks {
+		s.Barrier(func() {
+			if left.Add(-1) == 0 {
+				fn()
+			}
+		})
+	}
+}
 
 // Close flushes every sink.
 func (p *Pipeline) Close() error {

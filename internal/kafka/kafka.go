@@ -102,11 +102,13 @@ func TopicPartitions(ctx context.Context, brokers []string, topic string) (int, 
 }
 
 // Handler processes one batch of records from a single partition. It is
-// always called from the same goroutine for a given partition.
-type Handler func(partition int32, records []*kgo.Record)
+// always called from the same goroutine for a given partition. It must call
+// done once the records' effects are durable (it may do so later, from any
+// goroutine); only then are their offsets marked for commit.
+type Handler func(partition int32, records []*kgo.Record, done func())
 
-// NewConsumer returns a group consumer that only commits offsets the
-// partition workers have finished with (at-least-once).
+// NewConsumer returns a group consumer that only commits offsets whose
+// records the handler has acknowledged (at-least-once).
 func NewConsumer(brokers []string, group string, topics []string, extra ...kgo.Opt) (*kgo.Client, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(brokers...),
@@ -122,8 +124,9 @@ func NewConsumer(brokers []string, group string, topics []string, extra ...kgo.O
 }
 
 // Run polls until ctx is cancelled, dispatching each partition's records to
-// a dedicated goroutine created on first sight. Records are marked for commit
-// only after the handler returns.
+// a dedicated goroutine created on first sight. A batch is marked for commit
+// only when the handler calls its done function; marks only move forward, so
+// a late acknowledgement can never rewind a partition's offset.
 func Run(ctx context.Context, cl *kgo.Client, newHandler func(topic string, partition int32) Handler) error {
 	type key struct {
 		topic string
@@ -164,9 +167,18 @@ func Run(ctx context.Context, cl *kgo.Client, newHandler func(topic string, part
 				wg.Add(1)
 				go func(part int32) {
 					defer wg.Done()
+					var mu sync.Mutex
+					marked := int64(-1)
 					for recs := range ch {
-						h(part, recs)
-						cl.MarkCommitRecords(recs...)
+						last := recs[len(recs)-1]
+						h(part, recs, func() {
+							mu.Lock()
+							defer mu.Unlock()
+							if last.Offset > marked {
+								marked = last.Offset
+								cl.MarkCommitRecords(last)
+							}
+						})
 					}
 				}(p.Partition)
 			}

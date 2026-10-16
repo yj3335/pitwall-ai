@@ -104,15 +104,36 @@ func (w *BatchWriter[T]) writeFile(key int32, rows []T) (string, error) {
 		os.Remove(tmp)
 		return "", err
 	}
+	// the rename lives in the directory entry: sync it too, or a power loss
+	// can forget a batch whose offsets were already committed
+	if err := syncDir(dir); err != nil {
+		return "", fmt.Errorf("sync dir: %w", err)
+	}
 	w.files.Add(1)
 	w.rows.Add(int64(len(rows)))
 	return final, nil
 }
 
+func syncDir(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	return d.Sync()
+}
+
+// item is a row or a barrier in the sink's queue.
+type item[T any] struct {
+	row  T
+	mark func()
+}
+
 // Sink batches rows from many producer goroutines through a channel into a
-// single writer goroutine, flushing by size or age.
+// single writer goroutine, flushing by size or age. A Barrier queued after a
+// goroutine's rows runs once all of them are durable on disk.
 type Sink[T Partitioned] struct {
-	in      chan T
+	in      chan item[T]
 	w       *BatchWriter[T]
 	max     int
 	every   time.Duration
@@ -124,13 +145,20 @@ type Sink[T Partitioned] struct {
 
 // NewSink starts the writer goroutine.
 func NewSink[T Partitioned](w *BatchWriter[T], maxRows int, every time.Duration) *Sink[T] {
-	s := &Sink[T]{in: make(chan T, maxRows*4), w: w, max: maxRows, every: every, done: make(chan struct{})}
+	s := &Sink[T]{in: make(chan item[T], maxRows*4), w: w, max: maxRows, every: every, done: make(chan struct{})}
 	go s.loop()
 	return s
 }
 
 // Add enqueues a row (blocks when the writer is behind: backpressure).
-func (s *Sink[T]) Add(r T) { s.in <- r }
+func (s *Sink[T]) Add(r T) { s.in <- item[T]{row: r} }
+
+// Barrier calls fn once every row this goroutine added before it has been
+// committed to disk (immediately if nothing is pending). After a failed flush
+// barriers never run again, so a caller that commits Kafka offsets in fn can
+// never move them past rows that were lost: those records are re-read after a
+// restart instead (at-least-once).
+func (s *Sink[T]) Barrier(fn func()) { s.in <- item[T]{mark: fn} }
 
 // Close flushes the remaining rows and stops the writer.
 func (s *Sink[T]) Close() error {
@@ -151,6 +179,8 @@ func (s *Sink[T]) Writer() *BatchWriter[T] { return s.w }
 func (s *Sink[T]) loop() {
 	defer close(s.done)
 	buf := make([]T, 0, s.max)
+	var pending []func() // barriers waiting for the rows in buf
+	failed := false
 	tick := time.NewTicker(s.every)
 	defer tick.Stop()
 	flush := func() {
@@ -161,20 +191,37 @@ func (s *Sink[T]) loop() {
 		if err != nil {
 			s.errs.Add(1)
 			s.lastErr.Store(&err)
+			failed = true
 		}
 		if s.OnFlush != nil {
 			s.OnFlush(paths, len(buf))
 		}
+		if !failed {
+			for _, fn := range pending {
+				fn()
+			}
+		}
+		pending = pending[:0]
 		buf = make([]T, 0, s.max)
 	}
 	for {
 		select {
-		case r, ok := <-s.in:
+		case it, ok := <-s.in:
 			if !ok {
 				flush()
 				return
 			}
-			buf = append(buf, r)
+			if it.mark != nil {
+				switch {
+				case failed:
+				case len(buf) == 0:
+					it.mark()
+				default:
+					pending = append(pending, it.mark)
+				}
+				continue
+			}
+			buf = append(buf, it.row)
 			if len(buf) >= s.max {
 				flush()
 			}

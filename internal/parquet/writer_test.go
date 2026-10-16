@@ -117,3 +117,71 @@ func TestConcurrentReadersNeverSeePartialFiles(t *testing.T) {
 	}
 	t.Logf("%d files, %d concurrent reads, 0 errors", len(files), reads.Load())
 }
+
+func committedFiles(t *testing.T, dir string) int {
+	t.Helper()
+	m, _ := filepath.Glob(filepath.Join(dir, "laps", "session=*", "*.parquet"))
+	return len(m)
+}
+
+// A barrier runs only once the rows queued before it are on disk; with
+// nothing pending it runs at once.
+func TestSinkBarrierWaitsForDurableRows(t *testing.T) {
+	dir := t.TempDir()
+	s := NewSink(NewBatchWriter[row](dir, "laps", "b_"), 1000, time.Hour) // no size or age flush during the test
+	var fired atomic.Int32
+	s.Barrier(func() { fired.Add(1) })
+	waitFor(t, func() bool { return fired.Load() == 1 }, "barrier on an empty sink")
+	s.Add(row{Session: 1, Driver: 44})
+	s.Barrier(func() {
+		if committedFiles(t, dir) != 1 {
+			t.Error("barrier ran before its rows were committed")
+		}
+		fired.Add(1)
+	})
+	time.Sleep(50 * time.Millisecond)
+	if fired.Load() != 1 {
+		t.Fatal("barrier ran while its rows were still buffered")
+	}
+	if err := s.Close(); err != nil { // the final flush commits the row, then runs the barrier
+		t.Fatal(err)
+	}
+	if fired.Load() != 2 || committedFiles(t, dir) != 1 {
+		t.Fatalf("fired=%d files=%d after close", fired.Load(), committedFiles(t, dir))
+	}
+}
+
+// After a failed write no barrier runs again, so offsets can never be
+// committed past rows that were lost.
+func TestSinkBarrierNeverRunsAfterAFailedWrite(t *testing.T) {
+	dir := t.TempDir()
+	blocker := filepath.Join(dir, "laps")
+	if err := os.WriteFile(blocker, []byte("not a directory"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s := NewSink(NewBatchWriter[row](dir, "laps", "f_"), 1, time.Hour)
+	var fired atomic.Int32
+	s.Add(row{Session: 1}) // fills the batch: the write fails
+	s.Barrier(func() { fired.Add(1) })
+	waitFor(t, func() bool { return s.Errors() == 1 }, "the failed write")
+	os.Remove(blocker) // later writes succeed again
+	s.Add(row{Session: 1})
+	s.Barrier(func() { fired.Add(1) })
+	if err := s.Close(); err == nil {
+		t.Fatal("expected the first write to fail")
+	}
+	if fired.Load() != 0 {
+		t.Fatalf("%d barrier(s) ran after a failed write", fired.Load())
+	}
+}
+
+func waitFor(t *testing.T, ok func() bool, what string) {
+	t.Helper()
+	for i := 0; i < 200; i++ {
+		if ok() {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatalf("timed out waiting for %s", what)
+}

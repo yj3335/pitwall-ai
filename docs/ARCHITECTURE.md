@@ -72,22 +72,29 @@ a partition without a leader (a topic just created, a leader moving) holds every
 buffered record for 5 s (`TestProducerDoesNotStallOnANewTopic`).
 
 **Per-partition ownership.** `kafka.Run` starts one goroutine per assigned partition,
-and each goroutine owns a `stream.Engine`, so driver state needs no locks. A record's
-offset is marked only after the engine has applied it (`AutoCommitMarks`, committed
-every second), so the engine stage is at-least-once.
+and each goroutine owns a `stream.Engine`, so driver state needs no locks.
 
-That guarantee does not reach the lakehouse. Each Parquet sink buffers rows for up
-to 2 s (or until a batch fills: 20,000 telemetry rows, 2,000 laps, 500 triggers), and
-their offsets may already be committed during that time:
-- On SIGTERM the processor flushes every buffer before leaving the group, so nothing
-  is lost.
-- On a hard crash (`kill -9`, power loss) the rows still in the buffer, up to about
-  2 s of data, are lost from the lakehouse, and the restarted engines rebuild their
-  5-lap windows from new laps. The writer also does not fsync the directory after the
-  rename, so a power loss can lose a just-committed file.
-
-Closing the gap needs offsets committed only once their batch is durable, or
-idempotent rows keyed by `(session, driver, seq)` and de-duplicated on read.
+**Delivery: at-least-once into the lakehouse.**
+- **Offsets wait for the disk.** A batch's offsets are marked for commit only after
+  the rows it produced are on disk. After a batch, the partition handler queues a
+  barrier behind its rows in every Parquet sink. Each sink buffers for up to 2 s
+  (or until a batch fills: 20,000 telemetry rows, 2,000 laps, 500 triggers) and
+  runs the barrier only after the write, the file `fsync`, the rename and a
+  directory `fsync`. When every sink has passed it, the batch is acknowledged and
+  its offsets are marked (`AutoCommitMarks`, committed every second). Marks only
+  move forward for each partition.
+- **A failed write freezes the offsets.** No barrier runs after a failed write, so
+  offsets never move past lost rows; a restart reads those records again.
+- **SIGTERM.** The processor stops consuming, flushes every sink (which marks the
+  offsets of everything written), commits, and only then leaves the group.
+- **What remains.** Delivery is at-least-once, not exactly-once. After a hard crash
+  or a rebalance, a record whose row reached disk but whose offset was not yet
+  committed is read again, so the lakehouse can hold duplicates. Readers do not
+  de-duplicate them yet; the key would be `(session, driver, seq)`. A restarted
+  engine also rebuilds its 5-lap windows from new laps.
+- **Tests.** `TestOffsetsCommitOnlyAfterParquetIsDurable` (live broker: nothing is
+  committed while rows sit in memory, everything after the flush), and the sink
+  barrier tests.
 
 **Degradation math.** For each car the engine keeps a ring of the last 5 *clean* laps
 of the current stint. A lap is unclean if it is lap 1, an in-lap or out-lap, under

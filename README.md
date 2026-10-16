@@ -193,9 +193,10 @@ docker/         Dockerfiles for docker-compose.yml
   once on the live models in an earlier run.
 - **Inputs not in OpenF1.** Track wetness and the 2024 Sao Paulo pit loss (one green
   stop measured) are estimates.
-- **Lakehouse durability on a hard crash.** Offsets are committed before the Parquet
-  batch that holds their rows is flushed. A clean shutdown (SIGTERM) loses nothing, but
-  a hard crash loses the buffered rows from the lakehouse
+- **At-least-once, not exactly-once.** Kafka offsets are committed only after their
+  Parquet rows are on disk, so a crash loses nothing. But after a crash or a
+  rebalance, records whose rows were written before their offsets were committed
+  are read again, and readers do not de-duplicate them yet
   ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 - **Docker Compose not run.** `docker-compose.yml` is written but unexercised: the
   development machine has no Docker. Every number here comes from the native `.venv/`

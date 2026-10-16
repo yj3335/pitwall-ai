@@ -97,9 +97,17 @@ func main() {
 	if err := kafka.Run(ctx, cl, p.PartitionHandler); err != nil {
 		log.Printf("consumer: %v", err)
 	}
+	// flush first: the sink barriers then mark the offsets of every record
+	// that reached disk, which are committed before the group is left
+	sinkErr := p.Close()
+	cctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := cl.CommitMarkedOffsets(cctx); err != nil {
+		log.Printf("commit: %v", err)
+	}
+	cancel()
 	cl.Close()
-	if err := p.Close(); err != nil {
-		log.Fatalf("sink: %v", err)
+	if sinkErr != nil {
+		log.Fatalf("sink: %v", sinkErr)
 	}
 }
 
