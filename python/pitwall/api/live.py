@@ -7,6 +7,8 @@ streamed.
 """
 from __future__ import annotations
 
+import asyncio
+
 import json
 from datetime import datetime, timezone
 from typing import Any
@@ -51,6 +53,22 @@ class ProcessorClient:
             return r.status_code == 200
         except httpx.HTTPError:
             return False
+
+    async def ready(self) -> bool:
+        """True once the processor's consumer holds telemetry partitions."""
+        try:
+            r = await self._http.get(f"{self.url}/readyz", timeout=1.0)
+            return r.status_code == 200
+        except httpx.HTTPError:
+            return False
+
+    async def wait_ready(self, timeout: float = 30.0) -> bool:
+        deadline = asyncio.get_running_loop().time() + timeout
+        while asyncio.get_running_loop().time() < deadline:
+            if await self.ready():
+                return True
+            await asyncio.sleep(0.1)
+        return False
 
     async def aclose(self) -> None:
         await self._http.aclose()

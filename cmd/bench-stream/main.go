@@ -137,28 +137,6 @@ func loadEvents(files []string, n int) []stream.Event {
 	return out
 }
 
-// waitForLeaders blocks until every partition of a new topic has a leader, so
-// the timed run does not include the broker finishing the topic creation.
-func waitForLeaders(ctx context.Context, adm *kadm.Client, topic string) {
-	deadline := time.Now().Add(30 * time.Second)
-	for time.Now().Before(deadline) {
-		md, err := adm.Metadata(ctx, topic)
-		if err == nil {
-			if td, ok := md.Topics[topic]; ok && td.Err == nil && len(td.Partitions) == kafka.TelemetryPartitions {
-				ready := true
-				for _, p := range td.Partitions {
-					ready = ready && p.Err == nil && p.Leader >= 0
-				}
-				if ready {
-					return
-				}
-			}
-		}
-		time.Sleep(20 * time.Millisecond)
-	}
-	log.Fatalf("topic %s: partitions without a leader after 30s", topic)
-}
-
 func runStream(ctx context.Context, bl []string, events []stream.Event, rate float64, dir string) result {
 	topic := fmt.Sprintf("f1.telemetry.bench.%d", time.Now().UnixNano())
 	admin, err := kgo.NewClient(kgo.SeedBrokers(bl...))
@@ -169,7 +147,9 @@ func runStream(ctx context.Context, bl []string, events []stream.Event, rate flo
 	if _, err := adm.CreateTopic(ctx, kafka.TelemetryPartitions, 1, nil, topic); err != nil {
 		log.Fatalf("create topic: %v", err)
 	}
-	waitForLeaders(ctx, adm, topic)
+	if err := kafka.WaitForTopic(ctx, adm, topic, kafka.TelemetryPartitions); err != nil {
+		log.Fatal(err)
+	}
 	defer func() {
 		adm.DeleteTopics(context.Background(), topic)
 		admin.Close()

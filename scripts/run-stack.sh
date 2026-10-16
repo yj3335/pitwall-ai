@@ -31,7 +31,8 @@ up() {
   # offline replay (make lakehouse) that scenarios, tests and benchmarks read
   start processor 8090 "$ROOT/bin/processor" -brokers localhost:9092 -out "$ROOT/data/lakehouse_live" -http :8090
   start api 8080 bash -c "cd '$ROOT/python' && exec '$ROOT/.venv/bin/python' -m uvicorn pitwall.api.app:app --host 0.0.0.0 --port 8080"
-  wait_http localhost:8081/healthz && wait_http localhost:8090/healthz && wait_http localhost:8080/healthz
+  # readyz: the processor holds its partitions, so an immediate replay is not skipped
+  wait_http localhost:8081/healthz && wait_http localhost:8090/readyz && wait_http localhost:8080/healthz
   echo "stack up:"
   echo "  control plane  http://localhost:8080/api/status"
   echo "  MCP simulator  http://localhost:8081/mcp"

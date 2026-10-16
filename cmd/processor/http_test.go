@@ -63,3 +63,24 @@ func TestRaceControlPublishFailure(t *testing.T) {
 		t.Fatalf("status %d, want 503", r.StatusCode)
 	}
 }
+
+func TestReadyzWaitsForPartitionAssignment(t *testing.T) {
+	p := pipeline.New(pipeline.Config{})
+	srv := httptest.NewServer(newHandler(p, nil))
+	defer srv.Close()
+	get := func() int {
+		r, err := http.Get(srv.URL + "/readyz")
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.Body.Close()
+		return r.StatusCode
+	}
+	if code := get(); code != http.StatusServiceUnavailable {
+		t.Fatalf("readyz before assignment: %d", code)
+	}
+	p.Ready.Store(true) // what the consumer's OnPartitionsAssigned does
+	if code := get(); code != http.StatusOK {
+		t.Fatalf("readyz after assignment: %d", code)
+	}
+}

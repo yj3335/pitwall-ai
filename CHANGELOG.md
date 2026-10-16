@@ -26,6 +26,18 @@ actually hit while building and verifying the system, with how it was found.
   In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
 
 ### Fixed in the handoff audit
+- **Two Kafka startup races, exposed by the first CI run on Linux.**
+  - *Topics.* `EnsureTopics` returned as soon as the broker accepted the create.
+    A caller that looked the topic up immediately could get "topic not found"
+    (`TestKafkaPerDriverOrdering` on CI). It now waits until every topic is
+    visible with a leader for each partition. That wait is
+    `kafka.WaitForTopic`, now shared with the stream benchmark.
+  - *Processor readiness.* A new consumer group starts at the end of the topic,
+    so events produced before the processor held its partitions were skipped.
+    On CI the round-trip test consumed 0 of 5,000 events because its fixed 2 s
+    wait was too short. The processor now serves `GET /readyz` once it is
+    assigned telemetry partitions. The tests wait for it instead of sleeping,
+    and so does `make run`, so an immediate `make replay` is safe.
 - **Rivals in the real scenarios had no measured wear.** `field_at` returned
   position, gap, compound and age but no degradation. So in the offline real
   scenarios every rival used the compound default (35 ms/lap on hards), while our

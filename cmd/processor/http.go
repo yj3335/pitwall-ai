@@ -83,5 +83,13 @@ func newHandler(p *pipeline.Pipeline, publish publishFunc) http.Handler {
 	})
 	mux.HandleFunc("GET /v1/stats", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, p.Stats()) })
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
+	// ready once the consumer holds telemetry partitions (offline runs never are)
+	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, r *http.Request) {
+		if !p.Ready.Load() {
+			http.Error(w, "waiting for partition assignment", http.StatusServiceUnavailable)
+			return
+		}
+		w.Write([]byte("ready"))
+	})
 	return mux
 }

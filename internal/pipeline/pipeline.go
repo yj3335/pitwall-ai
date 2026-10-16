@@ -41,7 +41,11 @@ type Pipeline struct {
 	Laps           atomic.Int64
 	TriggerCount   atomic.Int64
 	DecodeErrors   atomic.Int64
-	started        time.Time
+	// Ready is set once the Kafka consumer holds telemetry partitions: before
+	// that, records produced to a new group's topic are skipped (it starts at
+	// the end), so replays should wait for it (GET /readyz).
+	Ready   atomic.Bool
+	started time.Time
 
 	mu       sync.Mutex // guards the small HTTP-facing rings only
 	recent   []stream.Trigger
@@ -166,6 +170,7 @@ func (p *Pipeline) RecentRaceControl(n int) []stream.RaceControlMsg {
 
 // Stats is a JSON-friendly pipeline summary.
 type Stats struct {
+	Ready          bool            `json:"ready"`
 	Events         int64           `json:"events"`
 	Laps           int64           `json:"laps"`
 	Triggers       int64           `json:"triggers"`
@@ -183,7 +188,7 @@ type Stats struct {
 func (p *Pipeline) Stats() Stats {
 	up := time.Since(p.started).Seconds()
 	s := Stats{
-		Events: p.Events.Load(), Laps: p.Laps.Load(), Triggers: p.TriggerCount.Load(),
+		Ready: p.Ready.Load(), Events: p.Events.Load(), Laps: p.Laps.Load(), Triggers: p.TriggerCount.Load(),
 		DecodeErrors: p.DecodeErrors.Load(), UptimeS: up,
 		EventLatency: p.EventLatency.Summarize(), TriggerLatency: p.TriggerLatency.Summarize(),
 	}

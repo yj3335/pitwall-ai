@@ -254,11 +254,8 @@ async def test_trigger_round_trips_through_kafka(binaries, tmp_path):
                              "-http", f"127.0.0.1:{port}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     client = ProcessorClient(f"http://127.0.0.1:{port}")
     try:
-        for _ in range(100):
-            if await client.healthy():
-                break
-            await asyncio.sleep(0.1)
-        await asyncio.sleep(2.0)  # consumer group assignment
+        # a new group starts at the end of the topic: replay only once it holds partitions
+        assert await client.wait_ready(30), "processor was never assigned telemetry partitions"
         subprocess.run([str(binaries / "replayer"), "-file", str(ROOT / "data/races/session_9165_events.jsonl.gz"),
                         "-speed", "0", "-limit", "5000"], check=True, capture_output=True)
         for _ in range(100):
@@ -317,7 +314,7 @@ async def test_sigterm_leaves_group_and_flushes(binaries, tmp_path):
     p1, port1 = start(port := free_port(), tmp_path / "a"), port
     c1 = ProcessorClient(f"http://127.0.0.1:{port1}")
     try:
-        await asyncio.sleep(3.0)  # first member joins and takes all partitions
+        assert await c1.wait_ready(30), "first member was never assigned partitions"
         replay = [str(binaries / "replayer"), "-file", str(ROOT / "data/races/session_9165_events.jsonl.gz"), "-speed", "0"]
         subprocess.run([*replay, "-limit", "3000"], check=True, capture_output=True)
         assert await wait_events(c1, 3000, 20) >= 3000
@@ -334,7 +331,7 @@ async def test_sigterm_leaves_group_and_flushes(binaries, tmp_path):
     c2 = ProcessorClient(f"http://127.0.0.1:{port2}")
     try:
         t0 = time.monotonic()
-        await asyncio.sleep(1.0)
+        assert await c2.wait_ready(20), "replacement waited for the dead member's session timeout"
         subprocess.run([*replay, "-limit", "2000"], check=True, capture_output=True)
         assert await wait_events(c2, 2000, 20) >= 2000
         assert time.monotonic() - t0 < 20, "replacement waited for the dead member's session timeout"

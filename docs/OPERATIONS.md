@@ -128,8 +128,9 @@ curl -s localhost:8090/v1/tower | jq '.drivers[:3]'
 curl -s localhost:8090/v1/stats | jq
 ```
 
-The processor starts at the end of the topic for a new consumer group. Start it
-before the replayer, or pass a fresh `-group`.
+The processor starts at the end of the topic for a new consumer group, so a
+replay must wait until it holds its partitions. `GET :8090/readyz` returns 200
+from that moment (503 before), and `make run` waits for it.
 
 **Two lakehouses.** The live processor writes to `data/lakehouse_live/`.
 `data/lakehouse/` is the deterministic offline replay of the three committed races

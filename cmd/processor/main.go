@@ -68,7 +68,12 @@ func main() {
 	}
 	p := pipeline.New(cfg)
 	cl, err := kafka.NewConsumer(bl, *group, []string{kafka.TopicTelemetry, kafka.TopicRaceControl},
-		kgo.ConsumeResetOffset(kgo.NewOffset().AtEnd()))
+		kgo.ConsumeResetOffset(kgo.NewOffset().AtEnd()),
+		kgo.OnPartitionsAssigned(func(_ context.Context, _ *kgo.Client, m map[string][]int32) {
+			if len(m[kafka.TopicTelemetry]) > 0 {
+				p.Ready.Store(true)
+			}
+		}))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -80,7 +80,39 @@ func EnsureTopics(ctx context.Context, brokers []string) error {
 			return fmt.Errorf("create %s: %w", topic, resp.Err)
 		}
 	}
+	// a created topic is not usable at once: wait until the broker serves its
+	// metadata with a leader for every partition
+	for topic, parts := range Topics {
+		if err := WaitForTopic(ctx, adm, topic, int(parts)); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// WaitForTopic blocks until the topic's metadata shows the given number of
+// partitions, each with a leader (30 s at most).
+func WaitForTopic(ctx context.Context, adm *kadm.Client, topic string, partitions int) error {
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		if md, err := adm.Metadata(ctx, topic); err == nil {
+			if td, ok := md.Topics[topic]; ok && td.Err == nil && len(td.Partitions) == partitions {
+				ready := true
+				for _, p := range td.Partitions {
+					ready = ready && p.Err == nil && p.Leader >= 0
+				}
+				if ready {
+					return nil
+				}
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(20 * time.Millisecond):
+		}
+	}
+	return fmt.Errorf("topic %s: %d partitions with leaders not visible after 30s", topic, partitions)
 }
 
 // TopicPartitions returns the partition count of a topic.
