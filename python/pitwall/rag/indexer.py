@@ -1,6 +1,9 @@
 """Index the FIA regulations corpus into Qdrant.
 
-    python -m pitwall.rag.indexer [--recreate]
+    python -m pitwall.rag.indexer [--no-recreate]
+
+By default the collection is dropped and rebuilt, so chunks removed from the
+corpus do not linger. --no-recreate upserts into the existing collection.
 """
 from __future__ import annotations
 
@@ -13,7 +16,8 @@ from pitwall.rag.store import HybridRetriever, load_corpus
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--recreate", action="store_true", default=True)
+    ap.add_argument("--recreate", action=argparse.BooleanOptionalAction, default=True,
+                    help="drop and rebuild the collection (default); --no-recreate upserts into it")
     ap.add_argument("--collection", default=config.QDRANT_COLLECTION)
     args = ap.parse_args()
     docs = load_corpus()
