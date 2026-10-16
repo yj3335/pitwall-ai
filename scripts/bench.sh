@@ -3,7 +3,7 @@
 #   1. stream: 200k real events through Kafka -> Go -> Parquet with concurrent DuckDB,
 #      Monte Carlo latency in-process and over MCP, DuckDB OLAP latency
 #   2. rag:    40-query Qdrant ablation (dense / sparse / hybrid RRF / + rerank)
-#   3. agent:  20 scenarios, single-pass vs cyclic agent, real models, 10% faults
+#   3. agent:  24 scenarios, single-pass vs cyclic agent, real models, 10% faults
 # Needs `make run` (Kafka, Qdrant, MCP simulator on :8081) and Ollama with the models.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -22,7 +22,7 @@ echo "== 1/3 stream pipeline"
 "$PY" -m pitwall.eval.stream_bench --out ../benchmarks/stream.json >/dev/null
 echo "== 2/3 Qdrant retrieval ablation"
 "$PY" -m pitwall.eval.rag_eval --out ../benchmarks/rag_ablation.json
-echo "== 3/3 agent evaluation on real models (about 8 minutes)"
+echo "== 3/3 agent evaluation on real models (about 10 minutes)"
 "$PY" -m pitwall.eval.agent_eval --out ../benchmarks/agent_eval.json >/dev/null
 "$PY" -m pitwall.eval.report >/dev/null
 echo "wrote benchmarks/results.json"

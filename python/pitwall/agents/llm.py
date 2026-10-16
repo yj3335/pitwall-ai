@@ -68,6 +68,7 @@ class LLMStats:
             "faults": self.faults,
             "recovered": self.recovered,
             "by_model": {m: sum(1 for c in self.calls if c.model == m) for m in {c.model for c in self.calls}},
+            "errors": [c.error for c in self.calls if c.error and c.error != "circuit open"],
         }
 
 

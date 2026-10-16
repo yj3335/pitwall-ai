@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-16T02:44:01+00:00",
-  "git_commit": "e003400-dirty",
+  "generated_at": "2026-10-16T14:45:28+00:00",
+  "git_commit": "32551e3-dirty",
   "machine": {
     "cpu": "Apple M5 Pro",
     "cores": 15,
@@ -14,32 +14,32 @@
   },
   "stream": {
     "events": 200000,
-    "sustained_events_per_s": 1003571,
+    "sustained_events_per_s": 927570,
     "sustained_events_per_s_range": [
-      962293,
-      1018831
+      883492,
+      985357
     ],
-    "committed_to_parquet_events_per_s": 826214,
-    "cold_start_events_per_s": 39440,
+    "committed_to_parquet_events_per_s": 753197,
+    "cold_start_events_per_s": 158581,
     "burst_stream_to_trigger_ms": {
-      "p50_ms": 6.016,
-      "p95_ms": 8.96,
-      "p99_ms": 11.008
+      "p50_ms": 16.128,
+      "p95_ms": 26.112,
+      "p99_ms": 29.184
     },
     "paced_rate_events_per_s": 20000,
     "paced_stream_to_trigger_ms": {
       "p50_ms": 2.016,
       "p95_ms": 3.008,
-      "p99_ms": 4.032
+      "p99_ms": 3.008
     },
     "sink_errors": 0,
-    "duckdb_concurrent_queries": 32684,
+    "duckdb_concurrent_queries": 34148,
     "duckdb_concurrent_errors": 0,
-    "duckdb_concurrent_p50_ms": 1.06,
-    "duckdb_olap_p50_ms": 1.19,
-    "monte_carlo_10k_x6_in_process_p50_ms": 6.528,
-    "monte_carlo_10k_x6_mcp_round_trip_p50_ms": 7.56,
-    "monte_carlo_10k_single_strategy_p50_ms": 1.008
+    "duckdb_concurrent_p50_ms": 1.01,
+    "duckdb_olap_p50_ms": 1.17,
+    "monte_carlo_10k_x6_in_process_p50_ms": 7.04,
+    "monte_carlo_10k_x6_mcp_round_trip_p50_ms": 7.07,
+    "monte_carlo_10k_single_strategy_p50_ms": 0.848
   },
   "rag": {
     "queries": 40,
@@ -51,21 +51,21 @@
         "mrr_at_10": 0.8629,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.8,
-        "qdrant_p50_ms": 1.66,
-        "qdrant_p95_ms": 2.22,
-        "end_to_end_p50_ms": 20.05,
-        "end_to_end_p95_ms": 20.61
+        "qdrant_p50_ms": 1.78,
+        "qdrant_p95_ms": 2.83,
+        "end_to_end_p50_ms": 20.24,
+        "end_to_end_p95_ms": 21.28
       },
       "sparse": {
         "recall_at_1": 0.575,
         "recall_at_3": 0.875,
-        "mrr_at_10": 0.7208,
+        "mrr_at_10": 0.7167,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.75,
-        "qdrant_p50_ms": 1.19,
-        "qdrant_p95_ms": 1.26,
-        "end_to_end_p50_ms": 1.19,
-        "end_to_end_p95_ms": 1.26
+        "qdrant_p50_ms": 1.2,
+        "qdrant_p95_ms": 1.51,
+        "end_to_end_p50_ms": 1.2,
+        "end_to_end_p95_ms": 1.51
       },
       "hybrid": {
         "recall_at_1": 0.775,
@@ -73,10 +73,10 @@
         "mrr_at_10": 0.8592,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.9,
-        "qdrant_p50_ms": 2.65,
-        "qdrant_p95_ms": 2.96,
-        "end_to_end_p50_ms": 21.05,
-        "end_to_end_p95_ms": 21.36
+        "qdrant_p50_ms": 2.58,
+        "qdrant_p95_ms": 2.78,
+        "end_to_end_p50_ms": 21.04,
+        "end_to_end_p95_ms": 21.24
       },
       "hybrid_rerank": {
         "recall_at_1": 0.75,
@@ -84,15 +84,15 @@
         "mrr_at_10": 0.85,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.95,
-        "qdrant_p50_ms": 3.35,
-        "qdrant_p95_ms": 6.33,
-        "end_to_end_p50_ms": 167.81,
-        "end_to_end_p95_ms": 276.63
+        "qdrant_p50_ms": 3.56,
+        "qdrant_p95_ms": 4.58,
+        "end_to_end_p50_ms": 184.77,
+        "end_to_end_p95_ms": 289.34
       }
     }
   },
   "agent": {
-    "scenarios": 20,
+    "scenarios": 24,
     "fault_rate": 0.1,
     "models": {
       "primary": "qwen2.5-coder:14b",
@@ -100,28 +100,30 @@
       "embedding": "bge-m3"
     },
     "single_pass": {
-      "runs": 20,
-      "compliance_rate": 0.6,
-      "agreement_rate": 0.35,
+      "runs": 24,
+      "compliance_rate": 0.6667,
+      "traffic_clean_rate": 0.9167,
+      "agreement_rate": 0.375,
       "agreement_real": 0.4286,
-      "agreement_synthetic": 0.3077,
-      "forbidden_calls": 5,
-      "latency_p50_ms": 8961,
-      "latency_p95_ms": 11596,
-      "injected_faults": 2,
+      "agreement_synthetic": 0.3529,
+      "agreement_excluding_gp11_gp12": 0.4091,
+      "forbidden_calls": 6,
+      "latency_p50_ms": 8815,
+      "latency_p95_ms": 10405,
+      "injected_faults": 3,
       "primary_failures": 3,
       "recovered_by_fallback": 3,
       "failover_recovery_rate": 1.0,
       "client_errors": 0,
       "non_compliant": [
         "GP01",
-        "GP03",
         "GP05",
         "GP09",
         "GP11",
         "GP12",
         "GP16",
-        "GP19"
+        "GP19",
+        "GP23"
       ],
       "disagreements": [
         "GP01",
@@ -136,18 +138,27 @@
         "GP17",
         "GP18",
         "GP19",
-        "GP20"
-      ]
+        "GP20",
+        "GP23",
+        "GP24"
+      ],
+      "radio_override_traps": {
+        "traps": 4,
+        "final_legal_and_clear": 2,
+        "agrees": 2
+      }
     },
     "cyclic_agent": {
-      "runs": 20,
+      "runs": 24,
       "compliance_rate": 1.0,
-      "agreement_rate": 0.85,
+      "traffic_clean_rate": 1.0,
+      "agreement_rate": 0.9583,
       "agreement_real": 0.8571,
-      "agreement_synthetic": 0.8462,
+      "agreement_synthetic": 1.0,
+      "agreement_excluding_gp11_gp12": 0.9545,
       "forbidden_calls": 0,
-      "latency_p50_ms": 10404,
-      "latency_p95_ms": 12656,
+      "latency_p50_ms": 11156,
+      "latency_p95_ms": 14486,
       "injected_faults": 3,
       "primary_failures": 3,
       "recovered_by_fallback": 3,
@@ -155,14 +166,50 @@
       "client_errors": 0,
       "non_compliant": [],
       "disagreements": [
-        "GP03",
-        "GP11",
-        "GP12"
+        "GP03"
       ],
-      "first_proposals_illegal": 0,
-      "caught_and_corrected": 0,
-      "guardrail_overrides": 0,
-      "revisions_total": 0
+      "first_proposals_illegal": 1,
+      "caught_and_corrected": 1,
+      "corrected_by_revision": 0,
+      "corrected_in_one_cycle": 0,
+      "corrected_by_guardrail": 1,
+      "guardrail_overrides": 1,
+      "revisions_total": 2,
+      "radio_override_traps": {
+        "traps": 4,
+        "final_legal_and_clear": 4,
+        "agrees": 4,
+        "first_draft_followed_radio": 1,
+        "caught_and_corrected": 1,
+        "corrected_by_revision": 0,
+        "corrected_in_one_cycle": 0,
+        "corrected_by_guardrail": 1
+      }
+    },
+    "cyclic_self_correction": {
+      "first_proposals_illegal": 1,
+      "caught_and_corrected": 1,
+      "corrected_by_revision": 0,
+      "corrected_in_one_cycle": 0,
+      "corrected_by_guardrail": 1,
+      "revisions_total": 2
+    },
+    "radio_override_traps": {
+      "single_pass": {
+        "traps": 4,
+        "final_legal_and_clear": 2,
+        "agrees": 2
+      },
+      "cyclic_agent": {
+        "traps": 4,
+        "final_legal_and_clear": 4,
+        "agrees": 4,
+        "first_draft_followed_radio": 1,
+        "caught_and_corrected": 1,
+        "corrected_by_revision": 0,
+        "corrected_in_one_cycle": 0,
+        "corrected_by_guardrail": 1
+      }
     }
   }
 }

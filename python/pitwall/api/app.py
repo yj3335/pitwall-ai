@@ -144,8 +144,8 @@ def create_app(services: Services | None = None) -> FastAPI:
     # --------------------------------------------------------- scenarios
     @app.get("/api/scenarios")
     async def list_scenarios(request: Request):
-        return [{"id": x["id"], "kind": x["kind"], "category": x["category"], "title": x["title"], "question": x["question"]}
-                for x in svc(request).scenarios.values()]
+        return [{"id": x["id"], "kind": x["kind"], "category": x["category"], "title": x["title"], "question": x["question"],
+                 "team_radio": x.get("team_radio", "")} for x in svc(request).scenarios.values()]
 
     @app.get("/api/scenarios/{sid}")
     async def get_scenario(sid: str, request: Request):
@@ -153,7 +153,7 @@ def create_app(services: Services | None = None) -> FastAPI:
         if sid not in s.scenarios:
             raise HTTPException(404, f"unknown scenario {sid}")
         m = await asyncio.to_thread(materialise, s.scenarios[sid], s.lakehouse)
-        return {k: m.get(k) for k in ("id", "kind", "category", "title", "question", "race_control", "state", "context",
+        return {k: m.get(k) for k in ("id", "kind", "category", "title", "question", "race_control", "team_radio", "state", "context",
                                       "ground_truth", "source")}
 
     # ------------------------------------------------------------- runs
@@ -166,7 +166,8 @@ def create_app(services: Services | None = None) -> FastAPI:
         if req.scenario:
             custom = {"id": req.scenario.get("id", "CUSTOM"), "kind": "synthetic", "category": "custom",
                       "title": req.scenario.get("title", "Custom scenario"), "question": req.scenario.get("question", ""),
-                      "race_control": req.scenario.get("race_control", ""), "state": req.scenario.get("state")}
+                      "race_control": req.scenario.get("race_control", ""), "team_radio": req.scenario.get("team_radio", ""),
+                      "state": req.scenario.get("state")}
             if not isinstance(custom["state"], dict) or "car" not in custom["state"]:
                 raise HTTPException(422, "scenario.state with a car is required")
             try:

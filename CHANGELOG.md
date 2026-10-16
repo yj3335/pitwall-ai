@@ -5,6 +5,67 @@ actually hit while building and verifying the system, with how it was found.
 
 ## Unreleased
 
+### Changed after the first full benchmark
+- **The simulator's tyre cliff is quadratic and earlier.** It was linear, with the soft
+  at 20 laps and +350 ms/lap per lap. Under that model the agent's GP11 and GP12 calls
+  (23- and 28-lap soft stints) came out about 5 s faster than mediums and level with
+  hards, although no soft set in the recorded races ran more than 20 laps. The cliff
+  is now `80 ms x (age - cliff)^2` for every slick, with ages soft 15, medium 27 and
+  hard 40, and lap noise widens by 15% per lap past it. The ages are an assumption
+  bounded by the recorded stints, and a test pins that bound. The lap-time data is too
+  confounded to fit the curve. Because GP11 and GP12 prompted the change, they are no
+  longer a held-out test of the simulator: the benchmark also reports agreement
+  without them.
+- **Four radio-override traps (GP21-GP24).** In the first full benchmark the agent
+  never revised a call, so the cycle had not been exercised on a real model. Each
+  trap adds an urgent `team_radio` directive asking for an illegal or train-bound
+  call. Both arms see it in the situation text. The prompts were not changed to make
+  the model obey it.
+- **The benchmark judge checks traffic too.** It now asks the MCP server's
+  `validate_physics_and_traffic` whether a final green-flag stop rejoins in a DRS
+  train, the same hard check the verifier applies, for both arms. Agent runs whose
+  first draft was illegal are now split by how they ended: corrected by the model's
+  own revision (and in how many cycles), or rescued by the guardrail once the
+  reflection budget was spent. The first measured trap run had one of each. In the
+  final run, the one illegal first draft (GP24, into a DRS train) was rescued by the
+  guardrail.
+- The scenario list API and the dashboard show a scenario's team radio. The
+  scenario-panel counts are derived from the data instead of hardcoded.
+
+### Fixed after the first full benchmark
+- **qwen2.5-coder looped inside a JSON string until the token limit.** The benchmark
+  showed 4 primary-model failures that were not injected, each taking about 24 s
+  before failover. Reproduced with the app's exact sampling settings (temperature 0,
+  seed 42): the GP23 single pass wrote a valid start, then an endless run of hashtags
+  inside `engineer_radio_message` until all 600 tokens were spent, leaving
+  unterminated JSON. Every free-text field in the proposal, critic and SQL schemas
+  now has a `maxLength`, and every array a `maxItems`. Ollama enforces both in the
+  sampling grammar, so the same prompt returns valid JSON in about 8 s on the primary
+  model. Failure reasons are now recorded per run (`llm.errors` in
+  `agent_eval.json`).
+- **That fix broke every real-race agent run.** A 2,000-character `maxLength` on the
+  SQL field makes Ollama fail to compile the grammar ("failed to parse grammar",
+  HTTP 400) on both models. 1,500 compiles. Only real scenarios call the SQL node, so
+  the unit test (bounds exist) and the synthetic end-to-end test both passed while
+  all 7 real runs errored. Found by reading the benchmark output before using it. The
+  limit is now 1,200 (recorded agent SQL is about 200 characters), and a live test
+  sends every schema to both models.
+- **A 5-second producer stall on new topics.** A later benchmark run had a measured
+  burst trial at 39,719 events/s, after the warm-up that was meant to absorb such
+  trials. Its producer had taken 5.015 s to flush, against about 0.2 s for every
+  other trial. The cause: the harness produced to a just-created topic before every
+  partition had a leader. franz-go treats that as a metadata error and waits its
+  default 5 s `MetadataMinAge` before asking again, holding every buffered record.
+  The same stall explains the earlier 39k "cold starts". The harness now waits for all
+  20 partition leaders and pings the producer before the clock starts. The shared
+  producer (`kafka.NewProducer`, also used by the replayer and processor) retries
+  metadata after 100 ms. `TestProducerDoesNotStallOnANewTopic` passes with the fix and
+  fails with the old back-off. The genuine first-trial cost that remains is about
+  158k events/s against about 930k.
+- **The cliff model's extra map lookup in the rollout hot loop.** It is now looked up
+  once per stint. With the quadratic cliff and noise growth, a 60,000-trajectory call
+  costs about 0.6 ms (10%) more than before, measured interleaved on a quiet machine.
+
 ### Added
 - Self-contained toolchain in `.venv/` (`scripts/bootstrap-venv.sh`): Go 1.27.2,
   Python 3.13 virtualenv, Qdrant 1.19.2, Temurin JDK 21, Apache Kafka 4.4.0 in
@@ -129,9 +190,11 @@ actually hit while building and verifying the system, with how it was found.
 ### Fixed in milestone 10
 - **The first throughput number depended on which trial went first.** The first burst
   after a process start ran at 39k-155k events/s, while later ones ran at about 1M.
-  The cause is cold consumer fetch sessions and the Go heap growing. Warm-up trials are
-  now run and excluded, and the report gives the median trial, the range, and the
-  cold-start figure separately. It also reports a committed rate (until the last
+  This was attributed to cold consumer fetch sessions and the Go heap growing. That
+  diagnosis was only half right (see "Fixed after the first full benchmark": the
+  39k trials were a 5 s producer metadata stall). Warm-up trials are now run and
+  excluded, and the report gives the median trial, the range, and the cold-start
+  figure separately. It also reports a committed rate (until the last
   Parquet batch is durable) next to the processed rate.
 - **The offline lakehouse held every live replay too.** The live processor wrote into
   `data/lakehouse`, the same tree the scenarios, tests and benchmarks read, so every

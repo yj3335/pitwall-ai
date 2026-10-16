@@ -159,9 +159,9 @@ make bench      # all three benchmarks -> benchmarks/results.json
 - the stream benchmark, on its own topics, groups and temporary lakehouses, so the
   running processor is untouched;
 - the 40-query retrieval ablation;
-- the 20-scenario agent evaluation (40 runs on the real models).
+- the 24-scenario agent evaluation (48 runs on the real models).
 
-The agent evaluation dominates the run time (about 8 minutes for 40 runs). Stop other Ollama clients first, because
+The agent evaluation dominates the run time (about 10 minutes for 48 runs). Stop other Ollama clients first, because
 they share the GPU and inflate its latencies. Each step can also run on its own
 (`python -m pitwall.eval.stream_bench | rag_eval | agent_eval | report`).
 

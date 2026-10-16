@@ -24,9 +24,13 @@ export function ScenarioPanel({
   const [mode, setMode] = useState<"agent" | "single_pass">("agent");
   const [fault, setFault] = useState(0);
   const current = scenarios.find((s) => s.id === (id || scenarios[0]?.id));
+  const real = scenarios.filter((s) => s.kind === "real").length;
   return (
     <div data-testid="scenario-panel">
-      <SectionTitle title="Strategy scenarios" sub="7 rebuilt from real OpenF1 races at the decision instant · 13 rule traps set in 2025" />
+      <SectionTitle
+        title="Strategy scenarios"
+        sub={`${real} rebuilt from real OpenF1 races at the decision instant · ${scenarios.length - real} rule traps set in 2025`}
+      />
       <div className="flex flex-wrap items-center gap-2">
         <select
           aria-label="Scenario"
@@ -79,6 +83,12 @@ export function ScenarioPanel({
         <p className="secondary mt-2 text-sm" data-testid="scenario-question">
           <span className="muted mr-1 text-xs uppercase">{current.kind}</span>
           {current.question}
+        </p>
+      )}
+      {current?.team_radio && (
+        <p className="mt-1 text-sm" data-testid="scenario-radio">
+          <span className="muted mr-1 text-xs uppercase">Team radio</span>
+          {current.team_radio}
         </p>
       )}
     </div>

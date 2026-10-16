@@ -104,6 +104,7 @@ export interface ScenarioSummary {
   category: string;
   title: string;
   question: string;
+  team_radio?: string;
 }
 
 export interface SimRow {

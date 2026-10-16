@@ -169,3 +169,49 @@ async def test_real_models_end_to_end(mcp_server):
     base = await run_single_pass(scn, deps)
     assert base["final"]["recommended_action"] in rules.ACTIONS
     await mcp.aclose()
+
+
+def test_generated_strings_are_bounded():
+    """Every string a model writes has a maxLength (and every array a maxItems),
+    so a repetition loop inside a field cannot run to the token limit."""
+    from pitwall.agents.graph import CRITIC_SCHEMA, PROPOSAL_SCHEMA, SQL_SCHEMA
+
+    def walk(node, path):
+        if node.get("type") == "string" and "enum" not in node:
+            assert node.get("maxLength"), f"{path} is unbounded"
+        if node.get("type") == "array":
+            assert node.get("maxItems"), f"{path} is unbounded"
+            walk(node["items"], path + "[]")
+        for k, v in node.get("properties", {}).items():
+            walk(v, f"{path}.{k}")
+
+    for name, schema in {"proposal": PROPOSAL_SCHEMA, "critic": CRITIC_SCHEMA, "sql": SQL_SCHEMA}.items():
+        walk(schema, name)
+
+
+@requires_ollama
+@pytest.mark.parametrize("model", ["qwen2.5-coder:14b", "llama3.2:3b"])
+async def test_ollama_accepts_every_output_schema(model):
+    """Ollama compiles each schema into a sampling grammar and rejects ones it
+    cannot build with HTTP 400 (a 2,000-character maxLength on the SQL field
+    did; 1,500 does not), which failed every real-race agent run."""
+    import httpx
+    from pitwall import config
+    from pitwall.agents.graph import CRITIC_SCHEMA, PROPOSAL_SCHEMA, SQL_SCHEMA
+
+    async with httpx.AsyncClient(timeout=120) as http:
+        for schema in (PROPOSAL_SCHEMA, CRITIC_SCHEMA, SQL_SCHEMA):
+            r = await http.post(f"{config.OLLAMA_URL}/api/chat", json={
+                "model": model, "stream": False, "format": schema, "options": {"num_predict": 8},
+                "messages": [{"role": "user", "content": "Reply with JSON."}]})
+            assert r.status_code == 200, (sorted(schema["properties"]), r.text[:200])
+
+
+@requires_ollama
+async def test_single_pass_json_completes_on_the_primary_model():
+    """GP23 single pass used to loop on hashtags in engineer_radio_message until
+    the 600-token budget, leaving truncated JSON and a failover after ~24 s."""
+    deps = AgentDeps(llm=FailoverLLM(), mcp=None, retriever=None, lakehouse=None)
+    out = await run_single_pass(materialise(SCN["GP23"]), deps)
+    assert not out["failover"] and out["model"] == "qwen2.5-coder:14b", out
+    assert out["elapsed_ms"] < 20_000

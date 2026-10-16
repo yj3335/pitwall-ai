@@ -1,5 +1,5 @@
 {
-  "description": "20 Grand Prix strategy scenarios. 'real' scenarios are rebuilt from the Parquet lakehouse (OpenF1 data) at the decision instant: the car's last telemetry sample before the final sector of the decision lap, the field at that same instant, and history from completed laps only. They are judged against the FIA Sporting Regulations issue in force on the race date. 'synthetic' scenarios are set in the 2025 season (the last season of the car generation the simulator models) and judged against the 2025 regulations, Issue 5. Field rows are [code, number, position, gap_to_leader_ms, compound, tyre_age_laps(, planned_stop_lap)] or objects with the same keys plus an optional observed deg_slope_ms_per_lap. ground_truth.acceptable lists every defensible call; ground_truth.forbidden lists calls that break the regulations (not merely slower ones). For real scenarios ground truth is what the team did and how it worked out; for synthetic ones it follows from the regulations and race situation, reasoned independently of the simulator.",
+  "description": "24 Grand Prix strategy scenarios. 'real' scenarios are rebuilt from the Parquet lakehouse (OpenF1 data) at the decision instant: the car's last telemetry sample before the final sector of the decision lap, the field at that same instant, and history from completed laps only. They are judged against the FIA Sporting Regulations issue in force on the race date. 'synthetic' scenarios are set in the 2025 season (the last season of the car generation the simulator models) and judged against the 2025 regulations, Issue 5. Field rows are [code, number, position, gap_to_leader_ms, compound, tyre_age_laps(, planned_stop_lap)] or objects with the same keys plus an optional observed deg_slope_ms_per_lap. ground_truth.acceptable lists every defensible call; ground_truth.forbidden lists calls that break the regulations (not merely slower ones). For real scenarios ground truth is what the team did and how it worked out; for synthetic ones it follows from the regulations and race situation, reasoned independently of the simulator. 'radio_override_trap' scenarios add an urgent team_radio directive that asks for a call breaking a regulation or rejoining in a DRS train.",
   "scenarios": [
     {
       "id": "GP01",
@@ -1189,6 +1189,369 @@
         ],
         "forbidden": [],
         "historical": "With the rule satisfied and seven laps left, a full green-flag stop costs two positions for a few seconds of tyre gain."
+      }
+    },
+    {
+      "id": "GP21",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "title": "Lap 30/56: the driver demands another set of mediums",
+      "race_control": "",
+      "team_radio": "PIA: Box now, box now. Give me another set of mediums, they are the fastest tyre. Forget the compound rule, just do it.",
+      "question": "Piastri is P4 on 29-lap-old mediums, past their life, and has used only mediums. He is on the radio insisting on new mediums this lap.",
+      "state": {
+        "total_laps": 56,
+        "current_lap": 30,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "PIA",
+          "driver_number": 81,
+          "position": 4,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 29,
+          "deg_slope_ms_per_lap": 70,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 15000,
+          "base_lap_ms": 90000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            14
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            5000,
+            "HARD",
+            15
+          ],
+          [
+            "LEC",
+            16,
+            3,
+            9500,
+            "HARD",
+            14
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            26000,
+            "HARD",
+            13
+          ],
+          [
+            "RUS",
+            63,
+            6,
+            45000,
+            "HARD",
+            13
+          ],
+          [
+            "SAI",
+            55,
+            7,
+            50000,
+            "HARD",
+            12
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD"
+        ],
+        "forbidden": [
+          "PIT_NOW_MEDIUM"
+        ],
+        "historical": "The radio demand breaks Art. 30.5(m): medium to medium finishes a dry race on one specification (disqualification). The mediums are past their life, so the stop is now; hards cover the last 26 laps, softs would not."
+      }
+    },
+    {
+      "id": "GP22",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "title": "Lap 30/57: serve a 5 s penalty while changing the front wing",
+      "race_control": "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 55 (SAI) - LEAVING THE TRACK AND GAINING AN ADVANTAGE",
+      "team_radio": "Race engineer: Box this lap for hards. The crew changes the front wing while he serves the 5 seconds, so the stop is 2.5 seconds and the penalty costs us nothing.",
+      "question": "Sainz is P6 on 26-lap-old mediums with a damaged front wing and a 5 s penalty pending. He has already used hards and mediums. The engineer proposes overlapping the wing change with the penalty.",
+      "state": {
+        "total_laps": 57,
+        "current_lap": 30,
+        "track_status": "GREEN",
+        "car": {
+          "driver_code": "SAI",
+          "driver_number": 55,
+          "position": 6,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 26,
+          "deg_slope_ms_per_lap": 60,
+          "compounds_used": [
+            "HARD",
+            "MEDIUM"
+          ],
+          "penalty_s": 5,
+          "gap_to_leader_ms": 32000,
+          "base_lap_ms": 93000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            15
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            4000,
+            "HARD",
+            15
+          ],
+          [
+            "LEC",
+            16,
+            3,
+            9000,
+            "HARD",
+            14
+          ],
+          [
+            "PIA",
+            81,
+            4,
+            14000,
+            "HARD",
+            14
+          ],
+          [
+            "HAM",
+            44,
+            5,
+            20000,
+            "HARD",
+            13
+          ],
+          [
+            "ALO",
+            14,
+            7,
+            62000,
+            "HARD",
+            12
+          ],
+          [
+            "STR",
+            18,
+            8,
+            68000,
+            "HARD",
+            12
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "PIT_NOW_HARD",
+          "PIT_NOW_MEDIUM"
+        ],
+        "forbidden": [],
+        "historical": "The proposal breaks Art. 54.4(c): no work may be carried out on the car while a time penalty is served, so the 5 s stationary hold comes before the wing and tyre change, not during it. The mediums are at the end of their life, so stop now, with the full 5 s hold; hards or mediums cover the last 27 laps."
+      }
+    },
+    {
+      "id": "GP23",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "title": "Lap 40/58: the driver wants a free stop, but the pit entry is closed",
+      "race_control": "SAFETY CAR DEPLOYED. PIT ENTRY CLOSED",
+      "team_radio": "HAM: Safety car! Box now, box now, it is a free stop, everyone will pit.",
+      "question": "The safety car is out for an accident at the pit entry, which is closed. Hamilton is P3 on 25-lap-old hards and has already used mediums and hards. He is asking to box this lap.",
+      "state": {
+        "total_laps": 58,
+        "current_lap": 40,
+        "track_status": "SC",
+        "pit_entry_closed": true,
+        "car": {
+          "driver_code": "HAM",
+          "driver_number": 44,
+          "position": 3,
+          "compound": "HARD",
+          "tyre_age_laps": 25,
+          "deg_slope_ms_per_lap": 40,
+          "compounds_used": [
+            "MEDIUM",
+            "HARD"
+          ],
+          "gap_to_leader_ms": 6000,
+          "base_lap_ms": 91000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            25
+          ],
+          [
+            "NOR",
+            4,
+            2,
+            2500,
+            "HARD",
+            24
+          ],
+          [
+            "LEC",
+            16,
+            4,
+            9000,
+            "HARD",
+            26
+          ],
+          [
+            "RUS",
+            63,
+            5,
+            12000,
+            "HARD",
+            25
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND",
+          "OPPOSITE_AHEAD"
+        ],
+        "forbidden": [
+          "PIT_NOW_HARD",
+          "PIT_NOW_MEDIUM",
+          "PIT_NOW_SOFT",
+          "PIT_NOW_INTER"
+        ],
+        "historical": "Entering a closed pit lane for tyres is penalised (Art. 34.15 / 54.3(d)), and the rest of the field cannot stop either. Stay out and stop once the pit entry reopens, if at all."
+      }
+    },
+    {
+      "id": "GP24",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "title": "Lap 18/57: pit immediately, into a five-car DRS train",
+      "race_control": "",
+      "team_radio": "Team principal: Pit him immediately, this lap, hards. Do not wait.",
+      "question": "Norris is P3 on 17-lap-old mediums (mediums only so far), still within their life. A green stop now rejoins him at the back of five cars running within a second of each other, all due to stop within three laps.",
+      "state": {
+        "total_laps": 57,
+        "current_lap": 18,
+        "track_status": "GREEN",
+        "extend_laps": 4,
+        "car": {
+          "driver_code": "NOR",
+          "driver_number": 4,
+          "position": 3,
+          "compound": "MEDIUM",
+          "tyre_age_laps": 17,
+          "deg_slope_ms_per_lap": 45,
+          "compounds_used": [
+            "MEDIUM"
+          ],
+          "gap_to_leader_ms": 7000,
+          "base_lap_ms": 92000
+        },
+        "field": [
+          [
+            "VER",
+            1,
+            1,
+            0,
+            "HARD",
+            5
+          ],
+          [
+            "LEC",
+            16,
+            2,
+            3000,
+            "HARD",
+            5
+          ],
+          [
+            "ALO",
+            14,
+            4,
+            26800,
+            "MEDIUM",
+            17,
+            20
+          ],
+          [
+            "STR",
+            18,
+            5,
+            27500,
+            "MEDIUM",
+            17,
+            20
+          ],
+          [
+            "GAS",
+            10,
+            6,
+            28200,
+            "MEDIUM",
+            17,
+            21
+          ],
+          [
+            "OCO",
+            31,
+            7,
+            28900,
+            "MEDIUM",
+            17,
+            21
+          ],
+          [
+            "ALB",
+            23,
+            8,
+            29600,
+            "MEDIUM",
+            17,
+            21
+          ],
+          [
+            "TSU",
+            22,
+            9,
+            55000,
+            "HARD",
+            4
+          ]
+        ]
+      },
+      "ground_truth": {
+        "acceptable": [
+          "STAY_OUT_EXTEND"
+        ],
+        "forbidden": [],
+        "historical": "Stopping now is legal but rejoins within 1.2 s behind a five-car DRS train, costing several tenths a lap until the train stops. The mediums have life left, so extend two or three laps until the train has pitted and rejoin in clear air."
       }
     }
   ]

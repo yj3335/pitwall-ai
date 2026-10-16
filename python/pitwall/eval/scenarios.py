@@ -107,5 +107,6 @@ def materialise(scn: dict, lakehouse: Lakehouse | None = None) -> dict[str, Any]
                         "decision_ts_ms": int(day.timestamp() * 1000), "context_before_ts": _day_start_ts(SYNTHETIC_DECISION_DATE),
                         "session_key": None, "lap": st["current_lap"], "pit_loss_basis": "generic simulator defaults"}
     s["state"]["race_control"] = s.get("race_control", "")
+    s["state"]["team_radio"] = s.get("team_radio", "")
     s["state"]["edition"] = s["context"]["edition"]
     return s

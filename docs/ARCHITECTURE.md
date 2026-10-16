@@ -111,8 +111,21 @@ trajectories each by default.
   default for the current set), a tyre cliff, fuel burn-off, out-lap warm-up, and
   track wetness with its trend (slicks lose up to 12 s on a soaked track,
   intermediates up to 4.5 s on a dry one, with the crossover at wetness 0.27).
+- **Tyre cliff:** past the cliff age a lap is `alpha x (age - cliff)^2` slower, and the
+  lap-time noise widens by 15% per lap (lock-ups, sliding).
+  - Cliff ages: soft 15, medium 27, hard 40, intermediate 35, wet 40.
+  - Curvature `alpha`: 80 ms for every slick (about 2 s/lap five laps past the cliff),
+    60 ms for intermediates, 50 ms for wets.
+  - Why these ages: the ages are an assumption bounded by the recorded races. No soft
+    set ran more than 20 laps in them, while mediums and hards reached 41
+    (`test_recorded_stints_bound_the_simulator_cliff_ages`). The lap times are too
+    confounded by rain, safety cars and track evolution to fit the curve itself.
+  - History: the cliff was linear (soft at 20 laps, +350 ms/lap per lap) until the
+    agent benchmark showed 23- and 28-lap soft stints priced as competitive, longer
+    than any soft stint in the data (`CHANGELOG.md`).
 - **Randomness:** Gaussian lap noise, a per-lap random safety-car hazard, and
-  stop-time noise with a 3% slow-stop tail.
+  stop-time noise with a 3% slow-stop tail. Discrete tyre failures (punctures) are not
+  modelled.
 - **Pit loss:** green-flag loss, the neutralised loss when stopping under SC/VSC,
   zero for a tyre change during a red-flag suspension, plus any stationary penalty
   hold. Real scenarios use the race's measured green-flag loss (section 3); the
@@ -235,7 +248,7 @@ retrieval, simulator or verifier. Both arms are scored by the same rule checker.
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/status` | reachability of MCP, Qdrant, Ollama and the processor; lakehouse sessions; active runs |
-| `GET /api/scenarios`, `GET /api/scenarios/{id}` | the 20 scenarios; one materialised at its decision instant (state, edition, ground truth) |
+| `GET /api/scenarios`, `GET /api/scenarios/{id}` | the 24 scenarios; one materialised at its decision instant (state, edition, ground truth) |
 | `POST /api/strategy/runs` | start an agent or single-pass run (scenario id or custom inline state; optional fault rate) |
 | `GET /api/strategy/runs/{id}/events` | **SSE**: `queued`, `started`, one `node` event per graph step, `final`, `done` |
 | `GET /api/strategy/runs/{id}` / `.../checkpoints` | full result and trace; the `MemorySaver` checkpoint history of the run |
@@ -304,7 +317,7 @@ is only ever drawn as a badge carrying its letter, never as an unlabelled fill.
 
 ## Scenarios
 
-`data/scenarios/grand_prix_scenarios.json` holds 20 scenarios.
+`data/scenarios/grand_prix_scenarios.json` holds 24 scenarios.
 
 - **Seven real ones** are rebuilt from the lakehouse at the decision instant. Their
   ground truth is what the team did. Track wetness is not in OpenF1, so for the four
@@ -314,3 +327,13 @@ is only ever drawn as a badge carrying its letter, never as an unlabelled fill.
   entry closed, DRS train, wet and dry crossovers, late SC, red flag). Their ground
   truth is reasoned from the regulations and race situation, not taken from the
   simulator. `forbidden` lists only illegal calls, and a test enforces that.
+- **Four radio-override traps** (GP21-GP24, synthetic, added after the first
+  benchmark) carry an urgent `team_radio` directive, which both the agent and the
+  single pass see in the situation text. Each directive asks for an illegal or costly
+  call:
+  - new mediums on a medium-only car (Art. 30.5);
+  - a front-wing change during a 5 s penalty (Art. 54.4(c));
+  - a stop while the pit entry is closed;
+  - a green stop into a five-car DRS train.
+
+  They exist to exercise the verifier and the cyclic revision on a real model.

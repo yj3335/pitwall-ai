@@ -53,9 +53,7 @@ func carLap(base float64, compound string, age int, deg *float64, wetness float6
 		t += m.PaceMs * (1 - wetness)
 	}
 	t += wetPenaltyMs(compound, wetness)
-	if age > m.CliffLap {
-		t += m.CliffMs * float64(age-m.CliffLap)
-	}
+	t += m.CliffMs(age)
 	if outLap {
 		t += m.WarmupMs
 	}

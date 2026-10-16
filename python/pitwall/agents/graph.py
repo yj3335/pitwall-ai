@@ -29,6 +29,10 @@ from pitwall.olap import SCHEMA_DOC, AsOf, Lakehouse, UnsafeSQLError
 
 MAX_REFLECTIONS = 2
 
+# Every free-text field is bounded. Under deterministic sampling qwen2.5-coder
+# can loop inside a string (a run of hashtags in the radio message) until the
+# token budget ends, leaving unterminated JSON and forcing a failover; Ollama
+# enforces maxLength/maxItems in the generation grammar.
 PROPOSAL_SCHEMA = {
     "type": "object",
     "properties": {
@@ -38,9 +42,9 @@ PROPOSAL_SCHEMA = {
         "expected_net_gain_ms": {"type": "number"},
         "rejoin_position": {"type": "integer"},
         "penalty_hold_s": {"type": "number"},
-        "fia_article_citations": {"type": "array", "items": {"type": "string"}},
-        "engineer_radio_message": {"type": "string"},
-        "rationale": {"type": "string"},
+        "fia_article_citations": {"type": "array", "items": {"type": "string", "maxLength": 40}, "maxItems": 6},
+        "engineer_radio_message": {"type": "string", "maxLength": 240},
+        "rationale": {"type": "string", "maxLength": 600},
     },
     "required": ["recommended_action", "target_compound", "pit_lap", "expected_net_gain_ms", "rejoin_position",
                  "penalty_hold_s", "fia_article_citations", "engineer_radio_message", "rationale"],
@@ -48,11 +52,12 @@ PROPOSAL_SCHEMA = {
 
 CRITIC_SCHEMA = {
     "type": "object",
-    "properties": {"ok": {"type": "boolean"}, "issues": {"type": "array", "items": {"type": "string"}}},
+    "properties": {"ok": {"type": "boolean"},
+                   "issues": {"type": "array", "items": {"type": "string", "maxLength": 240}, "maxItems": 6}},
     "required": ["ok", "issues"],
 }
 
-SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}}, "required": ["sql"]}
+SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string", "maxLength": 1200}}, "required": ["sql"]}
 
 
 class PitWallState(TypedDict, total=False):
@@ -107,6 +112,8 @@ def situation_text(s: dict) -> str:
     ]
     if s.get("race_control"):
         lines.append(f"Race control: {s['race_control']}")
+    if s.get("team_radio"):
+        lines.append(f"Team radio: {s['team_radio']}")
     near = sorted(s.get("field", []), key=lambda f: f["position"])
     rows = [f"P{f['position']} {f['driver_code']} gap_to_leader {f['gap_to_leader_ms'] / 1000:.1f}s {f['compound']} age {f['tyre_age_laps']}"
             for f in near if abs(f["position"] - c["position"]) <= 4]
@@ -383,7 +390,7 @@ async def verifier_node(state: PitWallState, config) -> dict:
     s = state["scenario"]["state"]
     c = _constraints(s)
     p = state["proposal"]
-    traffic = await _traffic_for(deps, s, c, p)
+    traffic = await traffic_for(deps, s, c, p)
     found = rules.check(p, c, traffic)
     hard = [v for v in found if v.severity == "hard"]
     soft = [v for v in found if v.severity != "hard"]
@@ -426,7 +433,7 @@ def route_after_verifier(state: PitWallState) -> str:
     return "strategy_synthesizer" if state.get("verdict", {}).get("revise") else "finalize"
 
 
-async def _traffic_for(deps: AgentDeps, s: dict, c: rules.Constraints, proposal: dict) -> dict | None:
+async def traffic_for(deps: AgentDeps, s: dict, c: rules.Constraints, proposal: dict) -> dict | None:
     """Rejoin traffic for a proposal's stop (none for no stop or a red-flag change)."""
     pit_lap, comp = rules.plan_of(proposal, c)
     if not pit_lap or not s.get("field") or c.track_status == "RED":
@@ -457,7 +464,7 @@ async def finalize_node(state: PitWallState, config) -> dict:
         for o in candidates:
             cand = {**p, "recommended_action": o["strategy"], "target_compound": o["compound"] if o["pit_lap"] else "NONE",
                     "pit_lap": o["pit_lap"], "penalty_hold_s": c.penalty_s if o["pit_lap"] else 0.0}
-            hard = [v for v in rules.check(cand, c, await _traffic_for(deps, s, c, cand)) if v.severity == "hard"]
+            hard = [v for v in rules.check(cand, c, await traffic_for(deps, s, c, cand)) if v.severity == "hard"]
             if not hard:
                 chosen = cand
                 break

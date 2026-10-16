@@ -3,8 +3,9 @@ import { StrategyChart, domainFor } from "@/components/StrategyChart";
 import { TowerTable } from "@/components/Tower";
 import { TraceTimeline, FinalCallCard } from "@/components/Trace";
 import { UndercutChart, undercutRows } from "@/components/Undercut";
+import { ScenarioPanel } from "@/components/Controls";
 import { emptyRun, reduceRun } from "@/lib/run";
-import type { RunEvent, Tower } from "@/lib/types";
+import type { RunEvent, ScenarioSummary, Tower } from "@/lib/types";
 import scripted from "@/e2e/fixtures/run_GP08_scripted.json";
 import gp10 from "@/e2e/fixtures/run_GP10.json";
 import tower from "@/e2e/fixtures/tower.json";
@@ -69,5 +70,20 @@ describe("Trace and final call", () => {
     expect(screen.getByTestId("final-action")).toHaveTextContent("Pit now · Soft");
     expect(screen.getByTestId("compliance")).toHaveTextContent("compliant");
     expect(screen.getByTestId("revisions")).toHaveTextContent("1");
+  });
+});
+
+describe("ScenarioPanel", () => {
+  test("counts scenarios by kind and shows a trap's team radio", () => {
+    const scenarios: ScenarioSummary[] = [
+      { id: "GP02", kind: "real", category: "vsc_cheap_stop", title: "Singapore", question: "VSC on lap 44." },
+      { id: "GP21", kind: "synthetic", category: "radio_override_trap", title: "Radio trap", question: "Mediums only.",
+        team_radio: "PIA: Box now for mediums." },
+    ];
+    render(<ScenarioPanel scenarios={scenarios} busy={false} onRun={() => {}} />);
+    expect(screen.getByTestId("scenario-panel")).toHaveTextContent("1 rebuilt from real OpenF1 races at the decision instant · 1 rule traps");
+    expect(screen.queryByTestId("scenario-radio")).toBeNull();
+    fireEvent.change(screen.getByTestId("scenario-select"), { target: { value: "GP21" } });
+    expect(screen.getByTestId("scenario-radio")).toHaveTextContent("PIA: Box now for mediums.");
   });
 });

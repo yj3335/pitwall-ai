@@ -1,4 +1,4 @@
-"""Benchmark 3: single-pass LLM vs the cyclic LangGraph agent on 20 scenarios.
+"""Benchmark 3: single-pass LLM vs the cyclic LangGraph agent on 24 scenarios.
 
     python -m pitwall.eval.agent_eval --out ../benchmarks/agent_eval.json
 
@@ -12,10 +12,15 @@ scenario, and compared with the scenario's ground truth.
 
 Metrics
 - FIA compliance: final calls that break no regulation or tyre-physics rule.
+- Traffic: final green-flag stops that do not rejoin in a DRS train (the
+  simulator's validate_physics_and_traffic, the same check the verifier uses).
+- Radio-override traps (GP21-GP24): an urgent team-radio directive asks for an
+  illegal or train-bound call. Reported: first drafts that followed it, and
+  of those, the ones the verifier rejected and the cycle corrected.
 - Ground-truth agreement: final action in the scenario's acceptable set,
-  reported separately for the 7 real and 13 synthetic scenarios.
-- Caught and corrected: agent runs whose first proposal broke a rule and whose
-  final call does not.
+  reported separately for the 7 real and 17 synthetic scenarios.
+- Caught and corrected: agent runs whose first proposal broke a rule (or
+  rejoined a DRS train under green) and whose final call does neither.
 - Failover recovery: injected or real primary failures whose request was then
   served by the fast model; client errors: runs that raised.
 - End-to-end latency p50 / p95 per arm.
@@ -31,7 +36,7 @@ from pathlib import Path
 
 from pitwall import config
 from pitwall.agents import rules
-from pitwall.agents.graph import AgentDeps, build_graph, run_agent, run_single_pass
+from pitwall.agents.graph import AgentDeps, build_graph, run_agent, run_single_pass, traffic_for
 from pitwall.agents.llm import FailoverLLM, FaultInjector, OllamaChat
 from pitwall.eval.scenarios import load_scenarios, materialise
 from pitwall.mcp_client.client import HTTPMCPClient
@@ -46,11 +51,19 @@ def pct(xs: list[float], q: float) -> float:
     return s[min(len(s) - 1, int(round(q * (len(s) - 1))))] if s else 0.0
 
 
-def judge(scn: dict, final: dict) -> dict:
+async def violations(scn: dict, proposal: dict, deps: AgentDeps) -> tuple[list[str], list[str]]:
+    """(regulation/physics violations, hard traffic violations) of a proposal."""
     c = rules.constraints_from(scn["state"])
-    v = rules.check(final, c)
+    regs = [x.code for x in rules.check(proposal, c)]
+    traffic = await traffic_for(deps, scn["state"], c, proposal)
+    hard_traffic = [x.code for x in rules.check(proposal, c, traffic) if x.code == "DRS_TRAIN" and x.severity == "hard"]
+    return regs, hard_traffic
+
+
+async def judge(scn: dict, final: dict, deps: AgentDeps) -> dict:
+    regs, traffic = await violations(scn, final, deps)
     gt = scn["ground_truth"]
-    return {"compliant": not v, "violations": [x.code for x in v],
+    return {"compliant": not regs, "violations": regs, "traffic_clean": not traffic, "traffic_violations": traffic,
             "agrees": final.get("recommended_action") in gt["acceptable"],
             "forbidden": final.get("recommended_action") in gt.get("forbidden", [])}
 
@@ -67,25 +80,42 @@ async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat
             st = await run_agent(scn, deps, graph=graph, thread_id=f"eval-{scn['id']}")
             final = st["final"]
             first = st["proposals"][0]
-            c = rules.constraints_from(scn["state"])
-            rec["first_proposal_violations"] = [x.code for x in rules.check(first, c)]
+            regs, traffic = await violations(scn, first, deps)
+            rec["first_proposal"] = {k: first.get(k) for k in ("recommended_action", "target_compound", "pit_lap", "penalty_hold_s")}
+            rec["first_proposal_violations"] = regs + traffic
             rec["revisions"] = st.get("reflection_count", 0)
+            rec["proposal_models"] = [x.get("_model") for x in st["proposals"]]
             rec["guardrail_override"] = bool(final.get("guardrail_override"))
             rec["sim_recommended"] = st["simulation"]["recommended"]
             rec["citations"] = [r["citation"] for r in st["regulations"]]
         else:
             final = (await run_single_pass(scn, deps))["final"]
+        rec["latency_ms"] = round((time.perf_counter() - t0) * 1000, 1)  # before judging
         rec["final"] = {k: final.get(k) for k in ("recommended_action", "target_compound", "pit_lap", "penalty_hold_s",
                                                   "fia_article_citations")}
-        rec.update(judge(scn, final))
+        rec.update(await judge(scn, final, deps))
         rec["error"] = None
     except Exception as e:  # noqa: BLE001 - a client-visible failure, counted
-        rec.update(final=None, compliant=False, agrees=False, forbidden=False, violations=[], error=f"{type(e).__name__}: {e}")
-    rec["latency_ms"] = round((time.perf_counter() - t0) * 1000, 1)
+        rec.update(final=None, compliant=False, traffic_clean=False, agrees=False, forbidden=False, violations=[],
+                   traffic_violations=[], error=f"{type(e).__name__}: {e}")
+        rec.setdefault("latency_ms", round((time.perf_counter() - t0) * 1000, 1))
     s = llm.stats.summary()
     rec["llm"] = {"calls": s["calls"], "faults": s["faults"], "recovered": s["recovered"], "failovers": s["failovers"],
-                  "injected": llm.faults.injected, "by_model": s["by_model"]}
+                  "injected": llm.faults.injected, "by_model": s["by_model"],
+                  "errors": [e[:200] for e in s["errors"]]}
     return rec
+
+
+def correction_counts(caught: list[dict]) -> dict:
+    """How agent runs whose first draft was illegal ended: fixed by the model's
+    own revision (and in how many cycles), or rescued by the guardrail, which
+    takes the simulator's best legal plan once the reflection budget is spent."""
+    ok = [x for x in caught if x["compliant"] and x["traffic_clean"]]
+    by_model = [x for x in ok if not x.get("guardrail_override")]
+    return {"caught_and_corrected": len(ok),
+            "corrected_by_revision": len(by_model),
+            "corrected_in_one_cycle": sum(x.get("revisions") == 1 for x in by_model),
+            "corrected_by_guardrail": len(ok) - len(by_model)}
 
 
 def summarise(rows: list[dict]) -> dict:
@@ -98,9 +128,13 @@ def summarise(rows: list[dict]) -> dict:
     out = {
         "runs": len(rows),
         "compliance_rate": rate(rows, "compliant"),
+        "traffic_clean_rate": rate(rows, "traffic_clean"),
         "agreement_rate": rate(rows, "agrees"),
         "agreement_real": rate([x for x in rows if x["kind"] == "real"], "agrees"),
         "agreement_synthetic": rate([x for x in rows if x["kind"] == "synthetic"], "agrees"),
+        # GP11 and GP12 prompted the simulator's cliff recalibration, so they are
+        # no longer a held-out test of it
+        "agreement_excluding_gp11_gp12": rate([x for x in rows if x["id"] not in ("GP11", "GP12")], "agrees"),
         "forbidden_calls": sum(bool(x["forbidden"]) for x in rows),
         "latency_p50_ms": round(pct(lat, 0.5)),
         "latency_p95_ms": round(pct(lat, 0.95)),
@@ -116,9 +150,18 @@ def summarise(rows: list[dict]) -> dict:
     if agent:
         caught = [x for x in agent if x.get("first_proposal_violations")]
         out["first_proposals_illegal"] = len(caught)
-        out["caught_and_corrected"] = sum(x["compliant"] for x in caught)
+        out.update(correction_counts(caught))
         out["guardrail_overrides"] = sum(x.get("guardrail_override", False) for x in agent)
         out["revisions_total"] = sum(x.get("revisions", 0) for x in agent)
+    traps = [x for x in rows if x["category"] == "radio_override_trap"]
+    if traps:
+        t = {"traps": len(traps), "final_legal_and_clear": sum(x["compliant"] and x["traffic_clean"] for x in traps),
+             "agrees": sum(x["agrees"] for x in traps)}
+        if agent:
+            followed = [x for x in traps if x.get("first_proposal_violations")]
+            t["first_draft_followed_radio"] = len(followed)
+            t.update(correction_counts(followed))
+        out["radio_override_traps"] = t
     return out
 
 

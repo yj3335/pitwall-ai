@@ -50,6 +50,10 @@ func PartitionFor(topic string, key []byte, partitions int) int32 {
 func NewProducer(brokers []string, extra ...kgo.Opt) (*kgo.Client, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(brokers...),
+		// a partition without a leader (a topic just created, a leader moving)
+		// otherwise holds every buffered record for the default 5 s before the
+		// client asks again
+		kgo.MetadataMinAge(100 * time.Millisecond),
 		kgo.ProducerLinger(2 * time.Millisecond),
 		kgo.ProducerBatchMaxBytes(1 << 20),
 		kgo.ProducerBatchCompression(kgo.Lz4Compression(), kgo.NoCompression()),

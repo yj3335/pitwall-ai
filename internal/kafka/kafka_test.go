@@ -118,3 +118,42 @@ func TestKafkaPerDriverOrdering(t *testing.T) {
 		})
 	}
 }
+
+// producing right after creating a topic must not wait out the client's
+// metadata back-off (5 s by default in franz-go; the first benchmark trial
+// after each topic creation sometimes stalled for exactly that long)
+func TestProducerDoesNotStallOnANewTopic(t *testing.T) {
+	bl := brokers(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	admin, err := kgo.NewClient(kgo.SeedBrokers(bl...))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Close()
+	adm := kadm.NewClient(admin)
+	for i := 0; i < 6; i++ {
+		topic := fmt.Sprintf("pitwall.test.fresh.%d", time.Now().UnixNano())
+		if _, err := adm.CreateTopic(ctx, TelemetryPartitions, 1, nil, topic); err != nil {
+			t.Fatal(err)
+		}
+		prod, err := NewProducer(bl)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t0 := time.Now()
+		for car := int32(1); car <= 20; car++ {
+			prod.Produce(ctx, &kgo.Record{Topic: topic, Key: DriverKey(car), Value: []byte("x")}, nil)
+		}
+		err = prod.Flush(ctx)
+		took := time.Since(t0)
+		prod.Close()
+		adm.DeleteTopics(context.Background(), topic)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if took > 2*time.Second {
+			t.Fatalf("topic %d: first flush took %s", i, took.Round(time.Millisecond))
+		}
+	}
+}

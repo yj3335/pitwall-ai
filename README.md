@@ -33,37 +33,40 @@ method and caveats in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 | Measurement | Result |
 |---|---|
-| Kafka -> Go engines, 200,000 real events, 20 partitions | **1,003,571 events/s** sustained (median of 5 trials); 826,214 events/s committed to Parquet |
-| Stream-to-trigger latency at 20,000 events/s | p50 2.0 ms, p99 4.0 ms |
-| DuckDB on the Parquet lakehouse while Go writes it | 32,684 concurrent queries, **0 errors**, p50 1.06 ms |
-| Go Monte Carlo, 10,000 rollouts x 6 strategies over MCP | **p50 7.6 ms** round trip (6.5 ms in process) |
-| DuckDB OLAP, 332,787-event lakehouse | p50 1.19 ms; decision-scoped agent SQL p50 0.91 ms |
+| Kafka -> Go engines, 200,000 real events, 20 partitions | **927,570 events/s** sustained (median of 5 trials, range 883k-985k); 753,197 events/s committed to Parquet |
+| Stream-to-trigger latency at 20,000 events/s | p50 2.0 ms, p99 3.0 ms |
+| DuckDB on the Parquet lakehouse while Go writes it | 34,148 concurrent queries, **0 errors**, p50 1.01 ms |
+| Go Monte Carlo, 10,000 rollouts x 6 strategies over MCP | **p50 7.1 ms** round trip |
+| DuckDB OLAP, 332,787-event lakehouse | p50 1.17 ms; decision-scoped agent SQL p50 0.90 ms |
 | Qdrant Recall@3, hybrid RRF + rerank vs dense only (40 FIA queries) | **0.975 vs 0.900** (situational queries 0.950 vs 0.800) |
-| FIA rule compliance, cyclic agent vs single-pass LLM (20 scenarios) | **100% (20/20) vs 60% (12/20)**; 0 vs 5 forbidden calls |
-| Agreement with ground truth, agent vs single pass | 85% vs 35% (real races 6/7 vs 3/7) |
-| Failover recovery under 10% injected primary-model faults | **6/6** primary failures served by llama3.2:3b (5 injected, 1 real), 0 client errors |
-| Agent latency, end to end on local models | agent p50 10.4 s, p95 12.7 s; single pass p50 9.0 s |
+| FIA rule compliance, cyclic agent vs single-pass LLM (24 scenarios) | **100% (24/24) vs 67% (16/24)**; 0 vs 6 forbidden calls |
+| Agreement with ground truth, agent vs single pass | 96% (23/24) vs 38% (9/24); real races 6/7 vs 3/7 |
+| Radio-override traps (urgent radio demanding an illegal or train-bound call) | agent 4/4 legal; the one illegal first draft (into a DRS train) was caught by the verifier and corrected by the guardrail. Single pass 2/4 |
+| Failover recovery under 10% injected primary-model faults | **6/6** injected failures served by llama3.2:3b, 0 client errors |
+| Agent latency, end to end on local models | agent p50 11.2 s, p95 14.5 s; single pass p50 8.8 s |
 
 ## What is verified
 
-- **Real models, real data.** 20 Grand Prix scenarios: 7 real decisions from the
-  three races and 13 synthetic traps (two-compound rule, penalty hold, VSC stops,
-  wet crossovers, closed pit entry, DRS trains). They run end to end on
+- **Real models, real data.** 24 Grand Prix scenarios:
+  - 7 real decisions from the three races;
+  - 13 synthetic traps (two-compound rule, penalty hold, VSC stops, wet crossovers,
+    closed pit entry, DRS trains);
+  - 4 radio-override traps. They run end to end on
   qwen2.5-coder:14b, llama3.2:3b and bge-m3 against live Qdrant, DuckDB and the Go MCP
   server. Each call is scored by a deterministic rule checker under the regulation
   edition in force.
-- **Go concurrency.** 36 Go tests run under `-race`, with 0 data races:
+- **Go concurrency.** 38 Go tests run under `-race`, with 0 data races:
   - 15 stream engines over a real race with a concurrent reader;
   - 8 Parquet producers against 4 readers, with 0 partial reads across 242 files;
   - concurrent MCP clients and Monte Carlo runs.
-- **Integration on live services.** 71 pytest tests against real Kafka, Qdrant,
+- **Integration on live services.** 76 pytest tests against real Kafka, Qdrant,
   DuckDB, Ollama and the MCP server, including:
   - Go window slopes equal DuckDB `REGR_SLOPE`;
   - decision-scoped SQL and retrieval cannot see the future;
   - SSE resume with `Last-Event-ID`;
   - a Kafka round trip;
   - a SIGTERM flush.
-- **The UI.** `tsc --noEmit`, 12 Jest tests, a production `next build` and 5
+- **The UI.** `tsc --noEmit`, 13 Jest tests, a production `next build` and 5
   Playwright tests in real Chromium:
   - four run against payloads recorded from the real system;
   - one drives a real 2023 decision through the browser on the live stack and models.
@@ -143,7 +146,7 @@ cmd/            processor, replayer, mcp-sim, bench-stream (Go entry points)
 internal/       stream engines, Kafka, Parquet sink, Monte Carlo, MCP server, metrics
 python/pitwall/ olap (DuckDB), rag (Qdrant), agents (LangGraph), api (FastAPI), eval
 web/            Next.js dashboard, Jest and Playwright suites
-data/           OpenF1 races, FIA regulation corpus, 20 scenarios, lakehouse schema
+data/           OpenF1 races, FIA regulation corpus, 24 scenarios, lakehouse schema
 scripts/        .venv bootstrap, services, data builders, bench and smoke scripts
 benchmarks/     raw benchmark outputs and results.json
 docker/         Dockerfiles for docker-compose.yml
@@ -154,17 +157,21 @@ docker/         Dockerfiles for docker-compose.yml
 - **Single machine.** One Kafka broker without replication. Producer, broker,
   engines and models share one laptop, so the throughput figures are for this setup,
   not a cluster.
-- **Small evaluation sets.** 20 strategy scenarios and 40 retrieval queries. On
+- **Small evaluation sets.** 24 strategy scenarios and 40 retrieval queries. On
   retrieval, differences of one or two queries are within noise. The reranker default
   was chosen on the same 40 queries.
-- **Synthetic ground truth.** 13 of the 20 scenarios are synthetic, with ground truth
+- **Synthetic ground truth.** 17 of the 24 scenarios are synthetic, with ground truth
   reasoned from the regulations. The simulator's tyre model is a calibrated
-  approximation, not team data, and it does not always agree with that reasoning
+  approximation, not team data. Its cliff was recalibrated after GP11 and GP12
+  disagreed with that reasoning, so those two are no longer a held-out test
   ([docs/BENCHMARKS.md](docs/BENCHMARKS.md)).
-- **Self-correction was not needed in the benchmark.** In all 20 benchmark runs the
-  agent's first proposal was already legal. Its compliance gain over the single pass
-  comes from grounding (simulator legality table, constraints, retrieved rules), not
-  from the revision cycle. The cycle is exercised by tests with a scripted model.
+- **The revision cycle rarely changes the outcome.** In the final run, 1 of 24 first
+  drafts was illegal (GP24, a stop into a DRS train demanded over the radio). qwen2.5-coder
+  repeated that stop through both revisions, and the guardrail substituted the
+  simulator's best legal plan. The agent's compliance gain over the single pass
+  comes mostly from grounding (simulator legality table, constraints, retrieved
+  rules). Self-correction by revision is verified with a scripted model and was seen
+  once on the live models in an earlier run.
 - **Inputs not in OpenF1.** Track wetness and the 2024 Sao Paulo pit loss (one green
   stop measured) are estimates.
 - **Docker Compose not run.** `docker-compose.yml` is written but unexercised: the

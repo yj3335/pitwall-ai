@@ -39,18 +39,46 @@ type Compound struct {
 	PaceMs   float64 // base pace offset vs MEDIUM on a dry track
 	DegMs    float64 // ms/lap of wear, fuel-corrected
 	CliffLap int     // tyre age where the cliff starts
-	CliffMs  float64 // additional ms/lap per lap beyond the cliff
-	WarmupMs float64 // out-lap warm-up loss
-	Dry      bool
+	// CliffAlphaMs scales the quadratic cliff: a lap at age a > CliffLap is
+	// CliffAlphaMs * (a - CliffLap)^2 slower (thermal degradation and graining
+	// compound once the tread is gone).
+	CliffAlphaMs float64
+	WarmupMs     float64 // out-lap warm-up loss
+	Dry          bool
 }
 
-// Compounds are calibrated to typical Pirelli C2-C4 behaviour.
+// CliffNoisePerLap widens the lap-time spread past the cliff (lock-ups,
+// sliding, a driver nursing the set): sigma grows by this fraction per lap.
+const CliffNoisePerLap = 0.15
+
+// Compounds are calibrated to typical Pirelli C2-C4 behaviour. Cliff ages
+// sit at or below the longest stints in the recorded races: no soft set ran
+// more than 20 laps in 2023 Singapore, 2024 Silverstone or 2024 Sao Paulo,
+// while mediums and hards reached 41. Every slick uses the same curvature,
+// about 2 s/lap five laps past the cliff (docs/ARCHITECTURE.md).
 var Compounds = map[string]Compound{
-	"SOFT":         {PaceMs: -650, DegMs: 85, CliffLap: 20, CliffMs: 350, WarmupMs: 500, Dry: true},
-	"MEDIUM":       {PaceMs: 0, DegMs: 55, CliffLap: 30, CliffMs: 250, WarmupMs: 900, Dry: true},
-	"HARD":         {PaceMs: 450, DegMs: 35, CliffLap: 42, CliffMs: 200, WarmupMs: 1500, Dry: true},
-	"INTERMEDIATE": {PaceMs: 0, DegMs: 60, CliffLap: 35, CliffMs: 200, WarmupMs: 700},
-	"WET":          {PaceMs: 0, DegMs: 40, CliffLap: 40, CliffMs: 150, WarmupMs: 900},
+	"SOFT":         {PaceMs: -650, DegMs: 85, CliffLap: 15, CliffAlphaMs: 80, WarmupMs: 500, Dry: true},
+	"MEDIUM":       {PaceMs: 0, DegMs: 55, CliffLap: 27, CliffAlphaMs: 80, WarmupMs: 900, Dry: true},
+	"HARD":         {PaceMs: 450, DegMs: 35, CliffLap: 40, CliffAlphaMs: 80, WarmupMs: 1500, Dry: true},
+	"INTERMEDIATE": {PaceMs: 0, DegMs: 60, CliffLap: 35, CliffAlphaMs: 60, WarmupMs: 700},
+	"WET":          {PaceMs: 0, DegMs: 40, CliffLap: 40, CliffAlphaMs: 50, WarmupMs: 900},
+}
+
+// CliffMs is the extra lap time of a set at the given age.
+func (m Compound) CliffMs(age int) float64 {
+	if age <= m.CliffLap {
+		return 0
+	}
+	x := float64(age - m.CliffLap)
+	return m.CliffAlphaMs * x * x
+}
+
+// NoiseScale multiplies the lap-time noise of a set at the given age.
+func (m Compound) NoiseScale(age int) float64 {
+	if age <= m.CliffLap {
+		return 1
+	}
+	return 1 + CliffNoisePerLap*float64(age-m.CliffLap)
 }
 
 // wetPenaltyMs is the pace loss of a compound on a track with wetness w in

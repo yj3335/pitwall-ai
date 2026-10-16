@@ -148,7 +148,7 @@ async def sse(client, url, headers=None, limit=200):
 async def test_scenarios_endpoints(api):
     client, *_ = api
     lst = (await client.get("/api/scenarios")).json()
-    assert len(lst) == 20 and {"id", "title", "question"} <= set(lst[0])
+    assert len(lst) == 24 and {"id", "title", "question"} <= set(lst[0])
     gp08 = (await client.get("/api/scenarios/GP08")).json()
     assert gp08["context"]["edition"] == "2025-i5" and gp08["state"]["car"]["compounds_used"] == ["MEDIUM"]
     assert (await client.get("/api/scenarios/NOPE")).status_code == 404

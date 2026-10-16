@@ -81,7 +81,11 @@ func (c *plannerCtx) wetness(lap int) float64 {
 
 // lapMs is the expected (noise-free) green-flag lap time.
 func (c *plannerCtx) lapMs(compound string, age, lap int, own bool) float64 {
-	m := Compounds[compound]
+	return c.lapMsOf(Compounds[compound], compound, age, lap, own)
+}
+
+// lapMsOf is lapMs for an already looked-up compound (the rollout hot loop).
+func (c *plannerCtx) lapMsOf(m Compound, compound string, age, lap int, own bool) float64 {
 	deg := m.DegMs
 	if own && c.hasDeg && compound == c.req.Car.Compound && age >= c.req.Car.TyreAgeLaps {
 		deg = math.Max(0, c.deg) // observed fuel-corrected slope of the current set
@@ -92,10 +96,7 @@ func (c *plannerCtx) lapMs(compound string, age, lap int, own bool) float64 {
 		t += m.PaceMs * (1 - w)
 	}
 	t += wetPenaltyMs(compound, w)
-	if age > m.CliffLap {
-		t += m.CliffMs * float64(age-m.CliffLap)
-	}
-	return t
+	return t + m.CliffMs(age)
 }
 
 func (c *plannerCtx) stintMs(compound string, startAge, fromLap, toLap int) float64 {
@@ -293,9 +294,7 @@ func newPlanner(req *Request) *plannerCtx {
 				t += m.PaceMs * (1 - w)
 			}
 			t += wetPenaltyMs(comp, w)
-			if age > m.CliffLap {
-				t += m.CliffMs * float64(age-m.CliffLap)
-			}
+			t += m.CliffMs(age)
 			// rivals react to the weather too: slicks on a wet track or wet
 			// tyres on a dry one trigger a crossover stop (once)
 			crossover := !weatherStop && ((m.Dry && w >= SlickToInterWetness) || (!m.Dry && w <= InterToSlickWetness))
@@ -534,6 +533,7 @@ func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNois
 	stopNoise, passU float64) (float64, float64, float64, float64, float64, float64, float64) {
 	req := c.req
 	comp, age := req.Car.Compound, req.Car.TyreAgeLaps
+	cm := Compounds[comp]
 	// cars physically ahead on track: at the start, or at the rejoin after a stop
 	ahead = ahead[:0]
 	for j := range c.field {
@@ -559,9 +559,9 @@ func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNois
 			// projected field this is a reference lap with no tyre or noise effect
 			lt = req.Car.BaseLapMs
 		} else {
-			lt = c.lapMs(comp, age, lap, true) + noise[k]
+			lt = c.lapMsOf(cm, comp, age, lap, true) + noise[k]*cm.NoiseScale(age)
 			if outLap {
-				lt += Compounds[comp].WarmupMs
+				lt += cm.WarmupMs
 			}
 			if dirty > 0 {
 				lt += DirtyAirMsPerLap
@@ -586,6 +586,7 @@ func (c *plannerCtx) rollout(p *Plan, noise []float64, scStart []bool, fieldNois
 			pitLoss = loss
 			t += loss
 			comp, age, outLap = p.Compound, 0, true
+			cm = Compounds[comp]
 			// rejoin: where do we come out relative to the projected field?
 			if len(c.field) > 0 {
 				pos := 1.0

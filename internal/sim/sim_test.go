@@ -290,3 +290,45 @@ func TestFieldReactsToWeather(t *testing.T) {
 		}
 	}
 }
+
+func TestCliffIsQuadraticWithWideningSpread(t *testing.T) {
+	s := Compounds["SOFT"]
+	for age, want := range map[int]float64{0: 0, 15: 0, 16: 80, 18: 720, 20: 2000, 23: 5120} {
+		if got := s.CliffMs(age); got != want {
+			t.Errorf("SOFT CliffMs(%d) = %.0f, want %.0f", age, got, want)
+		}
+	}
+	if s.NoiseScale(15) != 1 || s.NoiseScale(20) != 1.75 {
+		t.Errorf("noise scale %.2f at the cliff, %.2f five laps past it", s.NoiseScale(15), s.NoiseScale(20))
+	}
+	// a set loses about 2 s/lap five laps past its cliff, whatever the compound
+	for _, c := range []string{"SOFT", "MEDIUM", "HARD"} {
+		m := Compounds[c]
+		if got := m.CliffMs(m.CliffLap + 5); got != 2000 {
+			t.Errorf("%s five laps past the cliff: %.0f ms", c, got)
+		}
+	}
+}
+
+// The pace advantage of the soft pays for a short final stint but not for a
+// long one that runs it well past its cliff.
+func TestSoftOnlyPaysWhenItStaysOffTheCliff(t *testing.T) {
+	run := func(current int) (soft, medium float64) {
+		req := baseRequest()
+		req.CurrentLap = current
+		req.Car.Compound, req.Car.TyreAgeLaps, req.Car.CompoundsUsed = "HARD", 20, []string{"HARD"}
+		req.Car.DegSlopeMsPerLap = nil
+		req.Strategies = []string{"PIT_NOW_SOFT", "PIT_NOW_MEDIUM"}
+		r, err := Simulate(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return outcome(t, r, "PIT_NOW_SOFT").MeanRaceTimeMs, outcome(t, r, "PIT_NOW_MEDIUM").MeanRaceTimeMs
+	}
+	if s, m := run(34); s <= m { // 23 laps on the new set: 8 laps past the soft cliff
+		t.Errorf("23-lap soft stint %.1f s faster than mediums", (m-s)/1000)
+	}
+	if s, m := run(47); s >= m { // 10 laps: the soft never reaches its cliff
+		t.Errorf("10-lap soft stint %.1f s slower than mediums", (s-m)/1000)
+	}
+}

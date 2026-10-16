@@ -170,3 +170,21 @@ def test_committed_lakehouse_has_no_duplicate_events():
     total, distinct = Lakehouse().query(
         "SELECT count(*), count(DISTINCT (session_key, driver_number, seq)) FROM telemetry").rows[0]
     assert total == distinct == 332_787
+
+
+def test_recorded_stints_bound_the_simulator_cliff_ages():
+    """internal/sim places the soft cliff at 15 laps because no soft set in the
+    recorded races ran more than 20 laps, while mediums and hards reached 41."""
+    from pitwall import config
+
+    if not list(config.LAKEHOUSE.glob("laps/session=*/*.parquet")):
+        pytest.skip("run `make lakehouse` first")
+    rows = Lakehouse().query("""
+        WITH st AS (SELECT session_key, driver_number, compound, lap_number - tyre_age_laps AS sid,
+                           max(lap_number) - min(lap_number) + 1 AS stint_laps
+                    FROM laps WHERE compound IN ('SOFT', 'MEDIUM', 'HARD') GROUP BY ALL)
+        SELECT compound, max(stint_laps) FROM st GROUP BY compound""").rows
+    longest = dict(rows)
+    assert longest["SOFT"] == 20
+    assert longest["MEDIUM"] == 41 and longest["HARD"] == 41
+

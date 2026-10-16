@@ -80,6 +80,13 @@ def main() -> None:
             "models": agent["models"],
             "single_pass": agent["single_pass"],
             "cyclic_agent": agent["agent"],
+            # illegal first drafts: caught by the verifier, then fixed by the
+            # model's own revision or by the guardrail after the budget
+            "cyclic_self_correction": {k: agent["agent"].get(k) for k in (
+                "first_proposals_illegal", "caught_and_corrected", "corrected_by_revision",
+                "corrected_in_one_cycle", "corrected_by_guardrail", "revisions_total")},
+            "radio_override_traps": {"single_pass": agent["single_pass"].get("radio_override_traps"),
+                                     "cyclic_agent": agent["agent"].get("radio_override_traps")},
         },
     }
     (BENCH / "results.json").write_text(json.dumps(results, indent=2) + "\n")
