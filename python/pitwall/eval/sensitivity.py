@@ -18,6 +18,11 @@ perturbed. The simulator seed is fixed, so a change of call comes from the
 inputs, not from Monte Carlo noise. Reported per scenario: stability (share
 of perturbations with the unperturbed call), ground-truth agreement under
 noise, and the margin between the best and second-best legal plans.
+
+Strategy names can alias the same plan: OPPOSITE_AHEAD resolves to "stop now"
+or "stay out and stop in three laps", so it can be the very plan of another
+name. Stability is therefore also reported by the plan actually taken (stop
+lap and compound), which is what the car would do.
 """
 from __future__ import annotations
 
@@ -60,22 +65,33 @@ def perturb(state: dict, rng: random.Random) -> dict:
     return s
 
 
+def plan_of(result: dict) -> tuple[int, str]:
+    best = next(o for o in result["outcomes"] if o["strategy"] == result["recommended"])
+    return best["pit_lap"], best["target_compound"] if best["pit_lap"] else "NONE"
+
+
 async def study(scn: dict, mcp: HTTPMCPClient, n: int) -> dict:
     base = await mcp.call_tool("simulate_pit_strategies", sim_request(scn["state"]))
     legal = sorted((o for o in base["outcomes"] if o["legal"]), key=lambda o: o["expected_delta_ms"])
-    margin = (legal[1]["expected_delta_ms"] / 1000) if len(legal) > 1 else None
+    base_plan = plan_of(base)
+    # the runner-up that is a different plan (not the same plan under another name)
+    other = [o for o in legal if (o["pit_lap"], o["target_compound"] if o["pit_lap"] else "NONE") != base_plan]
+    margin = (other[0]["expected_delta_ms"] / 1000) if other else None
     rng = random.Random(zlib.crc32(scn["id"].encode()))
-    calls = Counter()
+    calls, plans = Counter(), Counter()
     for _ in range(n):
         r = await mcp.call_tool("simulate_pit_strategies", sim_request(perturb(scn["state"], rng)))
         calls[r["recommended"]] += 1
+        plans[plan_of(r)] += 1
     gt = scn["ground_truth"]["acceptable"]
     return {"id": scn["id"], "kind": scn["kind"], "category": scn["category"],
             "baseline_call": base["recommended"], "baseline_agrees": base["recommended"] in gt,
             "stability": round(calls[base["recommended"]] / n, 3),
+            "plan_stability": round(plans[base_plan] / n, 3),
+            "baseline_plan": {"pit_lap": base_plan[0], "compound": base_plan[1]},
             "agreement_under_noise": round(sum(v for k, v in calls.items() if k in gt) / n, 3),
             "margin_to_second_best_s": round(margin, 2) if margin is not None else None,
-            "second_best": legal[1]["strategy"] if len(legal) > 1 else None,
+            "second_best": other[0]["strategy"] if other else None,
             "calls": dict(calls.most_common())}
 
 
@@ -90,19 +106,20 @@ async def main_async(out: Path, n: int, only: list[str] | None) -> None:
             continue
         r = await study(materialise(s, lh), mcp, n)
         rows.append(r)
-        print(f"{r['id']} stability {r['stability']:.2f} agree-under-noise {r['agreement_under_noise']:.2f} "
+        print(f"{r['id']} stability {r['stability']:.2f} plan {r['plan_stability']:.2f} agree-under-noise {r['agreement_under_noise']:.2f} "
               f"margin {r['margin_to_second_best_s']}s {r['calls']}", flush=True)
     await mcp.aclose()
-    knife = [r["id"] for r in rows if r["stability"] < 0.8]
+    knife = [r["id"] for r in rows if r["plan_stability"] < 0.8]
     report = {
         "perturbations_per_scenario": n,
         "noise": {"gap_ms": GAP_MS, "tyre_age_laps": AGE_LAPS, "our_deg_ms_per_lap": DEG_MS, "pit_loss_s": PIT_S,
                   "wetness": WET},
         "scenarios": len(rows),
         "mean_stability": round(sum(r["stability"] for r in rows) / len(rows), 3),
+        "mean_plan_stability": round(sum(r["plan_stability"] for r in rows) / len(rows), 3),
         "mean_agreement_under_noise": round(sum(r["agreement_under_noise"] for r in rows) / len(rows), 3),
         "baseline_agreement": sum(r["baseline_agrees"] for r in rows),
-        "knife_edge": knife,  # stability below 0.8
+        "knife_edge": knife,  # plan stability below 0.8
         "elapsed_s": round(time.perf_counter() - t0, 1),
         "rows": rows,
     }

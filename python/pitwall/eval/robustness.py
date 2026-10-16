@@ -35,6 +35,20 @@ def call(r: dict) -> tuple | None:
     return (f["recommended_action"], f.get("pit_lap"), f.get("target_compound")) if f else None
 
 
+def plan(r: dict) -> tuple | None:
+    """What the car would do, whatever the strategy is called: stop now on a
+    compound, stop on a later lap on a compound, or no further stop.
+    OPPOSITE_AHEAD, for one, can be the very plan of another name."""
+    f = r.get("final")
+    if not f:
+        return None
+    action = (f.get("recommended_action") or "").upper()
+    if action.startswith("PIT_NOW_"):
+        return ("now", action.removeprefix("PIT_NOW_").replace("INTER", "INTERMEDIATE"))
+    lap = f.get("pit_lap") or 0
+    return (lap, f.get("target_compound") if lap else "NONE")
+
+
 def by_arm(run: dict, arm: str) -> dict[str, dict]:
     return {r["id"]: r for r in run["runs"] if r["mode"] == arm}
 
@@ -82,13 +96,15 @@ def sampling_axis() -> dict | None:
         for arm in ARMS:
             s = [r[arm] for r in runs]
             rows = [by_arm(r, arm) for r in runs]
-            flips = {}
+            flips, plan_flips = {}, {}
             identical = 0
             for sid in rows[0]:
                 calls = [call(x[sid]) for x in rows]
                 modal, n = Counter(calls).most_common(1)[0]
                 flips[sid] = round(1 - n / len(calls), 3)
                 identical += n == len(calls)
+                plans = [plan(x[sid]) for x in rows]
+                plan_flips[sid] = round(1 - Counter(plans).most_common(1)[0][1] / len(plans), 3)
             entry = {
                 "compliance": spread([x["compliance_rate"] for x in s]),
                 "traffic_clean": spread([x["traffic_clean_rate"] for x in s]),
@@ -98,6 +114,8 @@ def sampling_axis() -> dict | None:
                 "identical_calls_across_repeats": identical,
                 "mean_flip_rate": round(sum(flips.values()) / len(flips), 4),
                 "scenarios_that_flip": sorted(k for k, v in flips.items() if v > 0),
+                "mean_plan_flip_rate": round(sum(plan_flips.values()) / len(plan_flips), 4),
+                "scenarios_whose_plan_flips": sorted(k for k, v in plan_flips.items() if v > 0),
             }
             if arm == "agent":
                 entry["natural_illegal_first_drafts"] = sum(x.get("first_proposals_illegal", 0) for x in s)
@@ -118,14 +136,15 @@ def main() -> None:
     report = {"faults": faults_axis(), "sampling": sampling_axis(), "inputs": None, "cross_axis": None}
     if sens:
         report["inputs"] = {k: v for k, v in sens.items() if k != "rows"}
-        report["inputs"]["per_scenario"] = {r["id"]: {k: r[k] for k in ("stability", "agreement_under_noise",
-                                                                        "margin_to_second_best_s", "baseline_call")}
+        report["inputs"]["per_scenario"] = {r["id"]: {k: r.get(k) for k in ("stability", "plan_stability",
+                                                                            "agreement_under_noise",
+                                                                            "margin_to_second_best_s", "baseline_call")}
                                             for r in sens["rows"]}
     hot = report["sampling"] and report["sampling"].get("0.7", {}).get("agent")
     if sens and hot:
         knife = set(sens["knife_edge"])
-        flip = set(hot["scenarios_that_flip"])
-        report["cross_axis"] = {"knife_edge_inputs": sorted(knife), "agent_flips_at_0.7": sorted(flip),
+        flip = set(hot["scenarios_whose_plan_flips"])
+        report["cross_axis"] = {"knife_edge_inputs": sorted(knife), "agent_plan_flips_at_0.7": sorted(flip),
                                 "both": sorted(knife & flip), "inputs_only": sorted(knife - flip),
                                 "sampling_only": sorted(flip - knife)}
     (BENCH / "robustness.json").write_text(json.dumps(report, indent=2) + "\n")
