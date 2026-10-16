@@ -72,8 +72,20 @@ a partition without a leader (a topic just created, a leader moving) holds every
 buffered record for 5 s (`TestProducerDoesNotStallOnANewTopic`).
 
 **Per-partition ownership.** `kafka.Run` starts one goroutine per assigned partition,
-and each goroutine owns a `stream.Engine`, so driver state needs no locks. Offsets are
-committed only after the handler returns (`AutoCommitMarks`, at-least-once).
+and each goroutine owns a `stream.Engine`, so driver state needs no locks. A record's
+offset is marked only after the engine has applied it (`AutoCommitMarks`, committed
+every second), so the engine stage is at-least-once.
+
+That guarantee does not reach the lakehouse. The Parquet sink buffers rows (20,000
+telemetry rows, or 2 s for laps and triggers) after their offsets may already be
+committed:
+- On SIGTERM the processor flushes every buffer before leaving the group, so nothing
+  is lost.
+- On a hard crash (`kill -9`, power loss) the rows still in the buffer are lost from
+  the lakehouse, and the restarted engines rebuild their 5-lap windows from new laps.
+
+Closing the gap needs offsets committed only once their batch is durable, or
+idempotent rows keyed by `(session, driver, seq)` and de-duplicated on read.
 
 **Degradation math.** For each car the engine keeps a ring of the last 5 *clean* laps
 of the current stint. A lap is unclean if it is lap 1, an in-lap or out-lap, under
