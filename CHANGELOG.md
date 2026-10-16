@@ -6,6 +6,26 @@ actually hit while building and verifying the system, with how it was found.
 ## Unreleased
 
 ### Added in the handoff audit
+- **A robustness study** (`make robustness`, `docs/BENCHMARKS.md` section 4), with
+  three error sources measured separately:
+  - **Input noise.** `pitwall.eval.sensitivity` perturbs each simulator request 200
+    times and reports plan stability and the margin to the next plan. Stability is
+    counted by the plan taken, because strategy names can alias the same plan.
+  - **Faults.** Three fault seeds at the production setting.
+  - **Sampling.** Temperatures 0, 0.3 and 0.7 on the decision calls only, three seeds
+    each, faults off. The temperature-0 repeats double as a determinism check.
+
+  `pitwall.eval.robustness` merges them into `benchmarks/robustness.json`. Findings:
+  - greedy decisions reproduce exactly (24/24);
+  - the agent stays 100% compliant at every temperature;
+  - 19 natural illegal drafts: 7 fixed by revision, 12 by the guardrail;
+  - six scenarios are knife-edge under input noise;
+  - input sensitivity and sampling uncertainty overlap in only one scenario.
+- **GitHub Actions CI** (`.github/workflows/ci.yml`):
+  - Go `vet` and `-race`, and pytest, both against a Kafka service container;
+  - the web type-check, Jest, build and Playwright.
+
+  Failing tests are reported as annotations. The Ollama-dependent tests skip on CI.
 - **A simulator-only arm in the agent benchmark** (`--modes sim_only`). It uses no
   language model: it sends the same request as the agent's Monte Carlo node and
   takes the simulator's best legal plan as the call, scored by the same judge. It

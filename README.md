@@ -33,17 +33,19 @@ method and caveats in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 | Measurement | Result |
 |---|---|
-| Kafka -> Go engines, 200,000 real events, 20 partitions | **927,570 events/s** sustained (median of 5 trials, range 883k-985k); 753,197 events/s committed to Parquet |
-| Stream-to-trigger latency at 20,000 events/s | p50 2.0 ms, p99 3.0 ms |
-| DuckDB on the Parquet lakehouse while Go writes it | 34,148 concurrent queries, **0 errors**, p50 1.01 ms |
-| Go Monte Carlo, 10,000 rollouts x 6 strategies over MCP | **p50 7.1 ms** round trip |
-| DuckDB OLAP, 332,787-event lakehouse | p50 1.17 ms; decision-scoped agent SQL p50 0.90 ms |
+| Kafka -> Go engines, 200,000 real events, 20 partitions | **902,748 events/s** sustained (median of 5 trials, range 875k-958k); 685,392 events/s committed to Parquet, with offsets committed only after the rows are durable |
+| Stream-to-trigger latency at 20,000 events/s | p50 2.0 ms, p99 4.0 ms |
+| DuckDB on the Parquet lakehouse while Go writes it | 32,784 concurrent queries, **0 errors**, p50 1.06 ms |
+| Go Monte Carlo, 10,000 rollouts x 6 strategies over MCP | **p50 7.0 ms** round trip |
 | Qdrant Recall@3, hybrid RRF + rerank vs dense only (40 FIA queries) | **0.975 vs 0.900** (situational queries 0.950 vs 0.800) |
-| FIA rule compliance, cyclic agent vs single-pass LLM (24 scenarios) | **100% (24/24) vs 67% (16/24)**; 0 vs 6 forbidden calls |
-| Agreement with ground truth, agent vs single pass | 96% (23/24) vs 38% (9/24); real races 6/7 vs 3/7 |
-| Radio-override traps (urgent radio demanding an illegal or train-bound call) | agent 4/4 legal; the one illegal first draft (into a DRS train) was caught by the verifier and corrected by the guardrail. Single pass 2/4 |
-| Failover recovery under 10% injected primary-model faults | **6/6** injected failures served by llama3.2:3b, 0 client errors |
-| Agent latency, end to end on local models | agent p50 11.2 s, p95 14.5 s; single pass p50 8.8 s |
+| FIA rule compliance (24 scenarios): cyclic agent / simulator only / single-pass LLM | **100%** / 100% / 67% |
+| Agreement with ground truth: agent / simulator only / single pass | **96%** / 92% / 38% |
+| Radio-override traps (urgent radio demanding an illegal or train-bound call) | agent 4/4 legal, single pass 2/4 |
+| Cited FIA articles that exist in the edition in force | 100% for the agent (35) and the single pass (29) |
+| Agent under sampling noise (temperature 0 / 0.3 / 0.7, 3 runs each) | 100% compliant in all 9 runs; 19 illegal first drafts, 7 fixed by the model's own revision in one cycle, 12 by the guardrail |
+| Determinism at temperature 0 | identical calls in 24/24 scenarios across 3 runs, both arms |
+| Failover under 10% injected primary-model faults (3 fault seeds) | **22/22** served by llama3.2:3b, 0 client errors; agent compliance 100% on every seed |
+| Agent latency, end to end on local models | p50 11.3 s, p95 15.7 s (single pass 8.9 s, simulator alone 8 ms) |
 
 ## What is verified
 
@@ -181,16 +183,19 @@ docker/         Dockerfiles for docker-compose.yml
   was chosen on the same 40 queries.
 - **Synthetic ground truth.** 17 of the 24 scenarios are synthetic, with ground truth
   reasoned from the regulations. The simulator's tyre model is a calibrated
-  approximation, not team data. Its cliff was recalibrated after GP11 and GP12
-  disagreed with that reasoning, so those two are no longer a held-out test
+  approximation, not team data. GP03, GP11 and GP12 prompted simulator changes, so
+  they are not held-out tests, and agreement is also reported without them. Six
+  scenarios are knife-edge under input noise
   ([docs/BENCHMARKS.md](docs/BENCHMARKS.md)).
-- **The revision cycle rarely changes the outcome.** In the final run, 1 of 24 first
-  drafts was illegal (GP24, a stop into a DRS train demanded over the radio). qwen2.5-coder
-  repeated that stop through both revisions, and the guardrail substituted the
-  simulator's best legal plan. The agent's compliance gain over the single pass
-  comes mostly from grounding (simulator legality table, constraints, retrieved
-  rules). Self-correction by revision is verified with a scripted model and was seen
-  once on the live models in an earlier run.
+- **Most of the value is the simulator.** On its own it is as compliant as the agent
+  and agrees with the ground truth in 22 of 24 scenarios, in milliseconds. The
+  language-model layers add one scenario of agreement, cited regulations and an
+  explanation, at about 11 s per decision. At production settings (greedy decoding)
+  the revision cycle rarely fires; the guardrail does most of the correcting. Under
+  sampling noise the model's own revision fixed 7 of 19 illegal drafts.
+- **GP03 is still wrong, consistently.** The simulator does not model rivals pitting
+  under a VSC, so at Singapore 2023 it prefers a stop that Sainz, who won, did not
+  make. The prediction is stable under input noise.
 - **Inputs not in OpenF1.** Track wetness and the 2024 Sao Paulo pit loss (one green
   stop measured) are estimates.
 - **At-least-once, not exactly-once.** Kafka offsets are committed only after their

@@ -154,17 +154,27 @@ curl -s localhost:8081/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","pa
 make run        # the benchmarks and the smoke test need the running stack and Ollama
 make smoke      # one live check per component, about 12 s (one real model call)
 make bench      # all three benchmarks -> benchmarks/results.json
+make robustness # after make bench: faults, temperature sweep, input noise (about 2 hours)
 ```
 
 `make bench` runs, in order:
 - the stream benchmark, on its own topics, groups and temporary lakehouses, so the
   running processor is untouched;
 - the 40-query retrieval ablation;
-- the 24-scenario agent evaluation (48 runs on the real models).
+- the 24-scenario agent evaluation: single pass, cyclic agent and the
+  simulator-only arm (48 model runs).
+
+`make robustness` (`scripts/robustness.sh`) then runs the robustness study and
+writes `benchmarks/robustness.json`, with the raw runs in `benchmarks/robustness/`:
+- 200 input perturbations per scenario through the simulator (about 30 s);
+- two more fault seeds at the production setting;
+- temperatures 0, 0.3 and 0.7 on the decision calls, three seeds each, faults off.
 
 The agent evaluation dominates the run time (about 10 minutes for 48 runs). Stop other Ollama clients first, because
 they share the GPU and inflate its latencies. Each step can also run on its own
-(`python -m pitwall.eval.stream_bench | rag_eval | agent_eval | report`).
+(`python -m pitwall.eval.stream_bench | rag_eval | agent_eval | report`). The agent
+evaluation also takes `--modes`, `--fault-rate`, `--fault-seed`, `--temperature` and
+`--seed`.
 
 ## Docker Compose
 
