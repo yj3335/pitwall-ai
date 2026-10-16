@@ -1,4 +1,5 @@
-"""Benchmark 3: single-pass LLM vs the cyclic LangGraph agent on 24 scenarios.
+"""Benchmark 3: single-pass LLM vs the cyclic LangGraph agent on 24 scenarios,
+with a simulator-only reference arm.
 
     python -m pitwall.eval.agent_eval --out ../benchmarks/agent_eval.json
 
@@ -6,7 +7,11 @@ Both arms run on the real local models (qwen2.5-coder:14b primary,
 llama3.2:3b fast model) with the same seeded 10% fault injection on the
 primary model, so failover is exercised in both. The single pass gets the same
 situation text and system-prompt rules as the agent's synthesiser, so the
-difference measures the graph (SQL, retrieval, simulator, verifier, cycles). Each call is judged by the
+difference measures the graph (SQL, retrieval, simulator, verifier, cycles).
+
+The sim_only arm uses no language model: it sends the same request the agent's
+monte_carlo_mcp node sends and takes the simulator's best legal plan as the
+call. It shows what the LLM layers add over the simulator itself. Each call is judged by the
 same deterministic rule checker under the regulation edition in force for the
 scenario, and compared with the scenario's ground truth.
 
@@ -36,7 +41,7 @@ from pathlib import Path
 
 from pitwall import config
 from pitwall.agents import rules
-from pitwall.agents.graph import AgentDeps, build_graph, run_agent, run_single_pass, traffic_for
+from pitwall.agents.graph import AgentDeps, build_graph, run_agent, run_single_pass, sim_request, traffic_for
 from pitwall.agents.llm import FailoverLLM, FaultInjector, OllamaChat
 from pitwall.eval.scenarios import load_scenarios, materialise
 from pitwall.mcp_client.client import HTTPMCPClient
@@ -44,6 +49,7 @@ from pitwall.olap import Lakehouse
 from pitwall.rag.store import HybridRetriever
 
 FAULT_RATE = 0.10
+MODES = ("single_pass", "agent", "sim_only")
 
 
 def pct(xs: list[float], q: float) -> float:
@@ -68,6 +74,17 @@ async def judge(scn: dict, final: dict, deps: AgentDeps) -> dict:
             "forbidden": final.get("recommended_action") in gt.get("forbidden", [])}
 
 
+async def run_sim_only(scn: dict, deps: AgentDeps) -> dict:
+    """The simulator's best legal plan for the agent's own request, as a call."""
+    s = scn["state"]
+    sim = await deps.mcp.call_tool("simulate_pit_strategies", sim_request(s))
+    best = next(o for o in sim["outcomes"] if o["strategy"] == sim["recommended"])
+    stops = bool(best["pit_lap"])
+    return {"recommended_action": best["strategy"], "target_compound": best["target_compound"] if stops else "NONE",
+            "pit_lap": best["pit_lap"], "penalty_hold_s": float(s["car"].get("penalty_s") or 0) if stops else 0.0,
+            "fia_article_citations": []}
+
+
 async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat) -> dict:
     seed = zlib.crc32(f"{scn['id']}|{mode}".encode())
     llm = FailoverLLM(chat=chat, faults=FaultInjector(rate=FAULT_RATE, seed=seed))
@@ -88,6 +105,8 @@ async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat
             rec["guardrail_override"] = bool(final.get("guardrail_override"))
             rec["sim_recommended"] = st["simulation"]["recommended"]
             rec["citations"] = [r["citation"] for r in st["regulations"]]
+        elif mode == "sim_only":
+            final = await run_sim_only(scn, deps)
         else:
             final = (await run_single_pass(scn, deps))["final"]
         rec["latency_ms"] = round((time.perf_counter() - t0) * 1000, 1)  # before judging
@@ -165,7 +184,7 @@ def summarise(rows: list[dict]) -> dict:
     return out
 
 
-async def main_async(out: Path, only: list[str] | None) -> None:
+async def main_async(out: Path, only: list[str] | None, modes: tuple[str, ...] = MODES) -> None:
     lh = Lakehouse()
     mcp = HTTPMCPClient()
     await mcp.initialize()
@@ -175,7 +194,7 @@ async def main_async(out: Path, only: list[str] | None) -> None:
     scenarios = [materialise(s, lh) for s in load_scenarios() if not only or s["id"] in only]
     rows: list[dict] = []
     for scn in scenarios:
-        for mode in ("single_pass", "agent"):
+        for mode in modes:
             rec = await run_one(scn, mode, deps_base, graph, chat)
             rows.append(rec)
             flag = "OK " if rec["compliant"] else "ILLEGAL"
@@ -186,12 +205,11 @@ async def main_async(out: Path, only: list[str] | None) -> None:
         "fault_rate": FAULT_RATE,
         "models": {"primary": config.PRIMARY_MODEL, "fast": config.VERIFIER_MODEL, "embedding": config.EMBED_MODEL},
         "scenarios": len(scenarios),
-        "single_pass": summarise([r for r in rows if r["mode"] == "single_pass"]),
-        "agent": summarise([r for r in rows if r["mode"] == "agent"]),
+        **{m: summarise([r for r in rows if r["mode"] == m]) for m in modes},
         "runs": rows,
     }
     out.write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({k: report[k] for k in ("single_pass", "agent")}, indent=2))
+    print(json.dumps({m: report[m] for m in modes}, indent=2))
     await mcp.aclose()
     await chat.aclose()
 
@@ -200,8 +218,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--modes", nargs="*", choices=MODES, default=list(MODES))
     args = ap.parse_args()
-    asyncio.run(main_async(args.out, args.only))
+    asyncio.run(main_async(args.out, args.only, tuple(args.modes)))
 
 
 if __name__ == "__main__":

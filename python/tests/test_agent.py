@@ -215,3 +215,18 @@ async def test_single_pass_json_completes_on_the_primary_model():
     out = await run_single_pass(materialise(SCN["GP23"]), deps)
     assert not out["failover"] and out["model"] == "qwen2.5-coder:14b", out
     assert out["elapsed_ms"] < 20_000
+
+
+async def test_sim_only_arm_takes_the_simulators_best_legal_plan(mcp_server):
+    """The benchmark's no-LLM reference arm: GP12 (VSC, mediums only) must stop
+    for hards, with the call scored by the same rule checker as the other arms."""
+    from pitwall.eval.agent_eval import run_sim_only
+
+    mcp = HTTPMCPClient(mcp_server)
+    await mcp.initialize()
+    scn = materialise(SCN["GP12"])
+    final = await run_sim_only(scn, AgentDeps(llm=None, mcp=mcp))
+    await mcp.aclose()
+    assert final["recommended_action"] == "PIT_NOW_HARD" and final["target_compound"] == "HARD"
+    assert final["pit_lap"] == scn["state"]["current_lap"] and final["penalty_hold_s"] == 0
+    assert rules.check(final, rules.constraints_from(scn["state"])) == []

@@ -5,6 +5,13 @@ actually hit while building and verifying the system, with how it was found.
 
 ## Unreleased
 
+### Added in the handoff audit
+- **A simulator-only arm in the agent benchmark** (`--modes sim_only`). It uses no
+  language model: it sends the same request as the agent's Monte Carlo node and
+  takes the simulator's best legal plan as the call, scored by the same judge. It
+  answers what the LLM layers add over the simulator itself. The handoff audit had
+  estimated this from recorded simulator picks.
+
 ### Fixed in the handoff audit
 - **Kafka offsets were committed before their Parquet rows were durable.** An
   offset was marked as soon as the engine had handled the record, while its rows
