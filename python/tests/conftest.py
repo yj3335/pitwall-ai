@@ -10,13 +10,15 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 BIN = ROOT / "bin"
-GO = ROOT / ".venv" / "bin" / "go"
+VENV = ROOT / ".venv"
+# the self-contained toolchain locally; the go on PATH elsewhere (CI)
+GO = VENV / "bin" / "go" if (VENV / "bin" / "go").exists() else Path(shutil.which("go") or "go")
 
 
 def go_env() -> dict:
     env = dict(os.environ)
-    venv = ROOT / ".venv"
-    env.update(GOPATH=str(venv / "gopath"), GOMODCACHE=str(venv / "gopath" / "pkg" / "mod"), GOCACHE=str(venv / "gocache"))
+    if (VENV / "bin" / "go").exists():
+        env.update(GOPATH=str(VENV / "gopath"), GOMODCACHE=str(VENV / "gopath" / "pkg" / "mod"), GOCACHE=str(VENV / "gocache"))
     return env
 
 
