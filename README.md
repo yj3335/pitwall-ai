@@ -47,29 +47,48 @@ method and caveats in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ## What is verified
 
-- **Real models, real data.** 24 Grand Prix scenarios:
-  - 7 real decisions from the three races;
-  - 13 synthetic traps (two-compound rule, penalty hold, VSC stops, wet crossovers,
-    closed pit entry, DRS trains);
-  - 4 radio-override traps. They run end to end on
-  qwen2.5-coder:14b, llama3.2:3b and bge-m3 against live Qdrant, DuckDB and the Go MCP
-  server. Each call is scored by a deterministic rule checker under the regulation
-  edition in force.
-- **Go concurrency.** 38 Go tests run under `-race`, with 0 data races:
-  - 15 stream engines over a real race with a concurrent reader;
-  - 8 Parquet producers against 4 readers, with 0 partial reads across 242 files;
-  - concurrent MCP clients and Monte Carlo runs.
-- **Integration on live services.** 76 pytest tests against real Kafka, Qdrant,
-  DuckDB, Ollama and the MCP server, including:
-  - Go window slopes equal DuckDB `REGR_SLOPE`;
-  - decision-scoped SQL and retrieval cannot see the future;
-  - SSE resume with `Last-Event-ID`;
-  - a Kafka round trip;
-  - a SIGTERM flush.
-- **The UI.** `tsc --noEmit`, 13 Jest tests, a production `next build` and 5
-  Playwright tests in real Chromium:
-  - four run against payloads recorded from the real system;
-  - one drives a real 2023 decision through the browser on the live stack and models.
+- **Strategy calls on real models.** Each call is checked against the FIA
+  regulation edition in force on the race date:
+  - two dry compounds;
+  - penalty holds served with no work on the car;
+  - no stop while the pit entry is closed;
+  - tyres that suit the track;
+  - no green-flag rejoin into a DRS train.
+
+  The 24 scenarios run end to end on qwen2.5-coder:14b, llama3.2:3b and bge-m3, with
+  injected model faults. They cover 7 real decisions from the three races, 13 rule
+  traps and 4 radio-override traps. The tests also prove two things about the agent:
+  - the verifier rejects an illegal call and the cycle revises it (shown with a
+    scripted model against the real simulator);
+  - a primary-model failure is served by the fast model, with no error reaching the
+    client.
+- **Concurrency in Go, under the race detector:**
+  - Each car's events stay in order on one Kafka partition.
+  - Engines that process a real race share the live tower without a data race.
+  - DuckDB readers never open a half-written Parquet file while several writers
+    commit.
+  - The Monte Carlo simulator is deterministic for a seed under concurrent calls,
+    and its tyre, penalty, traffic and weather models move the decision the way
+    they should.
+- **Kafka, DuckDB and Qdrant integration, with no hindsight:**
+  - At a decision instant the agent sees only completed laps, the field at that
+    moment, messages already sent and the regulations then in force. Its SQL cannot
+    read later laps, telemetry or sessions. Retrieval returns no later edition and no
+    later notice.
+  - Go's degradation slope equals DuckDB's `REGR_SLOPE` on the same laps.
+  - The committed lakehouse holds each recorded event exactly once.
+  - A race replayed through Kafka reaches the processor.
+  - On SIGTERM the processor leaves its consumer group and flushes buffered batches.
+- **The dashboard in a real browser.** Playwright in Chromium checks four things:
+  - the live tower;
+  - a cyclic run streamed over SSE, including its revision step;
+  - strategy-chart tooltips and the table view;
+  - race-control triggers for the selected car.
+
+  One test runs a real 2023 Singapore decision through the browser on the live stack.
+  After a reconnect, SSE resumes from `Last-Event-ID` with no gaps or duplicates.
+
+Each suite and what it checks: [docs/TESTING.md](docs/TESTING.md).
 
 ## How it works
 
