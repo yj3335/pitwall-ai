@@ -1,0 +1,165 @@
+"""Benchmark 3: single-pass LLM vs the cyclic LangGraph agent on 20 scenarios.
+
+    python -m pitwall.eval.agent_eval --out ../benchmarks/agent_eval.json
+
+Both arms run on the real local models (qwen2.5-coder:14b primary,
+llama3.2:3b fast model) with the same seeded 10% fault injection on the
+primary model, so failover is exercised in both. The single pass gets the same
+situation text and system-prompt rules as the agent's synthesiser, so the
+difference measures the graph (SQL, retrieval, simulator, verifier, cycles). Each call is judged by the
+same deterministic rule checker under the regulation edition in force for the
+scenario, and compared with the scenario's ground truth.
+
+Metrics
+- FIA compliance: final calls that break no regulation or tyre-physics rule.
+- Ground-truth agreement: final action in the scenario's acceptable set,
+  reported separately for the 7 real and 13 synthetic scenarios.
+- Caught and corrected: agent runs whose first proposal broke a rule and whose
+  final call does not.
+- Failover recovery: injected or real primary failures whose request was then
+  served by the fast model; client errors: runs that raised.
+- End-to-end latency p50 / p95 per arm.
+"""
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import time
+import zlib
+from pathlib import Path
+
+from pitwall import config
+from pitwall.agents import rules
+from pitwall.agents.graph import AgentDeps, build_graph, run_agent, run_single_pass
+from pitwall.agents.llm import FailoverLLM, FaultInjector, OllamaChat
+from pitwall.eval.scenarios import load_scenarios, materialise
+from pitwall.mcp_client.client import HTTPMCPClient
+from pitwall.olap import Lakehouse
+from pitwall.rag.store import HybridRetriever
+
+FAULT_RATE = 0.10
+
+
+def pct(xs: list[float], q: float) -> float:
+    s = sorted(xs)
+    return s[min(len(s) - 1, int(round(q * (len(s) - 1))))] if s else 0.0
+
+
+def judge(scn: dict, final: dict) -> dict:
+    c = rules.constraints_from(scn["state"])
+    v = rules.check(final, c)
+    gt = scn["ground_truth"]
+    return {"compliant": not v, "violations": [x.code for x in v],
+            "agrees": final.get("recommended_action") in gt["acceptable"],
+            "forbidden": final.get("recommended_action") in gt.get("forbidden", [])}
+
+
+async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat) -> dict:
+    seed = zlib.crc32(f"{scn['id']}|{mode}".encode())
+    llm = FailoverLLM(chat=chat, faults=FaultInjector(rate=FAULT_RATE, seed=seed))
+    deps = AgentDeps(llm=llm, **deps_base)
+    t0 = time.perf_counter()
+    rec: dict = {"id": scn["id"], "kind": scn["kind"], "category": scn["category"], "mode": mode,
+                 "edition": scn["context"]["edition"]}
+    try:
+        if mode == "agent":
+            st = await run_agent(scn, deps, graph=graph, thread_id=f"eval-{scn['id']}")
+            final = st["final"]
+            first = st["proposals"][0]
+            c = rules.constraints_from(scn["state"])
+            rec["first_proposal_violations"] = [x.code for x in rules.check(first, c)]
+            rec["revisions"] = st.get("reflection_count", 0)
+            rec["guardrail_override"] = bool(final.get("guardrail_override"))
+            rec["sim_recommended"] = st["simulation"]["recommended"]
+            rec["citations"] = [r["citation"] for r in st["regulations"]]
+        else:
+            final = (await run_single_pass(scn, deps))["final"]
+        rec["final"] = {k: final.get(k) for k in ("recommended_action", "target_compound", "pit_lap", "penalty_hold_s",
+                                                  "fia_article_citations")}
+        rec.update(judge(scn, final))
+        rec["error"] = None
+    except Exception as e:  # noqa: BLE001 - a client-visible failure, counted
+        rec.update(final=None, compliant=False, agrees=False, forbidden=False, violations=[], error=f"{type(e).__name__}: {e}")
+    rec["latency_ms"] = round((time.perf_counter() - t0) * 1000, 1)
+    s = llm.stats.summary()
+    rec["llm"] = {"calls": s["calls"], "faults": s["faults"], "recovered": s["recovered"], "failovers": s["failovers"],
+                  "injected": llm.faults.injected, "by_model": s["by_model"]}
+    return rec
+
+
+def summarise(rows: list[dict]) -> dict:
+    def rate(xs, key):
+        return round(sum(bool(x[key]) for x in xs) / len(xs), 4) if xs else None
+
+    lat = [x["latency_ms"] for x in rows]
+    faults = sum(x["llm"]["faults"] for x in rows)
+    recovered = sum(x["llm"]["recovered"] for x in rows)
+    out = {
+        "runs": len(rows),
+        "compliance_rate": rate(rows, "compliant"),
+        "agreement_rate": rate(rows, "agrees"),
+        "agreement_real": rate([x for x in rows if x["kind"] == "real"], "agrees"),
+        "agreement_synthetic": rate([x for x in rows if x["kind"] == "synthetic"], "agrees"),
+        "forbidden_calls": sum(bool(x["forbidden"]) for x in rows),
+        "latency_p50_ms": round(pct(lat, 0.5)),
+        "latency_p95_ms": round(pct(lat, 0.95)),
+        "injected_faults": sum(x["llm"]["injected"] for x in rows),
+        "primary_failures": faults,
+        "recovered_by_fallback": recovered,
+        "failover_recovery_rate": round(recovered / faults, 4) if faults else None,
+        "client_errors": sum(x["error"] is not None for x in rows),
+        "non_compliant": [x["id"] for x in rows if not x["compliant"]],
+        "disagreements": [x["id"] for x in rows if not x["agrees"]],
+    }
+    agent = [x for x in rows if x["mode"] == "agent"]
+    if agent:
+        caught = [x for x in agent if x.get("first_proposal_violations")]
+        out["first_proposals_illegal"] = len(caught)
+        out["caught_and_corrected"] = sum(x["compliant"] for x in caught)
+        out["guardrail_overrides"] = sum(x.get("guardrail_override", False) for x in agent)
+        out["revisions_total"] = sum(x.get("revisions", 0) for x in agent)
+    return out
+
+
+async def main_async(out: Path, only: list[str] | None) -> None:
+    lh = Lakehouse()
+    mcp = HTTPMCPClient()
+    await mcp.initialize()
+    deps_base = {"mcp": mcp, "retriever": HybridRetriever(), "lakehouse": lh}
+    chat = OllamaChat()
+    graph = build_graph()
+    scenarios = [materialise(s, lh) for s in load_scenarios() if not only or s["id"] in only]
+    rows: list[dict] = []
+    for scn in scenarios:
+        for mode in ("single_pass", "agent"):
+            rec = await run_one(scn, mode, deps_base, graph, chat)
+            rows.append(rec)
+            flag = "OK " if rec["compliant"] else "ILLEGAL"
+            print(f"{scn['id']} {mode:11} {flag} {'agree' if rec['agrees'] else 'differ':6} "
+                  f"{(rec['final'] or {}).get('recommended_action')!s:16} {rec['latency_ms'] / 1000:6.1f}s "
+                  f"faults={rec['llm']['faults']} recovered={rec['llm']['recovered']} {rec['error'] or ''}", flush=True)
+    report = {
+        "fault_rate": FAULT_RATE,
+        "models": {"primary": config.PRIMARY_MODEL, "fast": config.VERIFIER_MODEL, "embedding": config.EMBED_MODEL},
+        "scenarios": len(scenarios),
+        "single_pass": summarise([r for r in rows if r["mode"] == "single_pass"]),
+        "agent": summarise([r for r in rows if r["mode"] == "agent"]),
+        "runs": rows,
+    }
+    out.write_text(json.dumps(report, indent=2) + "\n")
+    print(json.dumps({k: report[k] for k in ("single_pass", "agent")}, indent=2))
+    await mcp.aclose()
+    await chat.aclose()
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--only", nargs="*")
+    args = ap.parse_args()
+    asyncio.run(main_async(args.out, args.only))
+
+
+if __name__ == "__main__":
+    main()

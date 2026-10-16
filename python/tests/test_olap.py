@@ -158,3 +158,15 @@ def test_concurrent_reads_while_go_writes(binaries, tmp_path):
     files = list(out.glob("telemetry/session=*/*.parquet"))
     assert len(files) > 100
     assert not list(out.glob("**/*.inprogress"))
+
+
+def test_committed_lakehouse_has_no_duplicate_events():
+    """data/lakehouse is the deterministic offline replay: one row per event.
+    (A live processor once wrote into it, duplicating every replayed race.)"""
+    from pitwall import config
+
+    if not list(config.LAKEHOUSE.glob("telemetry/session=*/*.parquet")):
+        pytest.skip("run `make lakehouse` first")
+    total, distinct = Lakehouse().query(
+        "SELECT count(*), count(DISTINCT (session_key, driver_number, seq)) FROM telemetry").rows[0]
+    assert total == distinct == 332_787

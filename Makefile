@@ -47,7 +47,7 @@ mcp-sim: build
 	$(ENV) ./bin/mcp-sim -http :8081
 
 processor: build
-	$(ENV) ./bin/processor -brokers localhost:9092 -out data/lakehouse -mcp http://localhost:8081
+	$(ENV) ./bin/processor -brokers localhost:9092 -out data/lakehouse_live
 
 replay: build
 	$(ENV) ./bin/replayer -brokers localhost:9092 -file data/races/session_$(SESSION)_events.jsonl.gz -speed 20

@@ -1,0 +1,13 @@
+.venv
+.git
+.run
+.qdrant_storage
+.kafka_data
+bin
+**/node_modules
+**/.next
+**/__pycache__
+web/test-results
+web/playwright-report
+data/lakehouse_live
+data/lakehouse/**/*.parquet

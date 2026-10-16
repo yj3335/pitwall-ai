@@ -24,11 +24,11 @@ cyclic-loop tests), and those still call the real Go MCP server.
 | `internal/metrics` | Histogram quantiles within bucket error; concurrent recording; bucket monotonicity |
 | `cmd/processor` | `POST /v1/race-control`: publishes with the streaming session and a timestamp filled in; 400 on empty or invalid bodies; 502 when the broker rejects; 503 when publishing is disabled |
 
-## Python (`pytest`): 70 tests
+## Python (`pytest`): 71 tests
 
 | File | What is verified |
 |---|---|
-| `test_olap.py` (17) | DuckDB over a lakehouse the Go processor builds from the real Singapore race: all 113,469 events land exactly once. **Go's window slope equals DuckDB `REGR_SLOPE` on the same five laps** (max error < 1 ms/lap over 300+ laps). SC laps are never clean. **The decision state is taken before the pit lane** (Hamilton P4 at the call, while the lap-44 row says P5 from inside the pit lane). **Decision-scoped SQL cannot see later laps, later telemetry, later triggers or other sessions.** Stint summary and query latency. The SQL guard rejects 8 classes of unsafe SQL. **The Go processor commits more than 100 batches while 4 threads query: 0 errors.** |
+| `test_olap.py` (18) | DuckDB over a lakehouse the Go processor builds from the real Singapore race: all 113,469 events land exactly once. **The committed offline lakehouse holds exactly the 332,787 recorded events** (guards against a live processor writing into it). **Go's window slope equals DuckDB `REGR_SLOPE` on the same five laps** (max error < 1 ms/lap over 300+ laps). SC laps are never clean. **The decision state is taken before the pit lane** (Hamilton P4 at the call, while the lap-44 row says P5 from inside the pit lane). **Decision-scoped SQL cannot see later laps, later telemetry, later triggers or other sessions.** Stint summary and query latency. The SQL guard rejects 8 classes of unsafe SQL. **The Go processor commits more than 100 batches while 4 threads query: 0 errors.** |
 | `test_rag.py` (8) | Citation-preserving tokenizer; BM25 saturation. The corpus holds exactly the four editions in force, with no 2026. **Struck-through redline text is not indexed** (including the deleted 2025 58.12 sentence). Context documents are dated. **On live Qdrant + bge-m3:** exact citation via sparse; semantic match via dense; hybrid RRF + rerank; the **edition filter, and the point-in-time filter for the Singapore 2023 lap-44 decision** (no later edition, nothing dated on or after the race day, no notice from lap 44 on) |
 | `test_regulations.py` (14) | The edition in force on each race date (2026 deliberately unresolvable). **Article references follow the edition** (30.5(n) in 2023; 55.11 to 55.12 at 2024 Issue 7). Every clause resolves in every edition. |
 | `test_scenarios.py` (5) | Race lengths come from the chequered flag (Singapore 62, not 63). **Ground-truth integrity:** every `forbidden` call is illegal and every `acceptable` call legal under the rule checker. **Real scenarios use decision-time state** (position, status, compound, compounds used, edition). Measured pit loss is used only with at least 3 stops. **Real-scenario question text agrees with the data.** |
@@ -69,6 +69,19 @@ actionability checks never settle.
   colour and content: all in the FIA redline colour except one stray `". "`.
 - **Live agent runs** on two real scenarios with real models: SQL scoped to completed
   laps, citations from the right edition (30.5(n) for 2023), compliant calls.
+
+## Smoke test (`make smoke`)
+
+`scripts/smoke-test.sh` runs one live check per component against a running stack
+(`make run`) and exits non-zero on any failure:
+- Kafka: 20 partitions on `f1.telemetry.raw`.
+- Ollama: the three models are present, and bge-m3 returns 1024-dim vectors.
+- MCP: `initialize`, 4 tools, and a 60,000-trajectory `simulate_pit_strategies`.
+- Kafka to processor: 2,000 replayed events consumed.
+- DuckDB: 332,787 events in the lakehouse.
+- Qdrant: the point count equals the corpus, and the 2023 two-compound rule is found as
+  30.5(n) under the 2023 edition filter.
+- The control plane: every dependency is healthy, and a real single-pass model call.
 
 ## Live checks done by hand during development
 

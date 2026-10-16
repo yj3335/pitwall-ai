@@ -222,8 +222,11 @@ JSON, or an injected fault) on llama3.2:3b. After `trip_after` consecutive failu
 circuit opens until the cooldown passes. `FaultInjector` makes a seeded fraction of
 primary calls fail.
 
-**Baseline.** `run_single_pass` gives the same situation text to qwen2.5-coder:14b once,
-with no retrieval, simulator or verifier. Both are scored by the same rule checker.
+**Baseline.** `run_single_pass` makes one qwen2.5-coder:14b call. It gets the same
+situation text and the same system-prompt rules and output contract as the agent's
+synthesiser (two compounds, penalty hold, pit entry, and the action-to-compound
+mapping, with article numbers from the edition in force). It gets no lakehouse SQL,
+retrieval, simulator or verifier. Both arms are scored by the same rule checker.
 
 ## 5. Control plane (FastAPI, :8080)
 

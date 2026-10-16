@@ -109,6 +109,46 @@ actually hit while building and verifying the system, with how it was found.
   development run disagreed; the acceptable set is now every legal plan that accounts
   for the hold.
 
+### Added in milestone 10 (benchmarks and packaging)
+- `cmd/bench-stream`: 200,000 real OpenF1 events through a fresh 20-partition topic
+  into the Go engines and Parquet sink. It reports burst and paced trials, producer,
+  processed and committed-to-Parquet rates, stream-to-trigger latency, and concurrent
+  DuckDB readers during the writes. It also measures Monte Carlo latency in process
+  and over MCP.
+- `pitwall.eval.agent_eval`: 20 scenarios, single pass against the cyclic agent on the
+  real models with seeded 10% primary faults, judged by the rule checker under the
+  edition in force.
+- `make bench` (`scripts/bench.sh`) runs all three benchmarks and merges them into
+  `benchmarks/results.json` (`pitwall.eval.report`), with the machine and versions.
+- `make smoke` (`scripts/smoke-test.sh`): one live check each for Kafka, Ollama, the
+  MCP server, the processor, DuckDB, Qdrant and the control plane.
+- `docker-compose.yml` with Dockerfiles for the Go, Python and web images, plus
+  `python/requirements.lock` pinning the versions the tests ran on. The compose file
+  has not been run (no Docker on the development machine).
+
+### Fixed in milestone 10
+- **The first throughput number depended on which trial went first.** The first burst
+  after a process start ran at 39k-155k events/s, while later ones ran at about 1M.
+  The cause is cold consumer fetch sessions and the Go heap growing. Warm-up trials are
+  now run and excluded, and the report gives the median trial, the range, and the
+  cold-start figure separately. It also reports a committed rate (until the last
+  Parquet batch is durable) next to the processed rate.
+- **The offline lakehouse held every live replay too.** The live processor wrote into
+  `data/lakehouse`, the same tree the scenarios, tests and benchmarks read, so every
+  live replay during development added its events again. Found when the benchmark's
+  DuckDB step counted 752,787 telemetry rows for 332,787 recorded events. The live
+  processor now writes `data/lakehouse_live`,
+  the offline lakehouse was rebuilt, and a test asserts it holds exactly the
+  332,787 committed events.
+- **The single-pass baseline was a strawman.** Its prompt lacked the rules and the
+  action-to-compound mapping that the agent's synthesiser gets. The first benchmark
+  run scored it at 35% compliance, and 6 of its 13 illegal calls contradicted
+  themselves (for example, PIT_NOW_MEDIUM with an INTERMEDIATE target). Found while
+  reviewing why its violations differed in kind from the agent's. Both now share the
+  same rules and output contract (`_RULES` in `graph.py`), so the comparison measures
+  only what the graph adds. With that, the single pass scores 60%, and the agent 100%.
+- **`make processor` passed a flag that no longer exists** (`-mcp`) and failed at start.
+
 ### Fixed during the first build
 - **Kafka 4.4 refused to format KRaft storage.** `kafka-storage.sh format --standalone`
   rejects a static `controller.quorum.voters`; switched to
@@ -249,6 +289,13 @@ reranker moved from bge-reranker-v2-m3 (about 2.3 s) to ms-marco-MiniLM-L-12 ove
 candidates (about 0.2 s).
 
 ### Measured, not hidden
+- In the 20-scenario benchmark the agent's first proposal was legal every time: 0
+  revisions, 0 guardrail overrides. Its compliance gain comes from grounding, not from
+  the cycle.
+- The agent's GP11 and GP12 calls (soft stints of 23 and 28 laps) follow the simulator
+  and disagree with the ground truth, which says softs would not last. The labels were
+  not changed: the simulator's soft cliff (20 laps, +350 ms/lap per lap) is gentler
+  than that reasoning.
 - The engineer radio message is free text from the model and is not checked by the
   guardrail; in a GP10 run it mentioned undercutting a rival that the same run's
   numbers show cannot be undercut.

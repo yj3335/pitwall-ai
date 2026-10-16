@@ -33,7 +33,7 @@ make services-down
   `f1.triggers` (20); `auto.create.topics.enable=false`. Reset everything with
   `make services-down && rm -rf .kafka_data`.
 - **Qdrant** stores data in `.qdrant_storage/`, logs in `.run/qdrant.log`. The
-  collection is `fia_sporting_regs`. Rebuild it with `make index` (about 21 s for 903
+  collection is `fia_sporting_regs`. Rebuild it with `make index` (about 45 s for 2,077
   chunks with bge-m3 on an M5 Pro).
 - **Ollama** must be running (`ollama serve`). Models are kept loaded for 30 minutes
   (`keep_alive`). qwen2.5-coder:14b (9 GB), llama3.2:3b (2 GB) and bge-m3 (1.2 GB)
@@ -120,7 +120,7 @@ when it rests on at least 3 stops (`use_measured`), otherwise the generic 21.8 s
 
 ```bash
 make mcp-sim                                   # Go MCP server on :8081
-make processor                                 # Kafka consumer -> lakehouse + live tower on :8090
+make processor                                 # Kafka consumer -> data/lakehouse_live + live tower on :8090
 make replay SESSION=9165                       # replay Singapore 2023 at 20x
 ./bin/replayer -file data/races/session_9636_events.jsonl.gz -speed 1   # real time
 ./bin/replayer -file data/races/session_9558_events.jsonl.gz -speed 0   # as fast as possible
@@ -131,6 +131,12 @@ curl -s localhost:8090/v1/stats | jq
 The processor starts at the end of the topic for a new consumer group. Start it
 before the replayer, or pass a fresh `-group`.
 
+**Two lakehouses.** The live processor writes to `data/lakehouse_live/`.
+`data/lakehouse/` is the deterministic offline replay of the three committed races
+(`make lakehouse`). Scenarios, tests and benchmarks read only the offline one. Never
+point a live processor at it: every replay would append its events again, and
+`test_committed_lakehouse_has_no_duplicate_events` would fail.
+
 ## Calling the simulator directly
 
 ```bash
@@ -140,6 +146,48 @@ curl -s localhost:8081/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","pa
   | jq '.result.structuredContent | {recommended, elapsed_ms, total_trajectories}'
 ./bin/mcp-sim -stdio      # the same server over stdin/stdout for MCP desktop clients
 ```
+
+## Benchmarks and smoke test
+
+```bash
+make run        # the benchmarks and the smoke test need the running stack and Ollama
+make smoke      # one live check per component, about 12 s (one real model call)
+make bench      # all three benchmarks -> benchmarks/results.json
+```
+
+`make bench` runs, in order:
+- the stream benchmark, on its own topics, groups and temporary lakehouses, so the
+  running processor is untouched;
+- the 40-query retrieval ablation;
+- the 20-scenario agent evaluation (40 runs on the real models).
+
+The agent evaluation dominates the run time (about 8 minutes for 40 runs). Stop other Ollama clients first, because
+they share the GPU and inflate its latencies. Each step can also run on its own
+(`python -m pitwall.eval.stream_bench | rag_eval | agent_eval | report`).
+
+## Docker Compose
+
+`docker-compose.yml` describes the same stack in containers:
+- Kafka 4 in KRaft mode, plus a job that creates the topics;
+- Qdrant;
+- one-shot lakehouse and index jobs;
+- the MCP simulator, the processor, the API and the dashboard;
+- a `replay` profile for the replayer.
+
+Ollama stays on the host and is reached at `host.docker.internal:11434`. The host
+can reach the broker at `localhost:29092`.
+
+```bash
+docker compose up -d --build
+docker compose --profile replay run --rm replayer -file data/races/session_9165_events.jsonl.gz -speed 20
+```
+
+**Status: written but not run.** The development machine has no Docker. Everything in
+`docs/TESTING.md` and `docs/BENCHMARKS.md` was measured on the native `.venv/` stack
+(`make run`). The compose file mirrors that stack's flags and environment variables,
+and `python/requirements.lock` pins the Python versions the tests ran on. The image
+tags (`apache/kafka:4.0.0`, `qdrant/qdrant:v1.19.2`, `golang:1.26`, `python:3.13`,
+`node:22`) are the only parts not exercised.
 
 ## Configuration
 
@@ -154,6 +202,8 @@ curl -s localhost:8081/mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","pa
 | `QDRANT_URL`, `QDRANT_COLLECTION` | `http://localhost:6333`, `fia_sporting_regs` | retrieval |
 | `PITWALL_MCP_URL` | `http://localhost:8081/mcp` | agent |
 | `PITWALL_LAKEHOUSE` | `data/lakehouse` | DuckDB |
+| `PITWALL_PROCESSOR_URL` | `http://localhost:8090` | live tower and race-control publishing |
+| `PITWALL_CORS_ORIGINS` | (loopback only) | extra dashboard origins, comma-separated |
 
 ## Troubleshooting
 

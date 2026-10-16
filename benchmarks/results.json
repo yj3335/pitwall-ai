@@ -1,0 +1,168 @@
+{
+  "generated_at": "2026-10-16T02:44:01+00:00",
+  "git_commit": "e003400-dirty",
+  "machine": {
+    "cpu": "Apple M5 Pro",
+    "cores": 15,
+    "memory_gb": 24,
+    "os": "Darwin 27.0.0",
+    "go": "go version go1.27.2 darwin/arm64",
+    "python": "3.13.15",
+    "kafka": "4.4.0 (KRaft, single broker)",
+    "qdrant": "qdrant 1.19.2",
+    "ollama": "ollama version is 0.32.7"
+  },
+  "stream": {
+    "events": 200000,
+    "sustained_events_per_s": 1003571,
+    "sustained_events_per_s_range": [
+      962293,
+      1018831
+    ],
+    "committed_to_parquet_events_per_s": 826214,
+    "cold_start_events_per_s": 39440,
+    "burst_stream_to_trigger_ms": {
+      "p50_ms": 6.016,
+      "p95_ms": 8.96,
+      "p99_ms": 11.008
+    },
+    "paced_rate_events_per_s": 20000,
+    "paced_stream_to_trigger_ms": {
+      "p50_ms": 2.016,
+      "p95_ms": 3.008,
+      "p99_ms": 4.032
+    },
+    "sink_errors": 0,
+    "duckdb_concurrent_queries": 32684,
+    "duckdb_concurrent_errors": 0,
+    "duckdb_concurrent_p50_ms": 1.06,
+    "duckdb_olap_p50_ms": 1.19,
+    "monte_carlo_10k_x6_in_process_p50_ms": 6.528,
+    "monte_carlo_10k_x6_mcp_round_trip_p50_ms": 7.56,
+    "monte_carlo_10k_single_strategy_p50_ms": 1.008
+  },
+  "rag": {
+    "queries": 40,
+    "reranker": "Xenova/ms-marco-MiniLM-L-12-v2",
+    "modes": {
+      "dense": {
+        "recall_at_1": 0.8,
+        "recall_at_3": 0.9,
+        "mrr_at_10": 0.8629,
+        "recall_at_3_exact": 1.0,
+        "recall_at_3_semantic": 0.8,
+        "qdrant_p50_ms": 1.66,
+        "qdrant_p95_ms": 2.22,
+        "end_to_end_p50_ms": 20.05,
+        "end_to_end_p95_ms": 20.61
+      },
+      "sparse": {
+        "recall_at_1": 0.575,
+        "recall_at_3": 0.875,
+        "mrr_at_10": 0.7208,
+        "recall_at_3_exact": 1.0,
+        "recall_at_3_semantic": 0.75,
+        "qdrant_p50_ms": 1.19,
+        "qdrant_p95_ms": 1.26,
+        "end_to_end_p50_ms": 1.19,
+        "end_to_end_p95_ms": 1.26
+      },
+      "hybrid": {
+        "recall_at_1": 0.775,
+        "recall_at_3": 0.95,
+        "mrr_at_10": 0.8592,
+        "recall_at_3_exact": 1.0,
+        "recall_at_3_semantic": 0.9,
+        "qdrant_p50_ms": 2.65,
+        "qdrant_p95_ms": 2.96,
+        "end_to_end_p50_ms": 21.05,
+        "end_to_end_p95_ms": 21.36
+      },
+      "hybrid_rerank": {
+        "recall_at_1": 0.75,
+        "recall_at_3": 0.975,
+        "mrr_at_10": 0.85,
+        "recall_at_3_exact": 1.0,
+        "recall_at_3_semantic": 0.95,
+        "qdrant_p50_ms": 3.35,
+        "qdrant_p95_ms": 6.33,
+        "end_to_end_p50_ms": 167.81,
+        "end_to_end_p95_ms": 276.63
+      }
+    }
+  },
+  "agent": {
+    "scenarios": 20,
+    "fault_rate": 0.1,
+    "models": {
+      "primary": "qwen2.5-coder:14b",
+      "fast": "llama3.2:3b",
+      "embedding": "bge-m3"
+    },
+    "single_pass": {
+      "runs": 20,
+      "compliance_rate": 0.6,
+      "agreement_rate": 0.35,
+      "agreement_real": 0.4286,
+      "agreement_synthetic": 0.3077,
+      "forbidden_calls": 5,
+      "latency_p50_ms": 8961,
+      "latency_p95_ms": 11596,
+      "injected_faults": 2,
+      "primary_failures": 3,
+      "recovered_by_fallback": 3,
+      "failover_recovery_rate": 1.0,
+      "client_errors": 0,
+      "non_compliant": [
+        "GP01",
+        "GP03",
+        "GP05",
+        "GP09",
+        "GP11",
+        "GP12",
+        "GP16",
+        "GP19"
+      ],
+      "disagreements": [
+        "GP01",
+        "GP03",
+        "GP05",
+        "GP06",
+        "GP09",
+        "GP10",
+        "GP11",
+        "GP12",
+        "GP16",
+        "GP17",
+        "GP18",
+        "GP19",
+        "GP20"
+      ]
+    },
+    "cyclic_agent": {
+      "runs": 20,
+      "compliance_rate": 1.0,
+      "agreement_rate": 0.85,
+      "agreement_real": 0.8571,
+      "agreement_synthetic": 0.8462,
+      "forbidden_calls": 0,
+      "latency_p50_ms": 10404,
+      "latency_p95_ms": 12656,
+      "injected_faults": 3,
+      "primary_failures": 3,
+      "recovered_by_fallback": 3,
+      "failover_recovery_rate": 1.0,
+      "client_errors": 0,
+      "non_compliant": [],
+      "disagreements": [
+        "GP03",
+        "GP11",
+        "GP12"
+      ],
+      "first_proposals_illegal": 0,
+      "caught_and_corrected": 0,
+      "guardrail_overrides": 0,
+      "revisions_total": 0
+    }
+  }
+}

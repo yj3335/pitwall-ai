@@ -282,24 +282,34 @@ async def monte_carlo_mcp_node(state: PitWallState, config) -> dict:
         undercut=out.get("undercut"), traffic=out.get("traffic"))}
 
 
-SYSTEM_STRATEGIST = """You are the race strategist on a Formula 1 pit wall. Decide the pit call for our car.
-Rules you must respect (article numbers are those of the regulations in force for this race):
+_RULES = """Rules you must respect (article numbers are those of the regulations in force for this race):
 - recommended_action is exactly one of: PIT_NOW_HARD, PIT_NOW_MEDIUM, PIT_NOW_SOFT, PIT_NOW_INTER, STAY_OUT_EXTEND, OPPOSITE_AHEAD.
 - PIT_NOW_* means pit at the end of the current lap: pit_lap = current lap and target_compound = that compound.
 - STAY_OUT_EXTEND / OPPOSITE_AHEAD: pit_lap is the later lap you will stop (0 if no further stop) and target_compound the tyre then (NONE if no stop).
 - Article {two_compound}: in a dry race (no intermediates/wets used) a car must use two DIFFERENT dry compounds before the flag.
 - Article {penalty_hold}: a pending 5s/10s time penalty is served as a stationary hold at the next stop. If the plan stops, penalty_hold_s MUST equal the pending penalty, otherwise 0.
 - Article {pit_entry_closed}: no stop while the pit entry is closed.
-- Prefer the simulator's best LEGAL option unless you have a concrete reason grounded in the regulations or race situation.
+"""
+
+SYSTEM_STRATEGIST = """You are the race strategist on a Formula 1 pit wall. Decide the pit call for our car.
+""" + _RULES + """- Prefer the simulator's best LEGAL option unless you have a concrete reason grounded in the regulations or race situation.
 - expected_net_gain_ms: race time gained versus the next-best legal option (from the simulator table).
 - fia_article_citations: the specific articles you relied on, e.g. "Art. {two_compound}".
 - engineer_radio_message: one or two short sentences the race engineer says to the driver.
 Reply with JSON only."""
 
+# The baseline gets the same rules and output contract as the agent, so the comparison
+# isolates what the graph adds (lakehouse SQL, retrieval, simulator, verifier, cycles).
+SYSTEM_SINGLE = """You are the race strategist on a Formula 1 pit wall. Decide the pit call for our car in one shot.
+""" + _RULES + """- expected_net_gain_ms: your estimate of race time gained versus the next-best legal option.
+- fia_article_citations: the specific articles you relied on, e.g. "Art. {two_compound}".
+- engineer_radio_message: one or two short sentences the race engineer says to the driver.
+Reply with JSON only."""
 
-def strategist_prompt(c: rules.Constraints) -> str:
-    return SYSTEM_STRATEGIST.format(two_compound=c.art("two_compound"), penalty_hold=c.art("penalty_hold"),
-                                    pit_entry_closed=c.art("pit_entry_closed"))
+
+def strategist_prompt(c: rules.Constraints, template: str = SYSTEM_STRATEGIST) -> str:
+    return template.format(two_compound=c.art("two_compound"), penalty_hold=c.art("penalty_hold"),
+                           pit_entry_closed=c.art("pit_entry_closed"))
 
 
 def _synth_prompt(state: PitWallState) -> list[dict]:
@@ -498,18 +508,11 @@ async def run_agent(scenario: dict, deps: AgentDeps, graph=None, thread_id: str 
     return final_state
 
 
-SYSTEM_SINGLE = """You are the race strategist on a Formula 1 pit wall. Decide the pit call for our car in one shot.
-recommended_action is exactly one of: PIT_NOW_HARD, PIT_NOW_MEDIUM, PIT_NOW_SOFT, PIT_NOW_INTER, STAY_OUT_EXTEND, OPPOSITE_AHEAD.
-PIT_NOW_* means pit at the end of this lap (pit_lap = current lap). For STAY_OUT_EXTEND / OPPOSITE_AHEAD give the later stop lap
-(0 if no further stop) and the tyre then (NONE if no stop). penalty_hold_s is the stationary penalty time you include at the stop.
-Reply with JSON only."""
-
-
 async def run_single_pass(scenario: dict, deps: AgentDeps) -> dict:
-    """Baseline: one primary-model call with the same situation, no RAG, no simulator, no verifier."""
+    """Baseline: one primary-model call with the same situation and rules, no RAG, no simulator, no verifier."""
     t0 = time.perf_counter()
     s = scenario["state"]
-    msgs = [{"role": "system", "content": SYSTEM_SINGLE},
+    msgs = [{"role": "system", "content": strategist_prompt(_constraints(s), SYSTEM_SINGLE)},
             {"role": "user", "content": f"SITUATION\n{situation_text(s)}\n\nQUESTION\n{scenario.get('question', '')}"}]
     obj, rec = await deps.llm.complete_json("single_pass", msgs, PROPOSAL_SCHEMA, num_predict=600)
     p = _normalise(obj, s)

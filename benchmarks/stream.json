@@ -1,0 +1,563 @@
+{
+  "events": 200000,
+  "burst": {
+    "trials": 5,
+    "sustained_events_per_s": 1003571,
+    "sustained_events_per_s_range": [
+      962293,
+      1018831
+    ],
+    "committed_to_parquet_events_per_s": 826214,
+    "producer_events_per_s": 1028214,
+    "stream_to_trigger_ms": {
+      "count": 295,
+      "p50_ms": 6.016,
+      "p95_ms": 8.96,
+      "p99_ms": 11.008,
+      "mean_ms": 5.8,
+      "max_ms": 13
+    },
+    "cold_start_events_per_s": 39440,
+    "parquet_files": 15,
+    "parquet_rows": 201507,
+    "sink_errors": 0,
+    "decode_errors": 0,
+    "triggers": 295
+  },
+  "paced": {
+    "rate_events_per_s": 20000,
+    "sustained_events_per_s": 19994,
+    "stream_to_trigger_ms": {
+      "count": 308,
+      "p50_ms": 2.016,
+      "p95_ms": 3.008,
+      "p99_ms": 4.032,
+      "mean_ms": 1.905844155844156,
+      "max_ms": 5
+    },
+    "produce_to_processed_ms": {
+      "count": 200000,
+      "p50_ms": 2.112,
+      "p95_ms": 3.392,
+      "p99_ms": 5.76,
+      "mean_ms": 2.2186853,
+      "max_ms": 10.646
+    },
+    "duckdb_concurrent": {
+      "reader_threads": 4,
+      "queries_run": 32684,
+      "errors": 0,
+      "error_samples": [],
+      "p50_ms": 1.06,
+      "p95_ms": 1.94,
+      "by_query_p50_ms": {
+        "telemetry_count": 1.01,
+        "degradation_by_driver": 0.97,
+        "sector_speeds": 1.35,
+        "trigger_mix": 0.9
+      },
+      "row_count_never_decreased": true,
+      "final_rows_equal_events": true
+    }
+  },
+  "monte_carlo": {
+    "in_process": {
+      "runs": 200,
+      "rollouts_per_strategy": 10000,
+      "strategies": 6,
+      "workers": 15,
+      "p50_ms": 6.528,
+      "p95_ms": 7.04,
+      "p99_ms": 7.296,
+      "mean_ms": 6.4951099999999995,
+      "single_strategy_p50_ms": 1.008
+    },
+    "over_mcp_http": {
+      "calls": 100,
+      "trajectories_per_call": 60000,
+      "workers": 15,
+      "round_trip_p50_ms": 7.56,
+      "round_trip_p95_ms": 8.0,
+      "server_p50_ms": 7.0,
+      "server_p95_ms": 7.41
+    }
+  },
+  "duckdb_olap": {
+    "lakehouse_rows": {
+      "telemetry": 332787,
+      "laps": 3126
+    },
+    "queries": {
+      "degradation_leaderboard": {
+        "p50_ms": 1.19,
+        "p95_ms": 1.35
+      },
+      "stint_summary": {
+        "p50_ms": 1.29,
+        "p95_ms": 1.38
+      },
+      "pace_delta": {
+        "p50_ms": 1.04,
+        "p95_ms": 1.11
+      },
+      "decision_scoped_model_sql": {
+        "p50_ms": 0.91,
+        "p95_ms": 0.97
+      },
+      "field_at_decision_instant": {
+        "p50_ms": 1.36,
+        "p95_ms": 1.41
+      }
+    },
+    "median_of_p50_ms": 1.19
+  },
+  "raw": {
+    "burst": {
+      "median": {
+        "committed_events_per_s": 826214.2650040449,
+        "median_trial": {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.194512125,
+          "producer_events_per_s": 1028213.5368167922,
+          "end_to_end_seconds": 0.199288375,
+          "sustained_events_per_s": 1003570.8304611346,
+          "committed_seconds": 0.242067958,
+          "committed_events_per_s": 826214.2650040449,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 6.528,
+            "p95_ms": 11.008,
+            "p99_ms": 12.544,
+            "mean_ms": 6.882057325,
+            "max_ms": 14.069
+          },
+          "stream_to_trigger_latency": {
+            "count": 295,
+            "p50_ms": 6.016,
+            "p95_ms": 8.96,
+            "p99_ms": 11.008,
+            "mean_ms": 5.8,
+            "max_ms": 13
+          },
+          "triggers": 295,
+          "laps": 1212,
+          "parquet_files": 15,
+          "parquet_rows": 201507,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_1",
+          "telemetry_files_on_disk": 11
+        },
+        "sustained_events_per_s_range": [
+          962292.9501018339,
+          1018830.7533533109
+        ],
+        "trials": 5,
+        "trigger_p99_ms_range": [
+          8.96,
+          31.232
+        ]
+      },
+      "monte_carlo": {
+        "runs": 200,
+        "rollouts_per_strategy": 10000,
+        "strategies": 6,
+        "workers": 15,
+        "p50_ms": 6.528,
+        "p95_ms": 7.04,
+        "p99_ms": 7.296,
+        "mean_ms": 6.4951099999999995,
+        "single_strategy_p50_ms": 1.008
+      },
+      "trials": [
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.184891209,
+          "producer_events_per_s": 1081717.1951101255,
+          "end_to_end_seconds": 0.207836917,
+          "sustained_events_per_s": 962292.9501018339,
+          "committed_seconds": 0.276425417,
+          "committed_events_per_s": 723522.4682685384,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 11.52,
+            "p95_ms": 32.256,
+            "p99_ms": 41.984,
+            "mean_ms": 14.49382084,
+            "max_ms": 44.829
+          },
+          "stream_to_trigger_latency": {
+            "count": 287,
+            "p50_ms": 11.008,
+            "p95_ms": 25.088,
+            "p99_ms": 31.232,
+            "mean_ms": 12.933797909407666,
+            "max_ms": 32
+          },
+          "triggers": 287,
+          "laps": 1212,
+          "parquet_files": 15,
+          "parquet_rows": 201499,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_0",
+          "telemetry_files_on_disk": 11
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.194512125,
+          "producer_events_per_s": 1028213.5368167922,
+          "end_to_end_seconds": 0.199288375,
+          "sustained_events_per_s": 1003570.8304611346,
+          "committed_seconds": 0.242067958,
+          "committed_events_per_s": 826214.2650040449,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 6.528,
+            "p95_ms": 11.008,
+            "p99_ms": 12.544,
+            "mean_ms": 6.882057325,
+            "max_ms": 14.069
+          },
+          "stream_to_trigger_latency": {
+            "count": 295,
+            "p50_ms": 6.016,
+            "p95_ms": 8.96,
+            "p99_ms": 11.008,
+            "mean_ms": 5.8,
+            "max_ms": 13
+          },
+          "triggers": 295,
+          "laps": 1212,
+          "parquet_files": 15,
+          "parquet_rows": 201507,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_1",
+          "telemetry_files_on_disk": 11
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.192743167,
+          "producer_events_per_s": 1037650.2737448534,
+          "end_to_end_seconds": 0.199324875,
+          "sustained_events_per_s": 1003387.0584391436,
+          "committed_seconds": 0.223794333,
+          "committed_events_per_s": 893677.6786032378,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 5.76,
+            "p95_ms": 9.472,
+            "p99_ms": 11.008,
+            "mean_ms": 6.172867855000001,
+            "max_ms": 14.82
+          },
+          "stream_to_trigger_latency": {
+            "count": 296,
+            "p50_ms": 4.992,
+            "p95_ms": 7.04,
+            "p99_ms": 8.96,
+            "mean_ms": 5.003378378378378,
+            "max_ms": 11
+          },
+          "triggers": 296,
+          "laps": 1212,
+          "parquet_files": 15,
+          "parquet_rows": 201508,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_2",
+          "telemetry_files_on_disk": 11
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.191813833,
+          "producer_events_per_s": 1042677.6675694709,
+          "end_to_end_seconds": 0.196303458,
+          "sustained_events_per_s": 1018830.7533533109,
+          "committed_seconds": 0.227894083,
+          "committed_events_per_s": 877600.6703078815,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 6.528,
+            "p95_ms": 10.496,
+            "p99_ms": 11.52,
+            "mean_ms": 6.769460909999999,
+            "max_ms": 13.702
+          },
+          "stream_to_trigger_latency": {
+            "count": 302,
+            "p50_ms": 6.016,
+            "p95_ms": 8.96,
+            "p99_ms": 9.984,
+            "mean_ms": 6.304635761589404,
+            "max_ms": 12
+          },
+          "triggers": 302,
+          "laps": 1212,
+          "parquet_files": 15,
+          "parquet_rows": 201514,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_3",
+          "telemetry_files_on_disk": 11
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.188042,
+          "producer_events_per_s": 1063592.1762159518,
+          "end_to_end_seconds": 0.19708775,
+          "sustained_events_per_s": 1014776.4130444434,
+          "committed_seconds": 0.252543542,
+          "committed_events_per_s": 791942.642508752,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 12.032,
+            "p95_ms": 19.968,
+            "p99_ms": 24.064,
+            "mean_ms": 12.620901895000001,
+            "max_ms": 27.801
+          },
+          "stream_to_trigger_latency": {
+            "count": 279,
+            "p50_ms": 12.032,
+            "p95_ms": 18.944,
+            "p99_ms": 24.064,
+            "mean_ms": 12.351254480286737,
+            "max_ms": 25
+          },
+          "triggers": 279,
+          "laps": 1212,
+          "parquet_files": 16,
+          "parquet_rows": 201491,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/trial_4",
+          "telemetry_files_on_disk": 12
+        }
+      ],
+      "warmup": [
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 5.023775375,
+          "producer_events_per_s": 39810.69714925302,
+          "end_to_end_seconds": 5.071057084,
+          "sustained_events_per_s": 39439.50870342835,
+          "committed_seconds": 5.096571875,
+          "committed_events_per_s": 39242.06405899063,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 1081.344,
+            "p95_ms": 4849.664,
+            "p99_ms": 4994.099,
+            "mean_ms": 1452.8261059350002,
+            "max_ms": 5007.462
+          },
+          "stream_to_trigger_latency": {
+            "count": 230,
+            "p50_ms": 1081.344,
+            "p95_ms": 4849.664,
+            "p99_ms": 4987.368,
+            "mean_ms": 1398.8217391304347,
+            "max_ms": 4994
+          },
+          "triggers": 230,
+          "laps": 1212,
+          "parquet_files": 27,
+          "parquet_rows": 201442,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-624676587/warmup_0",
+          "telemetry_files_on_disk": 20
+        }
+      ]
+    },
+    "paced": {
+      "median": {
+        "committed_events_per_s": 19961.92495769983,
+        "median_trial": {
+          "mode": "paced",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 20000,
+          "produce_seconds": 10.000234583,
+          "producer_events_per_s": 19999.53084500558,
+          "end_to_end_seconds": 10.0027665,
+          "sustained_events_per_s": 19994.468530281098,
+          "committed_seconds": 10.019073833,
+          "committed_events_per_s": 19961.92495769983,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 2.112,
+            "p95_ms": 3.392,
+            "p99_ms": 5.76,
+            "mean_ms": 2.2186853,
+            "max_ms": 10.646
+          },
+          "stream_to_trigger_latency": {
+            "count": 308,
+            "p50_ms": 2.016,
+            "p95_ms": 3.008,
+            "p99_ms": 4.032,
+            "mean_ms": 1.905844155844156,
+            "max_ms": 5
+          },
+          "triggers": 308,
+          "laps": 1212,
+          "parquet_files": 26,
+          "parquet_rows": 201520,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-f2b_3v6p/trial_0",
+          "telemetry_files_on_disk": 13
+        },
+        "sustained_events_per_s_range": [
+          19994.468530281098,
+          19994.468530281098
+        ],
+        "trials": 1,
+        "trigger_p99_ms_range": [
+          4.032,
+          4.032
+        ]
+      },
+      "trials": [
+        {
+          "mode": "paced",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 20000,
+          "produce_seconds": 10.000234583,
+          "producer_events_per_s": 19999.53084500558,
+          "end_to_end_seconds": 10.0027665,
+          "sustained_events_per_s": 19994.468530281098,
+          "committed_seconds": 10.019073833,
+          "committed_events_per_s": 19961.92495769983,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 2.112,
+            "p95_ms": 3.392,
+            "p99_ms": 5.76,
+            "mean_ms": 2.2186853,
+            "max_ms": 10.646
+          },
+          "stream_to_trigger_latency": {
+            "count": 308,
+            "p50_ms": 2.016,
+            "p95_ms": 3.008,
+            "p99_ms": 4.032,
+            "mean_ms": 1.905844155844156,
+            "max_ms": 5
+          },
+          "triggers": 308,
+          "laps": 1212,
+          "parquet_files": 26,
+          "parquet_rows": 201520,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-f2b_3v6p/trial_0",
+          "telemetry_files_on_disk": 13
+        }
+      ],
+      "warmup": [
+        {
+          "mode": "paced",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 20000,
+          "produce_seconds": 10.000708375,
+          "producer_events_per_s": 19998.583350351917,
+          "end_to_end_seconds": 10.003182667,
+          "sustained_events_per_s": 19993.636691229283,
+          "committed_seconds": 10.008903417,
+          "committed_events_per_s": 19982.209006063786,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 1.696,
+            "p95_ms": 770.048,
+            "p99_ms": 3211.264,
+            "mean_ms": 122.97823318500001,
+            "max_ms": 5001.96
+          },
+          "stream_to_trigger_latency": {
+            "count": 304,
+            "p50_ms": 1.008,
+            "p95_ms": 368.64,
+            "p99_ms": 1867.776,
+            "mean_ms": 78.20723684210526,
+            "max_ms": 3731
+          },
+          "triggers": 304,
+          "laps": 1212,
+          "parquet_files": 26,
+          "parquet_rows": 201516,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-f2b_3v6p/warmup_0",
+          "telemetry_files_on_disk": 14
+        }
+      ]
+    }
+  }
+}

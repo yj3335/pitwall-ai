@@ -27,7 +27,9 @@ up() {
   curl -fs -m 2 localhost:11434/api/tags >/dev/null || { echo "Ollama is not running: start it with 'ollama serve'" >&2; exit 1; }
   (cd "$ROOT" && mkdir -p bin && go build -o bin/ ./cmd/...)
   start mcp-sim 8081 "$ROOT/bin/mcp-sim" -http :8081 -brokers localhost:9092 -quiet
-  start processor 8090 "$ROOT/bin/processor" -brokers localhost:9092 -out "$ROOT/data/lakehouse" -http :8090
+  # the live processor writes its own lakehouse: data/lakehouse is the deterministic
+  # offline replay (make lakehouse) that scenarios, tests and benchmarks read
+  start processor 8090 "$ROOT/bin/processor" -brokers localhost:9092 -out "$ROOT/data/lakehouse_live" -http :8090
   start api 8080 bash -c "cd '$ROOT/python' && exec '$ROOT/.venv/bin/python' -m uvicorn pitwall.api.app:app --host 0.0.0.0 --port 8080"
   wait_http localhost:8081/healthz && wait_http localhost:8090/healthz && wait_http localhost:8080/healthz
   echo "stack up:"
