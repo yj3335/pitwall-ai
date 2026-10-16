@@ -84,6 +84,50 @@ def test_scoped_sql_cannot_see_the_future(lh):
     assert max(s["last_lap"] for s in stints) == 43
 
 
+@pytest.mark.parametrize("escape", [
+    "SELECT max(lap_number) FROM main.laps",
+    "SELECT max(lap_number) FROM memory.main.laps",
+    "SELECT count(DISTINCT session_key) FROM main.telemetry",
+    "SELECT count(*) FROM temp.main.laps",
+    "SELECT count(*) FROM parquet_scan('data/lakehouse/laps/**/*.parquet')",
+    "SELECT count(*) FROM PARQUET_SCAN('data/lakehouse/laps/**/*.parquet')",
+])
+def test_guard_rejects_scope_escapes(lh, escape):
+    """Each of these once read future laps or other sessions through the old
+    CTE shadowing (audit, HANDOFF_REPORT 7.1)."""
+    with pytest.raises(UnsafeSQLError):
+        lh.safe_query(escape, as_of=lh.decision_point(9165, 44, 44))
+
+
+def test_scoped_database_holds_only_the_past_even_without_the_guard(lh, tmp_path):
+    """Defence in depth: SQL that reaches the scoped database unguarded still
+    sees only this session before the decision instant, and cannot read files,
+    attach databases, see Python objects or unlock the configuration."""
+    import duckdb
+    import pyarrow as pa
+
+    at = lh.decision_point(9165, 44, 44)
+    cur = lh.scoped_connection(at).cursor()
+    q = lambda sql: cur.execute(sql).fetchall()  # noqa: E731
+    assert q("SELECT max(lap_number) FROM memory.main.laps") == [(43,)]
+    assert q("SELECT count(DISTINCT session_key), max(ts_ms) <= %d FROM main.telemetry" % at.ts_ms) == [(1, True)]
+    assert q("SELECT count(*) FROM main.triggers WHERE ts_ms > %d" % at.ts_ms) == [(0,)]
+    assert sorted(r[0] for r in q("SELECT table_name FROM duckdb_tables()")) == ["laps", "telemetry", "triggers"]
+    leak = pa.table({"x": [1]})  # noqa: F841 - must stay invisible to SQL
+    (tmp_path / "x.csv").write_text("a\n1\n")
+    for escape in [
+        f"SELECT count(*) FROM parquet_scan('{lh.root}/laps/**/*.parquet')",
+        f"SELECT count(*) FROM read_csv('{tmp_path}/x.csv')",
+        f"ATTACH '{tmp_path}/x.db'",
+        "SELECT * FROM leak",
+        "SET enable_external_access = true",
+        "SET python_enable_replacements = true",
+    ]:
+        with pytest.raises(duckdb.Error):
+            q(escape)
+    assert lh.scoped_connection(at) is lh.scoped_connection(at)  # reused for the agent's retry
+
+
 def test_stint_summary_and_leaderboard(lh):
     stints = lh.stint_summary(9165, 55).records()
     assert [s["compound"] for s in stints] == ["MEDIUM", "HARD"]  # Sainz: one stop, lap 20

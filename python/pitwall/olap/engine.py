@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 import threading
 import time
+from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -70,6 +71,11 @@ _FORBIDDEN = re.compile(
 )
 
 
+# Model SQL names only the three views. A schema-qualified name ("main.laps",
+# "memory.main.laps") would reach past a scope, so it is rejected outright.
+_QUALIFIED = re.compile(r"\b(main|memory|temp|system|information_schema|pg_catalog)\s*\.", re.IGNORECASE)
+
+
 class UnsafeSQLError(ValueError):
     """Raised when model-generated SQL is not a single read-only SELECT."""
 
@@ -89,8 +95,11 @@ def guard_sql(sql: str, max_rows: int = 200) -> str:
     m = _FORBIDDEN.search(stripped)
     if m:
         raise UnsafeSQLError(f"forbidden keyword: {m.group(0)}")
-    if "read_parquet" in stripped.lower():
+    if re.search(r"\b(read_parquet|parquet_scan|parquet_metadata|parquet_schema)\b", stripped, re.IGNORECASE):
         raise UnsafeSQLError("query the laps / telemetry / triggers views, not files")
+    m = _QUALIFIED.search(stripped)
+    if m:
+        raise UnsafeSQLError(f"schema-qualified names are not allowed: {m.group(0)}")
     if not re.search(r"\blimit\s+\d+\s*$", s, re.IGNORECASE):
         s = f"SELECT * FROM ({s}) AS q LIMIT {max_rows}"
     return s
@@ -115,6 +124,8 @@ class Lakehouse:
         if threads:
             self._con.execute(f"SET threads = {int(threads)}")
         self._lock = threading.Lock()
+        self._scoped: OrderedDict[AsOf, duckdb.DuckDBPyConnection] = OrderedDict()
+        self._scoped_lock = threading.Lock()
         self.refresh_views()
 
     def refresh_views(self) -> None:
@@ -148,13 +159,60 @@ class Lakehouse:
         return QueryResult(cols, rows, (time.perf_counter() - t0) * 1000)
 
     def safe_query(self, sql: str, max_rows: int = 200, as_of: "AsOf | None" = None) -> QueryResult:
-        """Run model-written SQL. With ``as_of`` the laps / telemetry / triggers
-        names are shadowed by CTEs restricted to one session and to data that
-        existed at the decision instant, so the query cannot see the future."""
+        """Run model-written SQL after ``guard_sql``.
+
+        With ``as_of`` the query runs in a separate in-memory DuckDB database
+        that holds only this session's rows from before the decision instant
+        (``scoped_connection``), with file access disabled and the
+        configuration locked, so nothing outside the scope exists to be read.
+        Without ``as_of`` it reads the whole lakehouse (tests and tools only)."""
         q = guard_sql(sql, max_rows)
-        if as_of is not None:
-            q = as_of.wrap(q)
-        return self.query(q)
+        if as_of is None:
+            return self.query(q)
+        t0 = time.perf_counter()
+        cur = self.scoped_connection(as_of).cursor()
+        try:
+            rel = cur.execute(q)
+            rows = rel.fetchall()
+            cols = [d[0] for d in rel.description] if rel.description else []
+        finally:
+            cur.close()
+        return QueryResult(cols, rows, (time.perf_counter() - t0) * 1000)
+
+    def scoped_connection(self, at: "AsOf", keep: int = 4) -> duckdb.DuckDBPyConnection:
+        """An isolated database for one decision instant: ``laps`` (laps
+        completed before the decision lap), ``telemetry`` and ``triggers`` (up
+        to the instant), all for this session only. The full views are not in
+        its catalog, and external access (files, ATTACH, extensions, Python
+        replacement scans) is disabled and locked before any model SQL runs.
+        Kept for the last few instants: the agent retries a failed query."""
+        with self._scoped_lock:
+            if at in self._scoped:
+                self._scoped.move_to_end(at)
+                return self._scoped[at]
+        scopes = {
+            "laps": ("SELECT * FROM laps WHERE session_key = ? AND lap_number < ?", [at.session, at.lap]),
+            "telemetry": ("SELECT * FROM telemetry WHERE session_key = ? AND ts_ms <= ?", [at.session, at.ts_ms]),
+            "triggers": ("SELECT * FROM triggers WHERE session_key = ? AND ts_ms <= ?", [at.session, at.ts_ms]),
+        }
+        iso = duckdb.connect(database=":memory:")
+        iso.execute("SET python_enable_replacements = false")
+        src = self._con.cursor()
+        try:
+            for name, (sql, params) in scopes.items():
+                rows = src.execute(sql, params).to_arrow_table()
+                iso.register("_scope_src", rows)
+                iso.execute(f"CREATE TABLE {name} AS SELECT * FROM _scope_src")
+                iso.unregister("_scope_src")
+        finally:
+            src.close()
+        iso.execute("SET enable_external_access = false")
+        iso.execute("SET lock_configuration = true")
+        with self._scoped_lock:
+            self._scoped[at] = iso
+            while len(self._scoped) > keep:
+                self._scoped.popitem(last=False)[1].close()
+        return iso
 
     # ------------------------------------------------------------ analytics
     def sessions(self) -> list[int]:
@@ -298,12 +356,3 @@ class AsOf:
     session: int
     ts_ms: int
     lap: int
-
-    def wrap(self, sql: str) -> str:
-        ctes = (f"laps AS (SELECT * FROM main.laps WHERE session_key = {int(self.session)} AND lap_number < {int(self.lap)}), "
-                f"telemetry AS (SELECT * FROM main.telemetry WHERE session_key = {int(self.session)} AND ts_ms <= {int(self.ts_ms)}), "
-                f"triggers AS (SELECT * FROM main.triggers WHERE session_key = {int(self.session)} AND ts_ms <= {int(self.ts_ms)})")
-        m = re.match(r"^\s*with\s+(recursive\s+)?", sql, re.IGNORECASE)
-        if m:
-            return f"WITH {m.group(1) or ''}{ctes}, " + sql[m.end():]
-        return f"WITH {ctes} {sql}"

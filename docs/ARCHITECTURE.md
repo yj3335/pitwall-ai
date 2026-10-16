@@ -183,10 +183,20 @@ re-expanded on every query, so nothing is imported or copied. For a decision:
 - `decision_state` reads the car's state at that instant from `telemetry`, and its
   degradation, recent pace and compound history from laps completed before it.
 - `field_at` reads every other running car at the same instant.
-- `safe_query(sql, as_of=...)` runs model-written SQL after `guard_sql` (one
-  `SELECT`/`WITH`, no DDL/DML/`COPY`/`ATTACH`/`PRAGMA`, no file readers, forced
-  `LIMIT`). It shadows `laps`, `telemetry` and `triggers` with CTEs restricted to the
-  session and the decision instant, so a query cannot read the future even if it tries.
+- `safe_query(sql, as_of=...)` runs model-written SQL in two layers:
+  1. `guard_sql` allows one `SELECT`/`WITH`. It rejects DDL/DML, `COPY`, `ATTACH`,
+     `PRAGMA`, `SET`, file readers (`read_*`, `parquet_scan`, `glob`) and
+     schema-qualified names (`main.`, `memory.`), and it forces a `LIMIT`.
+  2. The query runs in a separate in-memory DuckDB database (`scoped_connection`).
+     That database holds only three tables, copied for this session and this
+     instant: `laps` completed before the decision lap, and `telemetry` and
+     `triggers` up to the instant. The full views are not in its catalog. External
+     access (files, `ATTACH`, extensions, Python replacement scans) is disabled, and
+     the configuration is locked before any model SQL runs. A query that passes the
+     guard therefore has nothing outside the scope to read
+     (`test_scoped_database_holds_only_the_past_even_without_the_guard`). The
+     scoped database is cached for each instant (about 60 ms to build for a full
+     race).
 
 **Measured pit loss.** `scripts/measure-pit-loss.py` estimates each race's green-flag
 pit loss field-relative: the stopping car's gap change across its in-lap and out-lap,

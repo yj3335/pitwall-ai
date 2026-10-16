@@ -5,6 +5,20 @@ actually hit while building and verifying the system, with how it was found.
 
 ## Unreleased
 
+### Fixed in the handoff audit
+- **Model SQL could read the future.** The point-in-time scope shadowed `laps`,
+  `telemetry` and `triggers` with CTEs over the full views. A schema-qualified name
+  went around the CTE:
+  - `SELECT max(lap_number) FROM main.laps` returned lap 61 at a lap-44 decision;
+  - `memory.main.laps` did the same;
+  - `parquet_scan()` was missing from the blocklist and read the files directly.
+
+  No recorded model query did this, but the docs claimed it was impossible. Found by
+  probing the guard while writing the handoff report. Model SQL now runs in an
+  isolated DuckDB database that holds only the scoped rows, with external access
+  disabled and the configuration locked. The guard also rejects schema-qualified
+  names and every Parquet reader. Tests try each escape against both layers.
+
 ### Changed after the first full benchmark
 - **The simulator's tyre cliff is quadratic and earlier.** It was linear, with the soft
   at 20 laps and +350 ms/lap per lap. Under that model the agent's GP11 and GP12 calls
