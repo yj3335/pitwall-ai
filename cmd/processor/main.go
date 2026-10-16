@@ -16,7 +16,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"time"
 
@@ -53,13 +52,12 @@ func main() {
 	if err := kafka.EnsureTopics(ctx, bl); err != nil {
 		log.Fatalf("topics: %v", err)
 	}
-	var prod *kgo.Client
+	prod, err := kafka.NewProducer(bl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer prod.Close()
 	if *publish {
-		var err error
-		if prod, err = kafka.NewProducer(bl); err != nil {
-			log.Fatal(err)
-		}
-		defer prod.Close()
 		cfg.TriggerSink = func(t stream.Trigger) {
 			b, _ := json.Marshal(t)
 			prod.Produce(ctx, &kgo.Record{Topic: kafka.TopicTriggers, Key: kafka.DriverKey(t.DriverNumber), Value: b}, nil)
@@ -72,7 +70,11 @@ func main() {
 		log.Fatal(err)
 	}
 	if *httpAddr != "" {
-		go serveHTTP(*httpAddr, p)
+		publishRC := func(ctx context.Context, m stream.RaceControlMsg) error {
+			b, _ := json.Marshal(m)
+			return prod.ProduceSync(ctx, &kgo.Record{Topic: kafka.TopicRaceControl, Value: b}).FirstErr()
+		}
+		go serveHTTP(*httpAddr, p, publishRC)
 	}
 	go func() {
 		t := time.NewTicker(5 * time.Second)
@@ -117,35 +119,9 @@ func runOffline(cfg pipeline.Config, path string) {
 		s.Events, s.Laps, s.Triggers, s.ParquetFiles, s.ParquetRows, time.Since(start).Round(time.Millisecond))
 }
 
-func serveHTTP(addr string, p *pipeline.Pipeline) {
-	mux := http.NewServeMux()
-	writeJSON := func(w http.ResponseWriter, v any) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		_ = json.NewEncoder(w).Encode(v)
-	}
-	mux.HandleFunc("GET /v1/tower", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, map[string]any{"drivers": p.Board.All(), "stats": p.Stats()})
-	})
-	mux.HandleFunc("GET /v1/driver/{n}", func(w http.ResponseWriter, r *http.Request) {
-		n, _ := strconv.Atoi(r.PathValue("n"))
-		s := p.Board.Driver(int32(n))
-		if s == nil {
-			http.Error(w, "unknown driver", http.StatusNotFound)
-			return
-		}
-		writeJSON(w, s)
-	})
-	mux.HandleFunc("GET /v1/triggers", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, p.RecentTriggers(100))
-	})
-	mux.HandleFunc("GET /v1/race-control", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, p.RecentRaceControl(50))
-	})
-	mux.HandleFunc("GET /v1/stats", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, p.Stats()) })
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
+func serveHTTP(addr string, p *pipeline.Pipeline, publish publishFunc) {
 	log.Printf("live state on http://%s/v1/tower", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, newHandler(p, publish)); err != nil {
 		log.Printf("http: %v", err)
 	}
 }

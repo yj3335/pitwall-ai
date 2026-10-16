@@ -12,6 +12,7 @@ guardrail decides whether the conditional back-edge fires.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import operator
 import time
@@ -202,7 +203,9 @@ async def fia_regulation_rag_node(state: PitWallState, config) -> dict:
                                                session_key=ctx.get("session_key"), lap=ctx.get("lap"))
         seen = set()
         for q in _rag_queries(s, c):
-            res = deps.retriever.search(q, mode="hybrid_rerank", k=3, qfilter=qfilter)
+            # the Qdrant client, embedding call and cross-encoder are blocking:
+            # keep them off the event loop so SSE streams stay live
+            res = await asyncio.to_thread(deps.retriever.search, q, mode="hybrid_rerank", k=3, qfilter=qfilter)
             timings.append(round(res.total_ms, 1))
             for h in res.hits:
                 if h.id in seen:
@@ -368,17 +371,10 @@ async def verifier_node(state: PitWallState, config) -> dict:
     s = state["scenario"]["state"]
     c = _constraints(s)
     p = state["proposal"]
-    pit_lap, comp = rules.plan_of(p, c)
-    traffic = None
-    if pit_lap and s.get("field") and c.track_status != "RED":
-        try:
-            traffic = await deps.mcp.call_tool("validate_physics_and_traffic", {
-                "current_lap": c.current_lap, "pit_lap": pit_lap, "penalty_s": c.penalty_s, "new_compound": comp,
-                "pit_loss_s": pit_loss_for_lap(s, pit_lap),
-                "car": {k: v for k, v in s["car"].items() if v is not None}, "field": s["field"]})
-        except MCPError:
-            traffic = None
-    hard = rules.check(p, c, traffic)
+    traffic = await _traffic_for(deps, s, c, p)
+    found = rules.check(p, c, traffic)
+    hard = [v for v in found if v.severity == "hard"]
+    soft = [v for v in found if v.severity != "hard"]
     critic: dict = {"ok": True, "issues": [], "model": None}
     if deps.use_critic:
         msg = (f"CONSTRAINTS\n" + "\n".join(c.describe()) + f"\nTRAFFIC: {traffic['verdict'] if traffic else 'n/a'}"
@@ -396,14 +392,18 @@ async def verifier_node(state: PitWallState, config) -> dict:
     cycle = state.get("reflection_count", 0)
     revise = bool(hard) and cycle < MAX_REFLECTIONS
     fb = rules.feedback(hard)
+    if soft:
+        fb += ("\n" if fb else "") + "Advisory: " + rules.feedback(soft)
     if critic["issues"] and not critic["ok"]:
         fb += ("\n" if fb else "") + "Reviewer notes (advisory): " + "; ".join(critic["issues"])
-    verdict = {"ok": not hard, "violations": [v.as_dict() for v in hard], "critic": critic, "feedback": fb,
+    verdict = {"ok": not hard, "violations": [v.as_dict() for v in hard], "advisories": [v.as_dict() for v in soft],
+               "critic": critic, "feedback": fb,
                "traffic": traffic.get("verdict") if traffic else None, "revise": revise}
     update: dict[str, Any] = {"verdict": verdict}
     if revise:
         update["reflection_count"] = cycle + 1
     summary = ("PASS" if not hard else f"{len(hard)} violation(s): " + ", ".join(v.code for v in hard)) + \
+              (f" (advisory: {', '.join(v.code for v in soft)})" if soft else "") + \
               (f"; critic ({critic.get('model')}): {'ok' if critic['ok'] else '; '.join(critic['issues'])}" if critic.get("model") else "")
     update["trace"] = _event(deps, "verifier", t0, summary + (" -> REVISE" if revise else ""), violations=verdict["violations"],
                              critic=critic, cycle=cycle)
@@ -414,28 +414,58 @@ def route_after_verifier(state: PitWallState) -> str:
     return "strategy_synthesizer" if state.get("verdict", {}).get("revise") else "finalize"
 
 
+async def _traffic_for(deps: AgentDeps, s: dict, c: rules.Constraints, proposal: dict) -> dict | None:
+    """Rejoin traffic for a proposal's stop (none for no stop or a red-flag change)."""
+    pit_lap, comp = rules.plan_of(proposal, c)
+    if not pit_lap or not s.get("field") or c.track_status == "RED":
+        return None
+    try:
+        return await deps.mcp.call_tool("validate_physics_and_traffic", {
+            "current_lap": c.current_lap, "pit_lap": pit_lap, "penalty_s": c.penalty_s, "new_compound": comp,
+            "pit_loss_s": pit_loss_for_lap(s, pit_lap),
+            "car": {k: v for k, v in s["car"].items() if v is not None}, "field": s["field"]})
+    except MCPError:
+        return None
+
+
 async def finalize_node(state: PitWallState, config) -> dict:
     deps, t0 = _deps(config), time.perf_counter()
     s = state["scenario"]["state"]
+    c = _constraints(s)
     p = dict(state["proposal"])
     verdict = state.get("verdict", {})
-    override = False
+    override, unresolved = False, []
     if not verdict.get("ok", True):
-        # still illegal after the reflection budget: fall back to the simulator's best legal plan
+        # Still violating after the reflection budget: take the best simulator
+        # plan (by expected race time) that passes every hard check. If none
+        # does, keep the proposal and report the violations as unresolved.
         sim = state.get("simulation", {})
-        best = next((o for o in sim.get("table", []) if o["strategy"] == sim.get("recommended")), None)
-        if best:
-            c = _constraints(s)
-            p.update(recommended_action=best["strategy"], target_compound=best["compound"] if best["pit_lap"] else "NONE",
-                     pit_lap=best["pit_lap"], penalty_hold_s=c.penalty_s if best["pit_lap"] else 0.0,
-                     rationale=(p.get("rationale", "") + " [guardrail override: simulator best legal plan]").strip())
-            override = True
+        candidates = sorted((o for o in sim.get("table", []) if o["legal"]), key=lambda o: o["expected_delta_s"])
+        chosen = None
+        for o in candidates:
+            cand = {**p, "recommended_action": o["strategy"], "target_compound": o["compound"] if o["pit_lap"] else "NONE",
+                    "pit_lap": o["pit_lap"], "penalty_hold_s": c.penalty_s if o["pit_lap"] else 0.0}
+            hard = [v for v in rules.check(cand, c, await _traffic_for(deps, s, c, cand)) if v.severity == "hard"]
+            if not hard:
+                chosen = cand
+                break
+        if chosen is not None:
+            changed = (chosen["recommended_action"], chosen["pit_lap"], chosen["target_compound"]) != \
+                      (p.get("recommended_action"), p.get("pit_lap"), p.get("target_compound"))
+            p = chosen
+            if changed:
+                override = True
+                p["rationale"] = (p.get("rationale", "") + " [guardrail override: best simulator plan that passes every check]").strip()
+        else:
+            unresolved = verdict.get("violations", [])
     final = {k: v for k, v in p.items() if not k.startswith("_")}
     final["guardrail_override"] = override
+    final["unresolved_violations"] = unresolved
     final["reflections"] = state.get("reflection_count", 0)
+    tail = " (guardrail override)" if override else (f" (unresolved: {', '.join(v['code'] for v in unresolved)})" if unresolved else "")
     return {"final": final, "trace": _event(deps, "finalize", t0,
-                                            f"{final['recommended_action']} {final['target_compound']} lap {final['pit_lap']}"
-                                            + (" (guardrail override)" if override else ""), final=final)}
+                                            f"{final['recommended_action']} {final['target_compound']} lap {final['pit_lap']}" + tail,
+                                            final=final)}
 
 
 def build_graph(checkpointer=None):

@@ -6,7 +6,7 @@ SESSION ?= 9558
 MODELS := qwen2.5-coder:14b llama3.2:3b bge-m3
 
 .PHONY: venv ollama-pull services-up services-down status build data lakehouse index \
-        run mcp-sim api processor replay web-dev test test-go test-py test-web bench smoke clean
+        run stop mcp-sim api processor replay web-dev test test-go test-py test-web bench smoke clean
 
 ## toolchain ---------------------------------------------------------------
 venv:
@@ -24,7 +24,7 @@ services-down:
 	bash scripts/services.sh down
 
 status:
-	bash scripts/services.sh status
+	bash scripts/run-stack.sh status
 
 build:
 	$(ENV) mkdir -p bin && go build -o bin/ ./cmd/...
@@ -55,8 +55,11 @@ replay: build
 api:
 	$(ENV) cd python && $(PY) -m uvicorn pitwall.api.app:app --host 0.0.0.0 --port 8080
 
-run: build services-up
-	bash scripts/run-stack.sh
+run:
+	bash scripts/run-stack.sh up
+
+stop:
+	bash scripts/run-stack.sh down
 
 web-dev:
 	$(ENV) cd web && npm run dev

@@ -82,10 +82,15 @@ down() {
   for svc in kafka qdrant; do
     if [ -f "$RUN/$svc.pid" ]; then
       pid="$(cat "$RUN/$svc.pid")"
-      kill "$pid" 2>/dev/null && echo "stopped $svc ($pid)" || true
+      kill "$pid" 2>/dev/null && echo "stopping $svc ($pid)" || true
       rm -f "$RUN/$svc.pid"
     fi
   done
+  # Kafka shuts down gracefully (controlled shutdown, log flush): wait for the ports to close
+  for port in "$KAFKA_PORT" "$QDRANT_PORT"; do
+    for _ in $(seq 1 60); do port_open "$port" || break; sleep 0.5; done
+  done
+  echo "services stopped"
 }
 
 status() {

@@ -9,6 +9,7 @@ It has four layers, each with a single job:
 | Simulation | Go, exposed over MCP | answer "what happens if we pit now / later / on what tyre" with Monte Carlo |
 | Knowledge | Python: DuckDB, Qdrant | analytical SQL over the lakehouse, retrieval over the FIA regulations |
 | Decision | Python: LangGraph + Ollama | combine the above into a legal, verified strategy call |
+| Control plane | Python: FastAPI (:8080) | stream runs over SSE, proxy live timing, turn race-control messages into runs |
 
 ```mermaid
 flowchart LR
@@ -222,6 +223,50 @@ primary calls fail.
 
 **Baseline.** `run_single_pass` gives the same situation text to qwen2.5-coder:14b once,
 with no retrieval, simulator or verifier. Both are scored by the same rule checker.
+
+## 5. Control plane (FastAPI, :8080)
+
+`pitwall.api.app` exposes the system to the dashboard and to scripts.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/status` | reachability of MCP, Qdrant, Ollama and the processor; lakehouse sessions; active runs |
+| `GET /api/scenarios`, `GET /api/scenarios/{id}` | the 20 scenarios; one materialised at its decision instant (state, edition, ground truth) |
+| `POST /api/strategy/runs` | start an agent or single-pass run (scenario id or custom inline state; optional fault rate) |
+| `GET /api/strategy/runs/{id}/events` | **SSE**: `queued`, `started`, one `node` event per graph step, `final`, `done` |
+| `GET /api/strategy/runs/{id}` / `.../checkpoints` | full result and trace; the `MemorySaver` checkpoint history of the run |
+| `POST /api/strategy` | synchronous convenience: start a run and wait for its result |
+| `GET /api/live/tower`, `GET /api/live/stream` | live timing from the processor; **SSE** of tower snapshots plus de-duplicated triggers and race-control messages |
+| `POST /api/race-control/parse` | FIA message to a structured event (SC/VSC/red flag/pit entry/time penalty) |
+| `POST /api/race-control/trigger` | parse, publish to `f1.race_control` through the processor, and start a run for the affected car |
+
+**Run log and SSE.** Each run appends events to an ordered, append-only log. An SSE
+subscriber replays the log from any offset (`Last-Event-ID`) and then waits for new
+events, so late or reconnecting clients miss nothing; a heartbeat comment is sent
+every 15 s. Runs share one compiled graph and its checkpointer. A semaphore runs them
+one at a time, because a local Ollama serves one 14B request at a time. Each run gets
+its own `FailoverLLM`, so fault injection and statistics are per run. Blocking calls
+(Qdrant, embedding, cross-encoder) run in worker threads so streams stay live.
+
+**Live triggers.** `POST /api/race-control/trigger` parses the message using patterns
+taken from real OpenF1 race-control text. The processor publishes it to Kafka
+synchronously (`POST /v1/race-control`, so a 202 means the broker acknowledged it) and
+consumes it back like any FIA message. For the affected car (the penalised car, or the
+car named in the request), a live scenario is built from the processor's tower:
+- the car's latest snapshot is the decision instant;
+- the field is taken from the same tower snapshot;
+- the regulations and measured pit loss are those of the race being streamed;
+- the message is applied on top (SC/VSC/RED status, pit entry, time penalty).
+
+The run then streams like any other.
+
+**Verifier severities.** A DRS-train rejoin is a time cost, not a rule. Under green flag
+a clear-air lap is a like-for-like alternative, so the verifier enforces it. Under
+SC/VSC, deferring the stop forfeits the cheaper neutralised stop, so it is advisory:
+the Monte Carlo already prices rejoin traffic and track position. If a call still
+violates a hard check after two revisions, `finalize` takes the best simulator plan
+that passes every hard check, and otherwise reports the violations as unresolved. It
+never claims an override that changed nothing.
 
 ## Scenarios
 

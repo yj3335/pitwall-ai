@@ -45,6 +45,38 @@ actually hit while building and verifying the system, with how it was found.
   qwen2.5-coder:14b -> llama3.2:3b failover with a circuit breaker and seeded
   fault injection, async MCP client, single-pass baseline, and 20 scenarios.
 
+### Added in milestone 8 (control plane)
+- FastAPI control plane on :8080: scenarios, strategy runs streamed over Server-Sent
+  Events (ordered event log with `Last-Event-ID` resume and heartbeats), checkpoint
+  history, synchronous runs, live tower and an SSE live feed, and race-control parse and
+  trigger endpoints.
+- Race-control trigger path: message, structured event, synchronous publish to
+  `f1.race_control` through the processor's new `POST /v1/race-control`, then a run on
+  the live, point-in-time state of the affected car.
+- `make run` / `make stop` / `make status` (`scripts/run-stack.sh`).
+
+### Fixed in milestone 8
+- **The verifier vetoed the Monte Carlo under a VSC.** A live trigger run showed the
+  deterministic DRS-train check hard-blocking a VSC stop three times, against a
+  simulator that already prices rejoin traffic and track position. Deferring a stop
+  under SC/VSC also gives up the cheaper neutralised stop. The traffic check is now
+  enforced under green flag only and advisory under SC/VSC.
+- **`finalize` claimed an override that changed nothing.** After the reflection budget
+  it "overrode" a call with the simulator's best plan, which was the same plan. It now
+  takes the best simulator plan that passes every hard check, or reports the
+  violations as unresolved.
+- **Blocking retrieval on the event loop.** The Qdrant client, embedding call and
+  cross-encoder ran inside the async graph node and would freeze every SSE stream
+  during retrieval. They now run in a worker thread.
+- **Request bodies were treated as query parameters.** With `from __future__ import
+  annotations`, Pydantic models declared inside the app factory could not be resolved
+  by FastAPI. They are now module-level.
+- **SSE tests passed while testing nothing streaming.** `httpx.ASGITransport` buffers
+  the whole response, so the endless live feed hung the suite and the run-stream
+  assertions saw a buffered body. The tests now run the app on a real uvicorn socket.
+- **`make stop` reported success while Kafka was still running.** It now waits for the
+  ports to close.
+
 ### Fixed during the first build
 - **Kafka 4.4 refused to format KRaft storage.** `kafka-storage.sh format --standalone`
   rejects a static `controller.quorum.voters`; switched to

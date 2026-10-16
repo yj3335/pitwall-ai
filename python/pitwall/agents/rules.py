@@ -109,7 +109,8 @@ def plan_of(proposal: dict, c: Constraints) -> tuple[int, str]:
 
 
 def check(proposal: dict, c: Constraints, traffic: dict | None = None) -> list[Violation]:
-    """All hard violations of a proposal. Empty list means compliant."""
+    """All violations of a proposal (``severity`` "hard" must be fixed, "soft"
+    is advisory). Without ``traffic`` only regulation and physics checks run."""
     v: list[Violation] = []
     action = (proposal.get("recommended_action") or "").upper()
     if action not in ACTIONS:
@@ -148,8 +149,13 @@ def check(proposal: dict, c: Constraints, traffic: dict | None = None) -> list[V
     if canonical(c.compound) in DRY and c.track_wetness >= 0.35 and (not stops or pit_lap > c.current_lap + 1):
         v.append(Violation("SLICKS_ON_WET", f"staying out on {c.compound} slicks with track wetness {c.track_wetness:.2f}"))
     if traffic and stops and traffic.get("in_drs_train") and traffic.get("suggested_clear_air_pit_laps"):
+        # A train is a time cost, not a rule: under green flag a clear-air lap is a
+        # like-for-like alternative, so it is enforced. Under SC/VSC deferring the
+        # stop forfeits the neutralised pit loss, so it is advisory only (the Monte
+        # Carlo already prices rejoin traffic and track position).
+        neutral = c.track_status in ("SC", "VSC") and pit_lap == c.current_lap
         v.append(Violation("DRS_TRAIN", f"pitting on lap {pit_lap} rejoins in a DRS train ({', '.join(traffic.get('drs_train', []))}); "
-                           f"clear-air laps: {traffic['suggested_clear_air_pit_laps']}", severity="hard"))
+                           f"clear-air laps: {traffic['suggested_clear_air_pit_laps']}", severity="soft" if neutral else "hard"))
     return v
 
 

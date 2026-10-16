@@ -11,7 +11,7 @@ is down (`requires_ollama`, `requires_qdrant`, a Kafka dial check). Nothing is m
 except where a test needs a scripted LLM to force a specific code path (the agent's
 cyclic-loop tests), and those still call the real Go MCP server.
 
-## Go (`go test -race ./...`): 33 tests in 6 packages, 0 data races
+## Go (`go test -race ./...`): 35 tests in 7 packages, 0 data races
 
 | Package | What is verified |
 |---|---|
@@ -21,8 +21,9 @@ cyclic-loop tests), and those still call the real Go MCP server.
 | `internal/sim` | Determinism for a fixed seed; 10k rollouts per strategy; two-compound legality (including the intermediate waiver); a 5 s hold costs about 5 s; a VSC stop saves pit time; a closed pit entry is never recommended; 8 concurrent simulations; exact 2-lap undercut arithmetic and the penalty's effect on it; DRS-train detection; **overtaking difficulty flips a Singapore-style VSC call from pit to stay out**; **a rival's observed degradation changes the projection**; **rivals switch to intermediates when it rains**; latency budget (10k rollouts < 15 ms, measured about 1 ms) |
 | `internal/mcp` | Lifecycle, `tools/list` schemas, ID echo, parse / invalid-request / method-not-found codes, tool errors as `isError` results, batches with notifications; **8 concurrent HTTP clients**; the legacy SSE round trip; stdio; `get_live_driver_window` from a Board fed with the real 2024 British GP stream, with a sub-millisecond lookup |
 | `internal/metrics` | Histogram quantiles within bucket error; concurrent recording; bucket monotonicity |
+| `cmd/processor` | `POST /v1/race-control`: publishes with the streaming session and a timestamp filled in; 400 on empty or invalid bodies; 502 when the broker rejects; 503 when publishing is disabled |
 
-## Python (`pytest`): 52 tests
+## Python (`pytest`): 69 tests
 
 | File | What is verified |
 |---|---|
@@ -30,6 +31,7 @@ cyclic-loop tests), and those still call the real Go MCP server.
 | `test_rag.py` (8) | Citation-preserving tokenizer; BM25 saturation. The corpus holds exactly the four editions in force, with no 2026. **Struck-through redline text is not indexed** (including the deleted 2025 58.12 sentence). Context documents are dated. **On live Qdrant + bge-m3:** exact citation via sparse; semantic match via dense; hybrid RRF + rerank; the **edition filter, and the point-in-time filter for the Singapore 2023 lap-44 decision** (no later edition, nothing dated on or after the race day, no notice from lap 44 on) |
 | `test_regulations.py` (14) | The edition in force on each race date (2026 deliberately unresolvable). **Article references follow the edition** (30.5(n) in 2023; 55.11 to 55.12 at 2024 Issue 7). Every clause resolves in every edition. |
 | `test_scenarios.py` (5) | Race lengths come from the chequered flag (Singapore 62, not 63). **Ground-truth integrity:** every `forbidden` call is illegal and every `acceptable` call legal under the rule checker. **Real scenarios use decision-time state** (position, status, compound, compounds used, edition). Measured pit loss is used only with at least 3 stops. **Real-scenario question text agrees with the data.** |
+| `test_api.py` (17) | The app is served by a real uvicorn server on a socket (`httpx.ASGITransport` buffers whole responses and would hide SSE behaviour). **Race-control parser** on hand-picked and all real OpenF1 messages ("CHEQUERED FLAG" is not a red flag). **Live scenarios are point-in-time** (edition, decision instant, measured pit loss; penalties applied to a copy). Scenario endpoints. **A run's cyclic trace streams over SSE**: ordered gap-free event ids, node order with the self-correction cycle, `Last-Event-ID` resume, result and checkpoint history. A late subscriber sees the run to completion. Custom and single-pass synchronous runs. Request validation. **A trigger publishes and starts a run** for the penalised car with the hold applied. The live stream de-duplicates triggers and race control. **Kafka round trip:** a real processor consumes a replayed race and reads back a published race-control message. |
 | `test_agent.py` (8) | Rule guardrail (two compounds, penalty hold, pit entry, wet/dry physics). **Cyclic self-correction:** an illegal MEDIUM to MEDIUM call is caught, revised once and finalised legal, with the trace order and `MemorySaver` history checked. The reflection budget and guardrail override on a closed pit entry. Penalty-hold enforcement. Failover with a 100% injected fault rate, and the circuit breaker opening after 2 failures. The HTTP MCP client. **End to end on real qwen2.5-coder:14b, llama3.2:3b, bge-m3/Qdrant and the Go MCP server.** |
 
 ## Checks done during the pre-milestone-8 audit

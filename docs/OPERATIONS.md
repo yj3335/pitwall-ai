@@ -39,6 +39,39 @@ make services-down
   (`keep_alive`). qwen2.5-coder:14b (9 GB), llama3.2:3b (2 GB) and bge-m3 (1.2 GB)
   fit together in 24 GB alongside Kafka and Qdrant.
 
+## Running the stack
+
+```bash
+make run      # Kafka + Qdrant, Go MCP simulator (:8081), Go processor (:8090), FastAPI (:8080)
+make status   # every component up or down
+make stop     # stops them and waits for the ports to close (Kafka shuts down gracefully)
+```
+
+Ollama must already be running (`ollama serve`). Logs and pids are in `.run/`.
+
+```bash
+make replay SESSION=9165                                    # stream Singapore 2023 into Kafka at 20x
+curl -s localhost:8080/api/status | jq
+curl -s localhost:8080/api/live/tower | jq '.drivers[:3]'
+
+# a strategy run, streamed over SSE
+RUN=$(curl -s -X POST localhost:8080/api/strategy/runs -H 'content-type: application/json' \
+      -d '{"scenario_id":"GP02"}' | jq -r .run_id)
+curl -N localhost:8080/api/strategy/runs/$RUN/events
+
+# a race-control message: published to Kafka, then a run for the affected car on live state
+curl -s -X POST localhost:8080/api/race-control/trigger -H 'content-type: application/json' \
+     -d '{"message":"VIRTUAL SAFETY CAR DEPLOYED","lap_number":38,"driver_number":44}' | jq
+
+# synchronous, single-pass baseline, with 10% injected primary-model faults
+curl -s -X POST localhost:8080/api/strategy -H 'content-type: application/json' \
+     -d '{"scenario_id":"GP08","mode":"single_pass","fault_rate":0.1}' | jq
+```
+
+For a live trigger, the lap count comes from the race's metadata. Track wetness, which
+OpenF1 does not provide, defaults from the weather-station rain flag unless
+`track_wetness` is given.
+
 ## Data
 
 ```bash
