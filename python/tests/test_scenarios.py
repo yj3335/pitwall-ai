@@ -88,3 +88,19 @@ def test_questions_match_the_data(materialised):
         q = m["question"]
         assert f"P{car['position']}" in q or (car["position"] == 1 and " leads " in q), (sid, car["position"], q)
         assert f"{car['tyre_age_laps']}-lap-old" in q or f"aged {car['tyre_age_laps']}" in q, (sid, q)
+
+
+def test_rivals_carry_their_own_decision_time_wear(materialised):
+    """Rivals in real scenarios get the measured fuel-corrected slope of the set
+    they are on, from laps completed before the decision lap (GP03: Singapore
+    2023, lap 44), instead of the compound default."""
+    from pitwall.olap import Lakehouse
+
+    field = {f["driver_code"]: f for f in materialised["GP03"]["state"]["field"]}
+    expected = dict(Lakehouse().query(
+        """SELECT driver_code, deg_slope_ms_per_lap FROM laps
+           WHERE session_key = 9165 AND lap_number < 44 AND deg_slope_ms_per_lap IS NOT NULL
+           QUALIFY row_number() OVER (PARTITION BY driver_number ORDER BY lap_number DESC) = 1""").rows)
+    for code in ("RUS", "NOR", "HAM", "LEC"):
+        assert field[code]["deg_slope_ms_per_lap"] == pytest.approx(expected[code])
+    assert field["RUS"]["deg_slope_ms_per_lap"] > 100  # Russell's hards were going off behind Sainz

@@ -26,6 +26,17 @@ actually hit while building and verifying the system, with how it was found.
   In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
 
 ### Fixed in the handoff audit
+- **Rivals in the real scenarios had no measured wear.** `field_at` returned
+  position, gap, compound and age but no degradation. So in the offline real
+  scenarios every rival used the compound default (35 ms/lap on hards), while our
+  car used its measured slope. The live path already passed rival slopes. In GP03,
+  Sainz carried 88.6 ms/lap against rivals assumed at 35, although Russell and
+  Norris were measured at 150 and 119. Rivals now carry the slope of their current
+  set from laps before the decision lap, with the same sanity range as our car.
+  With this and the defence fix, staying out in GP03 is projected at P2.36 instead
+  of P5. The simulator still prefers stopping, because it does not model rivals
+  pitting under the VSC (see ARCHITECTURE, "Known gap"). GP03 is therefore no
+  longer a held-out test of the simulator.
 - **Defending cost nothing to the attacker.** The simulator applied overtaking
   difficulty only when our car attacked. A faster rival behind us finished ahead
   on raw race time, as if passing were free, so on a street circuit staying out in

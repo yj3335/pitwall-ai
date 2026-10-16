@@ -79,8 +79,12 @@ def materialise(scn: dict, lakehouse: Lakehouse | None = None) -> dict[str, Any]
             "compounds_used": d["compounds_used"], "gap_to_leader_ms": d["gap_to_leader_ms"],
             "base_lap_ms": round(max(70_000.0, base)), "penalty_s": 0,
         }
+        # rivals carry their own measured wear, under the same sanity range as
+        # our car and the live path (weather swings are not tyre wear)
         field = [
-            {k: f[k] for k in ("driver_code", "driver_number", "position", "gap_to_leader_ms", "compound", "tyre_age_laps")}
+            {**{k: f[k] for k in ("driver_code", "driver_number", "position", "gap_to_leader_ms", "compound", "tyre_age_laps")},
+             **({"deg_slope_ms_per_lap": f["deg_slope_ms_per_lap"]}
+                if f["deg_slope_ms_per_lap"] is not None and 0 <= f["deg_slope_ms_per_lap"] <= 250 else {})}
             for f in lh.field_at(at, exclude_driver=src["driver_number"]) if f["compound"] != "UNKNOWN"
         ]
         loss = pit_loss_for(src["session_key"])

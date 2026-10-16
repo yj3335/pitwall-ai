@@ -328,15 +328,28 @@ class Lakehouse:
         return {**car, **hist, "deg_slope_ms_per_lap": hist["deg_slope_ms_per_lap"] if same_set else None}
 
     def field_at(self, at: "AsOf", exclude_driver: int | None = None, stale_ms: int = 60_000) -> list[dict[str, Any]]:
-        """Every other running car's latest state at the decision instant."""
+        """Every other running car's latest state at the decision instant, with
+        the fuel-corrected degradation of the set it is on now (from laps
+        completed before the decision lap; NULL when that set has no slope yet),
+        under the same same-set rule as ``decision_state``."""
         return self.query(
             """
-            SELECT driver_number, driver_code, position, gap_to_leader_ms, compound, tyre_age_laps, lap_number, track_status
-            FROM telemetry
-            WHERE session_key = ? AND ts_ms <= ? AND ts_ms > ? AND (? IS NULL OR driver_number <> ?)
-            QUALIFY row_number() OVER (PARTITION BY driver_number ORDER BY ts_ms DESC) = 1
+            WITH cur AS (
+              SELECT driver_number, driver_code, position, gap_to_leader_ms, compound, tyre_age_laps, lap_number, track_status
+              FROM telemetry
+              WHERE session_key = ? AND ts_ms <= ? AND ts_ms > ? AND (? IS NULL OR driver_number <> ?)
+              QUALIFY row_number() OVER (PARTITION BY driver_number ORDER BY ts_ms DESC) = 1
+            ), deg AS (
+              SELECT driver_number, compound, tyre_age_laps, lap_number, deg_slope_ms_per_lap FROM laps
+              WHERE session_key = ? AND lap_number < ? AND deg_slope_ms_per_lap IS NOT NULL
+              QUALIFY row_number() OVER (PARTITION BY driver_number ORDER BY lap_number DESC) = 1
+            )
+            SELECT cur.*, CASE WHEN deg.compound = cur.compound
+                                AND cur.tyre_age_laps - deg.tyre_age_laps = cur.lap_number - deg.lap_number
+                               THEN deg.deg_slope_ms_per_lap END AS deg_slope_ms_per_lap
+            FROM cur LEFT JOIN deg USING (driver_number)
             ORDER BY position
-            """, [at.session, at.ts_ms, at.ts_ms - stale_ms, exclude_driver, exclude_driver]).records()
+            """, [at.session, at.ts_ms, at.ts_ms - stale_ms, exclude_driver, exclude_driver, at.session, at.lap]).records()
 
     def recent_triggers(self, at: "AsOf", driver: int | None = None, limit: int = 20) -> list[dict]:
         return self.query(

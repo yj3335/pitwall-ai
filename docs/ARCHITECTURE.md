@@ -158,7 +158,10 @@ trajectories each by default.
   hold. Real scenarios use the race's measured green-flag loss (section 3); the
   generic defaults are 21.8 s and 13.2 s.
 - **The field:** every rival is projected lap by lap, using its own observed
-  degradation when known. A rival with no declared stop gets one before its tyre
+  degradation when known. Real scenarios supply it from the lakehouse: the slope of
+  the set each rival is on, from laps completed before the decision lap, in the
+  same 0-250 ms/lap range as our car. Wet laps are not clean laps, so in the wet
+  races most rivals keep the compound default. A rival with no declared stop gets one before its tyre
   cliff, and rivals switch to intermediates or slicks when the track crosses the
   wet or dry threshold.
 - **Traffic and track position:** rejoining within 1.2 s behind a slower car costs
@@ -172,6 +175,15 @@ trajectories each by default.
     instead.
 - **Regulation checks:** Art. 30.5 two dry compounds, pit entry closed, and compound
   availability. Illegal plans are reported but never recommended.
+- **Objective:** the recommendation is the legal plan with the lowest mean race
+  time. Expected finishing position is reported next to it. Ranking by position
+  instead (time as the tie-break) changes one of the 24 scenarios, GP03 (soft to
+  medium), and agreement with the ground truth not at all.
+- **Known gap: rivals do not react strategically.** A projected rival stops only
+  when it has a declared stop, before its cliff, or for weather. It never pits
+  because of a VSC. In GP03 (Singapore 2023, lap 44), Russell and Hamilton pitted
+  under that VSC and chased Sainz, who stayed out and won. The simulator still
+  prefers stopping there: about P2.0 expected against P2.36 for staying out.
 
 **Concurrency and determinism.** Rollouts are split into fixed 256-trajectory chunks.
 Workers (`runtime.NumCPU()`) pull chunk indices from an atomic counter, and each chunk
