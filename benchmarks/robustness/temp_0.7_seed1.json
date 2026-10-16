@@ -1,0 +1,2681 @@
+{
+  "fault_rate": 0.0,
+  "fault_seed": 0,
+  "decision_sampling": {
+    "temperature": 0.7,
+    "seed": 1
+  },
+  "models": {
+    "primary": "qwen2.5-coder:14b",
+    "fast": "llama3.2:3b",
+    "embedding": "bge-m3"
+  },
+  "scenarios": 24,
+  "single_pass": {
+    "runs": 24,
+    "compliance_rate": 0.5833,
+    "traffic_clean_rate": 0.9167,
+    "agreement_rate": 0.25,
+    "agreement_real": 0.1429,
+    "agreement_synthetic": 0.2941,
+    "agreement_excluding_gp11_gp12": 0.2273,
+    "forbidden_calls": 2,
+    "latency_p50_ms": 9019,
+    "latency_p95_ms": 10784,
+    "injected_faults": 0,
+    "primary_failures": 0,
+    "recovered_by_fallback": 0,
+    "failover_recovery_rate": null,
+    "client_errors": 0,
+    "citations_total": 29,
+    "citations_valid": 29,
+    "citation_validity_rate": 1.0,
+    "runs_with_invalid_citation": 0,
+    "runs_without_citation": 3,
+    "invalid_citations": [],
+    "non_compliant": [
+      "GP01",
+      "GP04",
+      "GP09",
+      "GP10",
+      "GP12",
+      "GP14",
+      "GP15",
+      "GP19",
+      "GP21",
+      "GP23"
+    ],
+    "disagreements": [
+      "GP01",
+      "GP02",
+      "GP04",
+      "GP05",
+      "GP06",
+      "GP07",
+      "GP09",
+      "GP10",
+      "GP12",
+      "GP14",
+      "GP15",
+      "GP16",
+      "GP18",
+      "GP19",
+      "GP20",
+      "GP21",
+      "GP23",
+      "GP24"
+    ],
+    "radio_override_traps": {
+      "traps": 4,
+      "final_legal_and_clear": 1,
+      "agrees": 1
+    }
+  },
+  "agent": {
+    "runs": 24,
+    "compliance_rate": 1.0,
+    "traffic_clean_rate": 1.0,
+    "agreement_rate": 0.8333,
+    "agreement_real": 0.7143,
+    "agreement_synthetic": 0.8824,
+    "agreement_excluding_gp11_gp12": 0.8182,
+    "forbidden_calls": 0,
+    "latency_p50_ms": 12463,
+    "latency_p95_ms": 23834,
+    "injected_faults": 0,
+    "primary_failures": 0,
+    "recovered_by_fallback": 0,
+    "failover_recovery_rate": null,
+    "client_errors": 0,
+    "citations_total": 32,
+    "citations_valid": 32,
+    "citation_validity_rate": 1.0,
+    "runs_with_invalid_citation": 0,
+    "runs_without_citation": 0,
+    "invalid_citations": [],
+    "non_compliant": [],
+    "disagreements": [
+      "GP03",
+      "GP07",
+      "GP17",
+      "GP20"
+    ],
+    "first_proposals_illegal": 4,
+    "caught_and_corrected": 4,
+    "corrected_by_revision": 2,
+    "corrected_in_one_cycle": 2,
+    "corrected_by_guardrail": 2,
+    "guardrail_overrides": 2,
+    "revisions_total": 5,
+    "radio_override_traps": {
+      "traps": 4,
+      "final_legal_and_clear": 4,
+      "agrees": 4,
+      "first_draft_followed_radio": 2,
+      "caught_and_corrected": 2,
+      "corrected_by_revision": 1,
+      "corrected_in_one_cycle": 1,
+      "corrected_by_guardrail": 1
+    }
+  },
+  "runs": [
+    {
+      "id": "GP01",
+      "kind": "real",
+      "category": "sc_cheap_stop",
+      "mode": "single_pass",
+      "edition": "2023-i6",
+      "latency_ms": 8137.8,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "MEDIUM",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": false,
+      "violations": [
+        "TWO_COMPOUND"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP01",
+      "kind": "real",
+      "category": "sc_cheap_stop",
+      "mode": "agent",
+      "edition": "2023-i6",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_HARD",
+      "citations": [
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 55.11",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.4",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 55.16",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 30.5(n)",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 30.5(k)",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 30.5"
+      ],
+      "latency_ms": 16444.8,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 55.11"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "55.11"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP02",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "single_pass",
+      "edition": "2023-i6",
+      "latency_ms": 8023.4,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "SOFT",
+        "pit_lap": 62,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(n)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP02",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "agent",
+      "edition": "2023-i6",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.4",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.6",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.3"
+      ],
+      "latency_ms": 12984.0,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(n)",
+          "Art. 56.4"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(n)",
+          "56.4"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP03",
+      "kind": "real",
+      "category": "track_position",
+      "mode": "single_pass",
+      "edition": "2023-i6",
+      "latency_ms": 9019.2,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "SOFT",
+        "pit_lap": 62,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(n)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP03",
+      "kind": "real",
+      "category": "track_position",
+      "mode": "agent",
+      "edition": "2023-i6",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.4",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.6",
+        "FIA 2023 Sporting Regulations (Issue 6) Art. 56.3"
+      ],
+      "latency_ms": 13777.5,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(n)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP04",
+      "kind": "real",
+      "category": "wet_crossover",
+      "mode": "single_pass",
+      "edition": "2024-i6",
+      "latency_ms": 8345.1,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 27,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 34.15",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "SLICKS_ON_WET"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "34.15",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP04",
+      "kind": "real",
+      "category": "wet_crossover",
+      "mode": "agent",
+      "edition": "2024-i6",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 27,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_INTER",
+      "citations": [
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(m)",
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5",
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(l)"
+      ],
+      "latency_ms": 14039.3,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 27,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP05",
+      "kind": "real",
+      "category": "drying_crossover",
+      "mode": "single_pass",
+      "edition": "2024-i6",
+      "latency_ms": 10114.3,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 38,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 34.15",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "34.15",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP05",
+      "kind": "real",
+      "category": "drying_crossover",
+      "mode": "agent",
+      "edition": "2024-i6",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 38,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(m)",
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5",
+        "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(l)"
+      ],
+      "latency_ms": 12463.0,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 38,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP06",
+      "kind": "real",
+      "category": "red_flag",
+      "mode": "single_pass",
+      "edition": "2024-i7",
+      "latency_ms": 8949.1,
+      "final": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP06",
+      "kind": "real",
+      "category": "red_flag",
+      "mode": "agent",
+      "edition": "2024-i7",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_INTER",
+      "citations": [
+        "2024 Monaco GP: lap-1 red flag and the free tyre change",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 57.4",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 34.9",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(m)",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(l)"
+      ],
+      "latency_ms": 14262.7,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 57.4",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "57.4",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP07",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "single_pass",
+      "edition": "2024-i7",
+      "latency_ms": 7579.6,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "NONE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP07",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "agent",
+      "edition": "2024-i7",
+      "first_proposal": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 36,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_INTER",
+      "citations": [
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 56.4",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 56.6",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 56.3",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(m)",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5",
+        "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(l)"
+      ],
+      "latency_ms": 14704.9,
+      "final": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 36,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 56.4",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "56.4",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 3,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP08",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10756.5,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP08",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 10581.3,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP09",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10124.0,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "TWO_COMPOUND"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP09",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 10217.2,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP10",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10265.7,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 28,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "INTERS_ON_DRY"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP10",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "MEDIUM",
+        "pit_lap": 31,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [
+        "PENALTY_HOLD"
+      ],
+      "revisions": 1,
+      "proposal_models": [
+        "qwen2.5-coder:14b",
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(c)",
+        "2024 Austrian GP: Norris 5 s penalty for track limits",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(d)"
+      ],
+      "latency_ms": 17122.5,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 28,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": [
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 4,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 2,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP11",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10112.9,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 35,
+        "penalty_hold_s": 10.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP11",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 35,
+        "penalty_hold_s": 10.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_MEDIUM",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(c)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(d)",
+        "2023 Bahrain GP: Ocon's penalty served incorrectly",
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11226.4,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 35,
+        "penalty_hold_s": 10.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP12",
+      "kind": "synthetic",
+      "category": "vsc_cheap_stop",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 5752.1,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "MEDIUM",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": false,
+      "violations": [
+        "TWO_COMPOUND"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP12",
+      "kind": "synthetic",
+      "category": "vsc_cheap_stop",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_HARD",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.6",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.3",
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11734.9,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP13",
+      "kind": "synthetic",
+      "category": "pit_entry_closed",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10840.8,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 57,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 34.15"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "34.15"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP13",
+      "kind": "synthetic",
+      "category": "pit_entry_closed",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "HARD",
+        "pit_lap": 28,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "OPPOSITE_AHEAD",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 34.15",
+        "Pit entry closed: no tyre stop permitted",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 57.2",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 55.12",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
+        "2023 Singapore GP: Mercedes double-stack under the VSC",
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11697.3,
+      "final": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "HARD",
+        "pit_lap": 28,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 34.15"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "34.15"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP14",
+      "kind": "synthetic",
+      "category": "wet_crossover",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8101.8,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 15,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "INCONSISTENT",
+        "TWO_COMPOUND",
+        "SLICKS_ON_WET"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP14",
+      "kind": "synthetic",
+      "category": "wet_crossover",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 15,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_INTER",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11793.3,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 15,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP15",
+      "kind": "synthetic",
+      "category": "drying_crossover",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8354.8,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "INTERS_ON_DRY"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP15",
+      "kind": "synthetic",
+      "category": "drying_crossover",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 12007.1,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP16",
+      "kind": "synthetic",
+      "category": "drs_train_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 9262.2,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 22,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": false,
+      "traffic_violations": [
+        "DRS_TRAIN"
+      ],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP16",
+      "kind": "synthetic",
+      "category": "drs_train_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 22,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [
+        "DRS_TRAIN"
+      ],
+      "revisions": 2,
+      "proposal_models": [
+        "qwen2.5-coder:14b",
+        "qwen2.5-coder:14b",
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": true,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 26908.9,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 26,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 6,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 3,
+          "qwen2.5-coder:14b": 3
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP17",
+      "kind": "synthetic",
+      "category": "undercut",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 9901.3,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 18,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP17",
+      "kind": "synthetic",
+      "category": "undercut",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 26,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11468.2,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 26,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP18",
+      "kind": "synthetic",
+      "category": "late_sc",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8082.3,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "NONE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP18",
+      "kind": "synthetic",
+      "category": "late_sc",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_SOFT",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 55.12",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
+        "2023 Singapore GP: Mercedes double-stack under the VSC"
+      ],
+      "latency_ms": 10818.4,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP19",
+      "kind": "synthetic",
+      "category": "red_flag",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8836.8,
+      "final": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "HARD",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 34.15"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "TWO_COMPOUND"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "34.15"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP19",
+      "kind": "synthetic",
+      "category": "red_flag",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_HARD",
+      "citations": [
+        "2024 Monaco GP: lap-1 red flag and the free tyre change",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 57.4(b)",
+        "2024 Sao Paulo GP: VSC stop versus red-flag tyre change",
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11766.7,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 57.4(b)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "57.4(b)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP20",
+      "kind": "synthetic",
+      "category": "no_stop",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10783.5,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 50,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 34.15",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "34.15",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP20",
+      "kind": "synthetic",
+      "category": "no_stop",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 50,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "Pit entry closed: no tyre stop permitted",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 26.17",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(n)"
+      ],
+      "latency_ms": 12772.3,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 50,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP21",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8405.7,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "TWO_COMPOUND"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP21",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_HARD",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 11600.4,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP22",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10140.0,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP22",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 5.0
+      },
+      "first_proposal_violations": [],
+      "revisions": 0,
+      "proposal_models": [
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "PIT_NOW_MEDIUM",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(c)",
+        "2024 Austrian GP: Norris 5 s penalty for track limits",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(d)"
+      ],
+      "latency_ms": 11200.0,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 54.4(c)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 2,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 1,
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP23",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 10356.1,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 54.4(c)",
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": false,
+      "violations": [
+        "PIT_ENTRY_CLOSED"
+      ],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": true,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "54.4(c)",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP23",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [
+        "PIT_ENTRY_CLOSED"
+      ],
+      "revisions": 1,
+      "proposal_models": [
+        "qwen2.5-coder:14b",
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": true,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 34.15",
+        "Pit entry closed: no tyre stop permitted",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 57.2",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 55.12",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
+        "2023 Singapore GP: Mercedes double-stack under the VSC"
+      ],
+      "latency_ms": 23834.4,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "NONE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)",
+          "Art. 34.15"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "34.15"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 4,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 2,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP24",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "single_pass",
+      "edition": "2025-i5",
+      "latency_ms": 8742.8,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 18,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": false,
+      "traffic_violations": [
+        "DRS_TRAIN"
+      ],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 1,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "qwen2.5-coder:14b": 1
+        },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP24",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "agent",
+      "edition": "2025-i5",
+      "first_proposal": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 18,
+        "penalty_hold_s": 0.0
+      },
+      "first_proposal_violations": [
+        "DRS_TRAIN"
+      ],
+      "revisions": 1,
+      "proposal_models": [
+        "qwen2.5-coder:14b",
+        "qwen2.5-coder:14b"
+      ],
+      "guardrail_override": false,
+      "sim_recommended": "STAY_OUT_EXTEND",
+      "citations": [
+        "Wet races: the two dry-compound rule no longer applies",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
+        "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
+      ],
+      "latency_ms": 18605.7,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 22,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": [
+          "Art. 30.5(m)"
+        ]
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 4,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {
+          "llama3.2:3b": 2,
+          "qwen2.5-coder:14b": 2
+        },
+        "errors": []
+      }
+    }
+  ]
+}

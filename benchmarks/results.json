@@ -1,6 +1,7 @@
 {
-  "generated_at": "2026-10-16T14:45:28+00:00",
-  "git_commit": "32551e3-dirty",
+  "generated_at": "2026-10-16T17:19:05+00:00",
+  "git_commit": "3131f2b",
+  "uncommitted_code": [],
   "machine": {
     "cpu": "Apple M5 Pro",
     "cores": 15,
@@ -14,32 +15,32 @@
   },
   "stream": {
     "events": 200000,
-    "sustained_events_per_s": 927570,
+    "sustained_events_per_s": 902748,
     "sustained_events_per_s_range": [
-      883492,
-      985357
+      875257,
+      958408
     ],
-    "committed_to_parquet_events_per_s": 753197,
-    "cold_start_events_per_s": 158581,
+    "committed_to_parquet_events_per_s": 685392,
+    "cold_start_events_per_s": 149305,
     "burst_stream_to_trigger_ms": {
-      "p50_ms": 16.128,
-      "p95_ms": 26.112,
-      "p99_ms": 29.184
+      "p50_ms": 17.92,
+      "p95_ms": 28.16,
+      "p99_ms": 32.884
     },
     "paced_rate_events_per_s": 20000,
     "paced_stream_to_trigger_ms": {
       "p50_ms": 2.016,
       "p95_ms": 3.008,
-      "p99_ms": 3.008
+      "p99_ms": 4.032
     },
     "sink_errors": 0,
-    "duckdb_concurrent_queries": 34148,
+    "duckdb_concurrent_queries": 32784,
     "duckdb_concurrent_errors": 0,
-    "duckdb_concurrent_p50_ms": 1.01,
+    "duckdb_concurrent_p50_ms": 1.06,
     "duckdb_olap_p50_ms": 1.17,
     "monte_carlo_10k_x6_in_process_p50_ms": 7.04,
-    "monte_carlo_10k_x6_mcp_round_trip_p50_ms": 7.07,
-    "monte_carlo_10k_single_strategy_p50_ms": 0.848
+    "monte_carlo_10k_x6_mcp_round_trip_p50_ms": 7.04,
+    "monte_carlo_10k_single_strategy_p50_ms": 0.88
   },
   "rag": {
     "queries": 40,
@@ -51,10 +52,10 @@
         "mrr_at_10": 0.8629,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.8,
-        "qdrant_p50_ms": 1.78,
-        "qdrant_p95_ms": 2.83,
-        "end_to_end_p50_ms": 20.24,
-        "end_to_end_p95_ms": 21.28
+        "qdrant_p50_ms": 1.74,
+        "qdrant_p95_ms": 3.12,
+        "end_to_end_p50_ms": 47.04,
+        "end_to_end_p95_ms": 48.42
       },
       "sparse": {
         "recall_at_1": 0.575,
@@ -62,10 +63,10 @@
         "mrr_at_10": 0.7167,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.75,
-        "qdrant_p50_ms": 1.2,
-        "qdrant_p95_ms": 1.51,
-        "end_to_end_p50_ms": 1.2,
-        "end_to_end_p95_ms": 1.51
+        "qdrant_p50_ms": 1.21,
+        "qdrant_p95_ms": 1.47,
+        "end_to_end_p50_ms": 1.21,
+        "end_to_end_p95_ms": 1.47
       },
       "hybrid": {
         "recall_at_1": 0.775,
@@ -73,10 +74,10 @@
         "mrr_at_10": 0.8592,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.9,
-        "qdrant_p50_ms": 2.58,
-        "qdrant_p95_ms": 2.78,
-        "end_to_end_p50_ms": 21.04,
-        "end_to_end_p95_ms": 21.24
+        "qdrant_p50_ms": 2.56,
+        "qdrant_p95_ms": 2.74,
+        "end_to_end_p50_ms": 47.85,
+        "end_to_end_p95_ms": 48.04
       },
       "hybrid_rerank": {
         "recall_at_1": 0.75,
@@ -84,10 +85,10 @@
         "mrr_at_10": 0.85,
         "recall_at_3_exact": 1.0,
         "recall_at_3_semantic": 0.95,
-        "qdrant_p50_ms": 3.56,
-        "qdrant_p95_ms": 4.58,
-        "end_to_end_p50_ms": 184.77,
-        "end_to_end_p95_ms": 289.34
+        "qdrant_p50_ms": 3.3,
+        "qdrant_p95_ms": 3.63,
+        "end_to_end_p50_ms": 207.01,
+        "end_to_end_p95_ms": 321.85
       }
     }
   },
@@ -108,13 +109,19 @@
       "agreement_synthetic": 0.3529,
       "agreement_excluding_gp11_gp12": 0.4091,
       "forbidden_calls": 6,
-      "latency_p50_ms": 8815,
-      "latency_p95_ms": 10405,
+      "latency_p50_ms": 8865,
+      "latency_p95_ms": 10306,
       "injected_faults": 3,
       "primary_failures": 3,
       "recovered_by_fallback": 3,
       "failover_recovery_rate": 1.0,
       "client_errors": 0,
+      "citations_total": 29,
+      "citations_valid": 29,
+      "citation_validity_rate": 1.0,
+      "runs_with_invalid_citation": 0,
+      "runs_without_citation": 1,
+      "invalid_citations": [],
       "non_compliant": [
         "GP01",
         "GP05",
@@ -157,13 +164,19 @@
       "agreement_synthetic": 1.0,
       "agreement_excluding_gp11_gp12": 0.9545,
       "forbidden_calls": 0,
-      "latency_p50_ms": 11156,
-      "latency_p95_ms": 14486,
+      "latency_p50_ms": 11339,
+      "latency_p95_ms": 15653,
       "injected_faults": 3,
       "primary_failures": 3,
       "recovered_by_fallback": 3,
       "failover_recovery_rate": 1.0,
       "client_errors": 0,
+      "citations_total": 35,
+      "citations_valid": 35,
+      "citation_validity_rate": 1.0,
+      "runs_with_invalid_citation": 0,
+      "runs_without_citation": 1,
+      "invalid_citations": [],
       "non_compliant": [],
       "disagreements": [
         "GP03"
@@ -184,6 +197,39 @@
         "corrected_by_revision": 0,
         "corrected_in_one_cycle": 0,
         "corrected_by_guardrail": 1
+      }
+    },
+    "sim_only": {
+      "runs": 24,
+      "compliance_rate": 1.0,
+      "traffic_clean_rate": 1.0,
+      "agreement_rate": 0.9167,
+      "agreement_real": 0.8571,
+      "agreement_synthetic": 0.9412,
+      "agreement_excluding_gp11_gp12": 0.9091,
+      "forbidden_calls": 0,
+      "latency_p50_ms": 8,
+      "latency_p95_ms": 10,
+      "injected_faults": 0,
+      "primary_failures": 0,
+      "recovered_by_fallback": 0,
+      "failover_recovery_rate": null,
+      "client_errors": 0,
+      "citations_total": 0,
+      "citations_valid": 0,
+      "citation_validity_rate": null,
+      "runs_with_invalid_citation": 0,
+      "runs_without_citation": 24,
+      "invalid_citations": [],
+      "non_compliant": [],
+      "disagreements": [
+        "GP03",
+        "GP17"
+      ],
+      "radio_override_traps": {
+        "traps": 4,
+        "final_legal_and_clear": 4,
+        "agrees": 4
       }
     },
     "cyclic_self_correction": {
@@ -209,6 +255,11 @@
         "corrected_by_revision": 0,
         "corrected_in_one_cycle": 0,
         "corrected_by_guardrail": 1
+      },
+      "sim_only": {
+        "traps": 4,
+        "final_legal_and_clear": 4,
+        "agrees": 4
       }
     }
   }

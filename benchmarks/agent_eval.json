@@ -1,5 +1,7 @@
 {
   "fault_rate": 0.1,
+  "fault_seed": 0,
+  "decision_sampling": null,
   "models": {
     "primary": "qwen2.5-coder:14b",
     "fast": "llama3.2:3b",
@@ -15,13 +17,19 @@
     "agreement_synthetic": 0.3529,
     "agreement_excluding_gp11_gp12": 0.4091,
     "forbidden_calls": 6,
-    "latency_p50_ms": 8815,
-    "latency_p95_ms": 10405,
+    "latency_p50_ms": 8865,
+    "latency_p95_ms": 10306,
     "injected_faults": 3,
     "primary_failures": 3,
     "recovered_by_fallback": 3,
     "failover_recovery_rate": 1.0,
     "client_errors": 0,
+    "citations_total": 29,
+    "citations_valid": 29,
+    "citation_validity_rate": 1.0,
+    "runs_with_invalid_citation": 0,
+    "runs_without_citation": 1,
+    "invalid_citations": [],
     "non_compliant": [
       "GP01",
       "GP05",
@@ -64,13 +72,19 @@
     "agreement_synthetic": 1.0,
     "agreement_excluding_gp11_gp12": 0.9545,
     "forbidden_calls": 0,
-    "latency_p50_ms": 11156,
-    "latency_p95_ms": 14486,
+    "latency_p50_ms": 11339,
+    "latency_p95_ms": 15653,
     "injected_faults": 3,
     "primary_failures": 3,
     "recovered_by_fallback": 3,
     "failover_recovery_rate": 1.0,
     "client_errors": 0,
+    "citations_total": 35,
+    "citations_valid": 35,
+    "citation_validity_rate": 1.0,
+    "runs_with_invalid_citation": 0,
+    "runs_without_citation": 1,
+    "invalid_citations": [],
     "non_compliant": [],
     "disagreements": [
       "GP03"
@@ -93,6 +107,39 @@
       "corrected_by_guardrail": 1
     }
   },
+  "sim_only": {
+    "runs": 24,
+    "compliance_rate": 1.0,
+    "traffic_clean_rate": 1.0,
+    "agreement_rate": 0.9167,
+    "agreement_real": 0.8571,
+    "agreement_synthetic": 0.9412,
+    "agreement_excluding_gp11_gp12": 0.9091,
+    "forbidden_calls": 0,
+    "latency_p50_ms": 8,
+    "latency_p95_ms": 10,
+    "injected_faults": 0,
+    "primary_failures": 0,
+    "recovered_by_fallback": 0,
+    "failover_recovery_rate": null,
+    "client_errors": 0,
+    "citations_total": 0,
+    "citations_valid": 0,
+    "citation_validity_rate": null,
+    "runs_with_invalid_citation": 0,
+    "runs_without_citation": 24,
+    "invalid_citations": [],
+    "non_compliant": [],
+    "disagreements": [
+      "GP03",
+      "GP17"
+    ],
+    "radio_override_traps": {
+      "traps": 4,
+      "final_legal_and_clear": 4,
+      "agrees": 4
+    }
+  },
   "runs": [
     {
       "id": "GP01",
@@ -100,7 +147,7 @@
       "category": "sc_cheap_stop",
       "mode": "single_pass",
       "edition": "2023-i6",
-      "latency_ms": 6944.3,
+      "latency_ms": 7911.6,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -118,6 +165,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -158,7 +212,7 @@
         "FIA 2023 Sporting Regulations (Issue 6) Art. 30.5(k)",
         "FIA 2023 Sporting Regulations (Issue 6) Art. 30.5"
       ],
-      "latency_ms": 14440.6,
+      "latency_ms": 15653.4,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -174,6 +228,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -189,12 +250,48 @@
       }
     },
     {
+      "id": "GP01",
+      "kind": "real",
+      "category": "sc_cheap_stop",
+      "mode": "sim_only",
+      "edition": "2023-i6",
+      "latency_ms": 10.1,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP02",
       "kind": "real",
       "category": "vsc_cheap_stop",
       "mode": "single_pass",
       "edition": "2023-i6",
-      "latency_ms": 8897.7,
+      "latency_ms": 8915.1,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -210,6 +307,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -247,7 +351,7 @@
         "FIA 2023 Sporting Regulations (Issue 6) Art. 56.6",
         "FIA 2023 Sporting Regulations (Issue 6) Art. 56.3"
       ],
-      "latency_ms": 8172.9,
+      "latency_ms": 14820.1,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -264,6 +368,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(n)",
+          "56.4"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -281,12 +393,48 @@
       }
     },
     {
+      "id": "GP02",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "sim_only",
+      "edition": "2023-i6",
+      "latency_ms": 7.4,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP03",
       "kind": "real",
       "category": "track_position",
       "mode": "single_pass",
       "edition": "2023-i6",
-      "latency_ms": 8587.8,
+      "latency_ms": 8644.6,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -302,6 +450,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(n)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -339,7 +494,7 @@
         "FIA 2023 Sporting Regulations (Issue 6) Art. 56.6",
         "FIA 2023 Sporting Regulations (Issue 6) Art. 56.3"
       ],
-      "latency_ms": 4065.3,
+      "latency_ms": 3894.8,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -358,6 +513,16 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 4,
+        "valid": [
+          "30.5(n)",
+          "56.4",
+          "56.6",
+          "56.3"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -375,12 +540,48 @@
       }
     },
     {
+      "id": "GP03",
+      "kind": "real",
+      "category": "track_position",
+      "mode": "sim_only",
+      "edition": "2023-i6",
+      "latency_ms": 7.0,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 44,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP04",
       "kind": "real",
       "category": "wet_crossover",
       "mode": "single_pass",
       "edition": "2024-i6",
-      "latency_ms": 7820.4,
+      "latency_ms": 7837.8,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -396,6 +597,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -433,7 +641,7 @@
         "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5",
         "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(l)"
       ],
-      "latency_ms": 14485.7,
+      "latency_ms": 14531.9,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -449,6 +657,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -464,12 +679,48 @@
       }
     },
     {
+      "id": "GP04",
+      "kind": "real",
+      "category": "wet_crossover",
+      "mode": "sim_only",
+      "edition": "2024-i6",
+      "latency_ms": 8.6,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 27,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP05",
       "kind": "real",
       "category": "drying_crossover",
       "mode": "single_pass",
       "edition": "2024-i6",
-      "latency_ms": 8374.6,
+      "latency_ms": 8392.5,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -487,6 +738,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -524,7 +782,7 @@
         "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5",
         "FIA 2024 Sporting Regulations (Issue 6) Art. 30.5(l)"
       ],
-      "latency_ms": 13783.3,
+      "latency_ms": 13902.4,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -538,6 +796,11 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -553,12 +816,48 @@
       }
     },
     {
+      "id": "GP05",
+      "kind": "real",
+      "category": "drying_crossover",
+      "mode": "sim_only",
+      "edition": "2024-i6",
+      "latency_ms": 5.2,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 38,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP06",
       "kind": "real",
       "category": "red_flag",
       "mode": "single_pass",
       "edition": "2024-i7",
-      "latency_ms": 8702.4,
+      "latency_ms": 8737.5,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "NONE",
@@ -572,6 +871,11 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -612,7 +916,7 @@
         "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5",
         "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(l)"
       ],
-      "latency_ms": 10050.2,
+      "latency_ms": 13719.7,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -629,6 +933,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "57.4",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -644,12 +956,48 @@
       }
     },
     {
+      "id": "GP06",
+      "kind": "real",
+      "category": "red_flag",
+      "mode": "sim_only",
+      "edition": "2024-i7",
+      "latency_ms": 12.4,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP07",
       "kind": "real",
       "category": "vsc_cheap_stop",
       "mode": "single_pass",
       "edition": "2024-i7",
-      "latency_ms": 9786.9,
+      "latency_ms": 9834.0,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -665,6 +1013,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -705,7 +1060,7 @@
         "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5",
         "FIA 2024 Sporting Regulations (Issue 7) Art. 30.5(l)"
       ],
-      "latency_ms": 13164.2,
+      "latency_ms": 13279.1,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -722,6 +1077,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "56.4",
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 3,
@@ -737,12 +1100,48 @@
       }
     },
     {
+      "id": "GP07",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "mode": "sim_only",
+      "edition": "2024-i7",
+      "latency_ms": 9.4,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 28,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP08",
       "kind": "synthetic",
       "category": "two_compound_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 2102.3,
+      "latency_ms": 2103.6,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -759,6 +1158,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -798,7 +1205,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 9222.9,
+      "latency_ms": 8210.1,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -814,6 +1221,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -829,12 +1243,48 @@
       }
     },
     {
+      "id": "GP08",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 8.8,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 32,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP09",
       "kind": "synthetic",
       "category": "two_compound_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 8814.9,
+      "latency_ms": 8865.1,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "NONE",
@@ -852,6 +1302,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -889,7 +1346,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 11308.2,
+      "latency_ms": 11339.4,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -905,6 +1362,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -920,12 +1384,48 @@
       }
     },
     {
+      "id": "GP09",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 5.4,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP10",
       "kind": "synthetic",
       "category": "penalty_hold_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 9178.9,
+      "latency_ms": 9162.2,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -942,6 +1442,14 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -979,7 +1487,7 @@
         "2024 Austrian GP: Norris 5 s penalty for track limits",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(d)"
       ],
-      "latency_ms": 12985.7,
+      "latency_ms": 13112.8,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -996,6 +1504,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1011,12 +1527,48 @@
       }
     },
     {
+      "id": "GP10",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 8.0,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "SOFT",
+        "pit_lap": 36,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP11",
       "kind": "synthetic",
       "category": "penalty_hold_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 8623.7,
+      "latency_ms": 8567.1,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1035,6 +1587,14 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "34.15",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1075,7 +1635,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 13020.6,
+      "latency_ms": 13204.8,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -1092,6 +1652,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1107,12 +1675,48 @@
       }
     },
     {
+      "id": "GP11",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 6.2,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 35,
+        "penalty_hold_s": 10.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP12",
       "kind": "synthetic",
       "category": "vsc_cheap_stop",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 9775.3,
+      "latency_ms": 9805.2,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -1130,6 +1734,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "34.15"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1170,7 +1781,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 10791.4,
+      "latency_ms": 10538.2,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1186,6 +1797,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1201,12 +1819,48 @@
       }
     },
     {
+      "id": "GP12",
+      "kind": "synthetic",
+      "category": "vsc_cheap_stop",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 7.5,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP13",
       "kind": "synthetic",
       "category": "pit_entry_closed",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 9618.6,
+      "latency_ms": 9583.8,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "HARD",
@@ -1222,6 +1876,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1265,7 +1926,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 13936.6,
+      "latency_ms": 13772.1,
       "final": {
         "recommended_action": "OPPOSITE_AHEAD",
         "target_compound": "HARD",
@@ -1282,6 +1943,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "34.15"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1297,12 +1966,48 @@
       }
     },
     {
+      "id": "GP13",
+      "kind": "synthetic",
+      "category": "pit_entry_closed",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 7.3,
+      "final": {
+        "recommended_action": "OPPOSITE_AHEAD",
+        "target_compound": "HARD",
+        "pit_lap": 28,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP14",
       "kind": "synthetic",
       "category": "wet_crossover",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 1935.1,
+      "latency_ms": 1943.8,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -1319,6 +2024,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1358,7 +2071,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 11360.6,
+      "latency_ms": 10120.5,
       "final": {
         "recommended_action": "PIT_NOW_INTER",
         "target_compound": "INTERMEDIATE",
@@ -1374,6 +2087,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1389,12 +2109,48 @@
       }
     },
     {
+      "id": "GP14",
+      "kind": "synthetic",
+      "category": "wet_crossover",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 10.5,
+      "final": {
+        "recommended_action": "PIT_NOW_INTER",
+        "target_compound": "INTERMEDIATE",
+        "pit_lap": 15,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP15",
       "kind": "synthetic",
       "category": "drying_crossover",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 9486.9,
+      "latency_ms": 9516.4,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -1410,6 +2166,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1447,7 +2210,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 10615.9,
+      "latency_ms": 10628.1,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -1463,6 +2226,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1478,12 +2248,48 @@
       }
     },
     {
+      "id": "GP15",
+      "kind": "synthetic",
+      "category": "drying_crossover",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 4.4,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 40,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP16",
       "kind": "synthetic",
       "category": "drs_train_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 8755.9,
+      "latency_ms": 8743.3,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -1503,6 +2309,13 @@
       ],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1540,7 +2353,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 9385.6,
+      "latency_ms": 9417.9,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "HARD",
@@ -1556,6 +2369,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1571,12 +2391,48 @@
       }
     },
     {
+      "id": "GP16",
+      "kind": "synthetic",
+      "category": "drs_train_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 7.4,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 26,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP17",
       "kind": "synthetic",
       "category": "undercut",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 10250.5,
+      "latency_ms": 10264.1,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -1592,6 +2448,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1629,7 +2492,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 11137.3,
+      "latency_ms": 11258.7,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1645,6 +2508,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1660,12 +2530,48 @@
       }
     },
     {
+      "id": "GP17",
+      "kind": "synthetic",
+      "category": "undercut",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 8.0,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 26,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": false,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP18",
       "kind": "synthetic",
       "category": "late_sc",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 8953.8,
+      "latency_ms": 8931.8,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1681,6 +2587,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1718,7 +2631,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
         "2023 Singapore GP: Mercedes double-stack under the VSC"
       ],
-      "latency_ms": 9777.6,
+      "latency_ms": 9860.1,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -1735,6 +2648,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "55.12",
+          "56.4"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1750,12 +2671,48 @@
       }
     },
     {
+      "id": "GP18",
+      "kind": "synthetic",
+      "category": "late_sc",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 3.5,
+      "final": {
+        "recommended_action": "PIT_NOW_SOFT",
+        "target_compound": "SOFT",
+        "pit_lap": 49,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP19",
       "kind": "synthetic",
       "category": "red_flag",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 7319.5,
+      "latency_ms": 7313.0,
       "final": {
         "recommended_action": "PIT_NOW_MEDIUM",
         "target_compound": "MEDIUM",
@@ -1773,6 +2730,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1813,7 +2777,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 11155.6,
+      "latency_ms": 11174.0,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1830,6 +2794,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "57.4(b)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1845,12 +2817,48 @@
       }
     },
     {
+      "id": "GP19",
+      "kind": "synthetic",
+      "category": "red_flag",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 8.5,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 20,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP20",
       "kind": "synthetic",
       "category": "no_stop",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 10405.1,
+      "latency_ms": 10305.6,
       "final": {
         "recommended_action": "PIT_NOW_SOFT",
         "target_compound": "SOFT",
@@ -1866,6 +2874,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1903,7 +2918,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 26.17",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(n)"
       ],
-      "latency_ms": 9007.3,
+      "latency_ms": 9004.2,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "HARD",
@@ -1919,6 +2934,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -1934,12 +2956,48 @@
       }
     },
     {
+      "id": "GP20",
+      "kind": "synthetic",
+      "category": "no_stop",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 6.0,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "NONE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP21",
       "kind": "synthetic",
       "category": "radio_override_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 2177.6,
+      "latency_ms": 2167.7,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -1956,6 +3014,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "34.15",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -1995,7 +3061,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 11117.9,
+      "latency_ms": 10373.1,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -2011,6 +3077,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -2026,12 +3099,48 @@
       }
     },
     {
+      "id": "GP21",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 6.1,
+      "final": {
+        "recommended_action": "PIT_NOW_HARD",
+        "target_compound": "HARD",
+        "pit_lap": 30,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP22",
       "kind": "synthetic",
       "category": "radio_override_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 10859.5,
+      "latency_ms": 10412.3,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -2048,6 +3157,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -2085,7 +3202,7 @@
         "2024 Austrian GP: Norris 5 s penalty for track limits",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 54.4(d)"
       ],
-      "latency_ms": 11128.8,
+      "latency_ms": 11096.3,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -2102,6 +3219,14 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 2,
+        "valid": [
+          "30.5(m)",
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -2117,12 +3242,48 @@
       }
     },
     {
+      "id": "GP22",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 6.8,
+      "final": {
+        "recommended_action": "PIT_NOW_MEDIUM",
+        "target_compound": "MEDIUM",
+        "pit_lap": 30,
+        "penalty_hold_s": 5.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP23",
       "kind": "synthetic",
       "category": "radio_override_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 8222.5,
+      "latency_ms": 8315.9,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -2140,6 +3301,13 @@
       "traffic_violations": [],
       "agrees": false,
       "forbidden": true,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "54.4(c)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -2180,7 +3348,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 56.4",
         "2023 Singapore GP: Mercedes double-stack under the VSC"
       ],
-      "latency_ms": 11435.0,
+      "latency_ms": 11454.7,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "HARD",
@@ -2196,6 +3364,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 2,
@@ -2211,12 +3386,48 @@
       }
     },
     {
+      "id": "GP23",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 8.5,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "NONE",
+        "pit_lap": 0,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
+        "errors": []
+      }
+    },
+    {
       "id": "GP24",
       "kind": "synthetic",
       "category": "radio_override_trap",
       "mode": "single_pass",
       "edition": "2025-i5",
-      "latency_ms": 9327.7,
+      "latency_ms": 9310.2,
       "final": {
         "recommended_action": "PIT_NOW_HARD",
         "target_compound": "HARD",
@@ -2234,6 +3445,13 @@
       ],
       "agrees": false,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 1,
@@ -2275,7 +3493,7 @@
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(m)",
         "FIA 2025 Sporting Regulations (Issue 5) Art. 30.5(l)"
       ],
-      "latency_ms": 32961.9,
+      "latency_ms": 34794.6,
       "final": {
         "recommended_action": "STAY_OUT_EXTEND",
         "target_compound": "HARD",
@@ -2291,6 +3509,13 @@
       "traffic_violations": [],
       "agrees": true,
       "forbidden": false,
+      "citations_check": {
+        "total": 1,
+        "valid": [
+          "30.5(m)"
+        ],
+        "invalid": []
+      },
       "error": null,
       "llm": {
         "calls": 6,
@@ -2302,6 +3527,42 @@
           "qwen2.5-coder:14b": 3,
           "llama3.2:3b": 3
         },
+        "errors": []
+      }
+    },
+    {
+      "id": "GP24",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "mode": "sim_only",
+      "edition": "2025-i5",
+      "latency_ms": 7.7,
+      "final": {
+        "recommended_action": "STAY_OUT_EXTEND",
+        "target_compound": "HARD",
+        "pit_lap": 22,
+        "penalty_hold_s": 0.0,
+        "fia_article_citations": []
+      },
+      "compliant": true,
+      "violations": [],
+      "traffic_clean": true,
+      "traffic_violations": [],
+      "agrees": true,
+      "forbidden": false,
+      "citations_check": {
+        "total": 0,
+        "valid": [],
+        "invalid": []
+      },
+      "error": null,
+      "llm": {
+        "calls": 0,
+        "faults": 0,
+        "recovered": 0,
+        "failovers": 0,
+        "injected": 0,
+        "by_model": {},
         "errors": []
       }
     }

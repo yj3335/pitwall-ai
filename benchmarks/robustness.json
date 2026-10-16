@@ -1,0 +1,605 @@
+{
+  "faults": {
+    "fault_seeds": [
+      0,
+      1,
+      2
+    ],
+    "single_pass": {
+      "injected_faults": 9,
+      "primary_failures": 9,
+      "recovered_by_fallback": 9,
+      "client_errors": 0,
+      "compliance": {
+        "mean": 0.6111,
+        "min": 0.5417,
+        "max": 0.6667
+      },
+      "agreement": {
+        "mean": 0.3194,
+        "min": 0.25,
+        "max": 0.375
+      },
+      "calls_changed_across_fault_seeds": [
+        {
+          "id": "GP07",
+          "calls": [
+            "('PIT_NOW_HARD', 29, 'SOFT')",
+            "('PIT_NOW_INTER', 28, 'INTERMEDIATE')"
+          ],
+          "failover_involved": true
+        },
+        {
+          "id": "GP08",
+          "calls": [
+            "('PIT_NOW_HARD', 33, 'HARD')",
+            "('PIT_NOW_MEDIUM', 32, 'MEDIUM')"
+          ],
+          "failover_involved": true
+        },
+        {
+          "id": "GP12",
+          "calls": [
+            "('PIT_NOW_HARD', 31, 'HARD')",
+            "('PIT_NOW_MEDIUM', 30, 'MEDIUM')"
+          ],
+          "failover_involved": true
+        },
+        {
+          "id": "GP14",
+          "calls": [
+            "('PIT_NOW_INTER', 15, 'INTERMEDIATE')",
+            "('PIT_NOW_INTER', 16, 'INTERMEDIATE')"
+          ],
+          "failover_involved": true
+        },
+        {
+          "id": "GP15",
+          "calls": [
+            "('PIT_NOW_HARD', 41, 'SOFT')",
+            "('PIT_NOW_SOFT', 40, 'SOFT')"
+          ],
+          "failover_involved": true
+        },
+        {
+          "id": "GP21",
+          "calls": [
+            "('PIT_NOW_HARD', 30, 'HARD')",
+            "('PIT_NOW_MEDIUM', 30, 'MEDIUM')"
+          ],
+          "failover_involved": true
+        }
+      ]
+    },
+    "agent": {
+      "injected_faults": 13,
+      "primary_failures": 13,
+      "recovered_by_fallback": 13,
+      "client_errors": 0,
+      "compliance": {
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "agreement": {
+        "mean": 0.9583,
+        "min": 0.9583,
+        "max": 0.9583
+      },
+      "calls_changed_across_fault_seeds": [
+        {
+          "id": "GP03",
+          "calls": [
+            "('PIT_NOW_HARD', 44, 'HARD')",
+            "('PIT_NOW_SOFT', 44, 'SOFT')"
+          ],
+          "failover_involved": true
+        }
+      ]
+    }
+  },
+  "sampling": {
+    "0.0": {
+      "repeats": 3,
+      "single_pass": {
+        "compliance": {
+          "mean": 0.5833,
+          "min": 0.5833,
+          "max": 0.5833
+        },
+        "traffic_clean": {
+          "mean": 0.9167,
+          "min": 0.9167,
+          "max": 0.9167
+        },
+        "agreement": {
+          "mean": 0.2917,
+          "min": 0.2917,
+          "max": 0.2917
+        },
+        "latency_p50_ms": {
+          "mean": 9807.3333,
+          "min": 9726,
+          "max": 9870
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 24,
+        "mean_flip_rate": 0.0,
+        "scenarios_that_flip": [],
+        "mean_plan_flip_rate": 0.0,
+        "scenarios_whose_plan_flips": []
+      },
+      "agent": {
+        "compliance": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "traffic_clean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "agreement": {
+          "mean": 0.9583,
+          "min": 0.9583,
+          "max": 0.9583
+        },
+        "latency_p50_ms": {
+          "mean": 11756.3333,
+          "min": 11715,
+          "max": 11807
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 24,
+        "mean_flip_rate": 0.0,
+        "scenarios_that_flip": [],
+        "mean_plan_flip_rate": 0.0,
+        "scenarios_whose_plan_flips": [],
+        "natural_illegal_first_drafts": 3,
+        "corrected_by_revision": 0,
+        "corrected_in_one_cycle": 0,
+        "corrected_by_guardrail": 3
+      }
+    },
+    "0.3": {
+      "repeats": 3,
+      "single_pass": {
+        "compliance": {
+          "mean": 0.6805,
+          "min": 0.625,
+          "max": 0.7083
+        },
+        "traffic_clean": {
+          "mean": 0.9167,
+          "min": 0.9167,
+          "max": 0.9167
+        },
+        "agreement": {
+          "mean": 0.3472,
+          "min": 0.3333,
+          "max": 0.375
+        },
+        "latency_p50_ms": {
+          "mean": 9575.3333,
+          "min": 9129,
+          "max": 10042
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 14,
+        "mean_flip_rate": 0.1805,
+        "scenarios_that_flip": [
+          "GP01",
+          "GP02",
+          "GP06",
+          "GP09",
+          "GP10",
+          "GP11",
+          "GP13",
+          "GP15",
+          "GP16",
+          "GP18"
+        ],
+        "mean_plan_flip_rate": 0.1388,
+        "scenarios_whose_plan_flips": [
+          "GP02",
+          "GP06",
+          "GP09",
+          "GP10",
+          "GP11",
+          "GP13",
+          "GP15",
+          "GP16",
+          "GP18"
+        ]
+      },
+      "agent": {
+        "compliance": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "traffic_clean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "agreement": {
+          "mean": 0.9167,
+          "min": 0.9167,
+          "max": 0.9167
+        },
+        "latency_p50_ms": {
+          "mean": 12821.6667,
+          "min": 12422,
+          "max": 13582
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 24,
+        "mean_flip_rate": 0.0,
+        "scenarios_that_flip": [],
+        "mean_plan_flip_rate": 0.0,
+        "scenarios_whose_plan_flips": [],
+        "natural_illegal_first_drafts": 6,
+        "corrected_by_revision": 1,
+        "corrected_in_one_cycle": 1,
+        "corrected_by_guardrail": 5
+      }
+    },
+    "0.7": {
+      "repeats": 3,
+      "single_pass": {
+        "compliance": {
+          "mean": 0.6111,
+          "min": 0.5833,
+          "max": 0.6667
+        },
+        "traffic_clean": {
+          "mean": 0.9167,
+          "min": 0.9167,
+          "max": 0.9167
+        },
+        "agreement": {
+          "mean": 0.2917,
+          "min": 0.25,
+          "max": 0.375
+        },
+        "latency_p50_ms": {
+          "mean": 9265.3333,
+          "min": 9012,
+          "max": 9765
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 7,
+        "mean_flip_rate": 0.3194,
+        "scenarios_that_flip": [
+          "GP01",
+          "GP02",
+          "GP03",
+          "GP04",
+          "GP05",
+          "GP06",
+          "GP07",
+          "GP08",
+          "GP09",
+          "GP10",
+          "GP11",
+          "GP12",
+          "GP13",
+          "GP14",
+          "GP15",
+          "GP18",
+          "GP19"
+        ],
+        "mean_plan_flip_rate": 0.2082,
+        "scenarios_whose_plan_flips": [
+          "GP01",
+          "GP02",
+          "GP03",
+          "GP04",
+          "GP05",
+          "GP07",
+          "GP08",
+          "GP09",
+          "GP10",
+          "GP11",
+          "GP13",
+          "GP14",
+          "GP15"
+        ]
+      },
+      "agent": {
+        "compliance": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "traffic_clean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "agreement": {
+          "mean": 0.8472,
+          "min": 0.8333,
+          "max": 0.875
+        },
+        "latency_p50_ms": {
+          "mean": 12841.0,
+          "min": 12463,
+          "max": 13556
+        },
+        "citation_validity": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "identical_calls_across_repeats": 20,
+        "mean_flip_rate": 0.0694,
+        "scenarios_that_flip": [
+          "GP07",
+          "GP10",
+          "GP17",
+          "GP23"
+        ],
+        "mean_plan_flip_rate": 0.0555,
+        "scenarios_whose_plan_flips": [
+          "GP07",
+          "GP10",
+          "GP17"
+        ],
+        "natural_illegal_first_drafts": 10,
+        "corrected_by_revision": 6,
+        "corrected_in_one_cycle": 6,
+        "corrected_by_guardrail": 4
+      }
+    },
+    "determinism_at_temperature_0": {
+      "single_pass": "24/24",
+      "agent": "24/24"
+    }
+  },
+  "inputs": {
+    "perturbations_per_scenario": 200,
+    "noise": {
+      "gap_ms": 500,
+      "tyre_age_laps": 1,
+      "our_deg_ms_per_lap": 20.0,
+      "pit_loss_s": 2.0,
+      "wetness": 0.1
+    },
+    "scenarios": 24,
+    "mean_stability": 0.888,
+    "mean_plan_stability": 0.873,
+    "mean_agreement_under_noise": 0.864,
+    "baseline_agreement": 22,
+    "knife_edge": [
+      "GP11",
+      "GP13",
+      "GP14",
+      "GP17",
+      "GP18",
+      "GP23"
+    ],
+    "elapsed_s": 32.3,
+    "per_scenario": {
+      "GP01": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 9.94,
+        "baseline_call": "PIT_NOW_HARD"
+      },
+      "GP02": {
+        "stability": 0.97,
+        "plan_stability": 0.97,
+        "agreement_under_noise": 0.97,
+        "margin_to_second_best_s": 5.56,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP03": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 0.0,
+        "margin_to_second_best_s": 4.17,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP04": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 15.57,
+        "baseline_call": "PIT_NOW_INTER"
+      },
+      "GP05": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 5.99,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP06": {
+        "stability": 0.975,
+        "plan_stability": 0.975,
+        "agreement_under_noise": 0.975,
+        "margin_to_second_best_s": 21.15,
+        "baseline_call": "PIT_NOW_INTER"
+      },
+      "GP07": {
+        "stability": 0.92,
+        "plan_stability": 0.92,
+        "agreement_under_noise": 0.92,
+        "margin_to_second_best_s": 5.39,
+        "baseline_call": "PIT_NOW_INTER"
+      },
+      "GP08": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 8.94,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP09": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 2.38,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP10": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 2.32,
+        "baseline_call": "STAY_OUT_EXTEND"
+      },
+      "GP11": {
+        "stability": 0.7,
+        "plan_stability": 0.7,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 2.26,
+        "baseline_call": "PIT_NOW_MEDIUM"
+      },
+      "GP12": {
+        "stability": 0.9,
+        "plan_stability": 0.9,
+        "agreement_under_noise": 0.9,
+        "margin_to_second_best_s": 3.23,
+        "baseline_call": "PIT_NOW_HARD"
+      },
+      "GP13": {
+        "stability": 0.33,
+        "plan_stability": 0.33,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 0.42,
+        "baseline_call": "OPPOSITE_AHEAD"
+      },
+      "GP14": {
+        "stability": 0.48,
+        "plan_stability": 0.48,
+        "agreement_under_noise": 0.48,
+        "margin_to_second_best_s": 3.59,
+        "baseline_call": "PIT_NOW_INTER"
+      },
+      "GP15": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 5.77,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP16": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 2.93,
+        "baseline_call": "STAY_OUT_EXTEND"
+      },
+      "GP17": {
+        "stability": 0.76,
+        "plan_stability": 0.76,
+        "agreement_under_noise": 0.0,
+        "margin_to_second_best_s": 0.94,
+        "baseline_call": "STAY_OUT_EXTEND"
+      },
+      "GP18": {
+        "stability": 0.495,
+        "plan_stability": 0.495,
+        "agreement_under_noise": 0.495,
+        "margin_to_second_best_s": 0.02,
+        "baseline_call": "PIT_NOW_SOFT"
+      },
+      "GP19": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 18.46,
+        "baseline_call": "PIT_NOW_HARD"
+      },
+      "GP20": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 13.44,
+        "baseline_call": "STAY_OUT_EXTEND"
+      },
+      "GP21": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 16.5,
+        "baseline_call": "PIT_NOW_HARD"
+      },
+      "GP22": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 5.44,
+        "baseline_call": "PIT_NOW_MEDIUM"
+      },
+      "GP23": {
+        "stability": 0.77,
+        "plan_stability": 0.43,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": null,
+        "baseline_call": "STAY_OUT_EXTEND"
+      },
+      "GP24": {
+        "stability": 1.0,
+        "plan_stability": 1.0,
+        "agreement_under_noise": 1.0,
+        "margin_to_second_best_s": 4.31,
+        "baseline_call": "STAY_OUT_EXTEND"
+      }
+    }
+  },
+  "cross_axis": {
+    "knife_edge_inputs": [
+      "GP11",
+      "GP13",
+      "GP14",
+      "GP17",
+      "GP18",
+      "GP23"
+    ],
+    "agent_plan_flips_at_0.7": [
+      "GP07",
+      "GP10",
+      "GP17"
+    ],
+    "both": [
+      "GP17"
+    ],
+    "inputs_only": [
+      "GP11",
+      "GP13",
+      "GP14",
+      "GP18",
+      "GP23"
+    ],
+    "sampling_only": [
+      "GP07",
+      "GP10"
+    ]
+  }
+}

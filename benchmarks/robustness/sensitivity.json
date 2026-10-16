@@ -1,0 +1,492 @@
+{
+  "perturbations_per_scenario": 200,
+  "noise": {
+    "gap_ms": 500,
+    "tyre_age_laps": 1,
+    "our_deg_ms_per_lap": 20.0,
+    "pit_loss_s": 2.0,
+    "wetness": 0.1
+  },
+  "scenarios": 24,
+  "mean_stability": 0.888,
+  "mean_plan_stability": 0.873,
+  "mean_agreement_under_noise": 0.864,
+  "baseline_agreement": 22,
+  "knife_edge": [
+    "GP11",
+    "GP13",
+    "GP14",
+    "GP17",
+    "GP18",
+    "GP23"
+  ],
+  "elapsed_s": 32.3,
+  "rows": [
+    {
+      "id": "GP01",
+      "kind": "real",
+      "category": "sc_cheap_stop",
+      "baseline_call": "PIT_NOW_HARD",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 20,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 9.94,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "PIT_NOW_HARD": 200
+      }
+    },
+    {
+      "id": "GP02",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 0.97,
+      "plan_stability": 0.97,
+      "baseline_plan": {
+        "pit_lap": 44,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 0.97,
+      "margin_to_second_best_s": 5.56,
+      "second_best": "PIT_NOW_MEDIUM",
+      "calls": {
+        "PIT_NOW_SOFT": 194,
+        "STAY_OUT_EXTEND": 6
+      }
+    },
+    {
+      "id": "GP03",
+      "kind": "real",
+      "category": "track_position",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": false,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 44,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 0.0,
+      "margin_to_second_best_s": 4.17,
+      "second_best": "PIT_NOW_MEDIUM",
+      "calls": {
+        "PIT_NOW_SOFT": 200
+      }
+    },
+    {
+      "id": "GP04",
+      "kind": "real",
+      "category": "wet_crossover",
+      "baseline_call": "PIT_NOW_INTER",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 27,
+        "compound": "INTERMEDIATE"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 15.57,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "PIT_NOW_INTER": 200
+      }
+    },
+    {
+      "id": "GP05",
+      "kind": "real",
+      "category": "drying_crossover",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 38,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 5.99,
+      "second_best": "PIT_NOW_MEDIUM",
+      "calls": {
+        "PIT_NOW_SOFT": 200
+      }
+    },
+    {
+      "id": "GP06",
+      "kind": "real",
+      "category": "red_flag",
+      "baseline_call": "PIT_NOW_INTER",
+      "baseline_agrees": true,
+      "stability": 0.975,
+      "plan_stability": 0.975,
+      "baseline_plan": {
+        "pit_lap": 32,
+        "compound": "INTERMEDIATE"
+      },
+      "agreement_under_noise": 0.975,
+      "margin_to_second_best_s": 21.15,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "PIT_NOW_INTER": 195,
+        "OPPOSITE_AHEAD": 5
+      }
+    },
+    {
+      "id": "GP07",
+      "kind": "real",
+      "category": "vsc_cheap_stop",
+      "baseline_call": "PIT_NOW_INTER",
+      "baseline_agrees": true,
+      "stability": 0.92,
+      "plan_stability": 0.92,
+      "baseline_plan": {
+        "pit_lap": 28,
+        "compound": "INTERMEDIATE"
+      },
+      "agreement_under_noise": 0.92,
+      "margin_to_second_best_s": 5.39,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "PIT_NOW_INTER": 184,
+        "OPPOSITE_AHEAD": 16
+      }
+    },
+    {
+      "id": "GP08",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 32,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 8.94,
+      "second_best": "PIT_NOW_HARD",
+      "calls": {
+        "PIT_NOW_SOFT": 200
+      }
+    },
+    {
+      "id": "GP09",
+      "kind": "synthetic",
+      "category": "two_compound_trap",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 49,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 2.38,
+      "second_best": "PIT_NOW_MEDIUM",
+      "calls": {
+        "PIT_NOW_SOFT": 200
+      }
+    },
+    {
+      "id": "GP10",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 36,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 2.32,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "STAY_OUT_EXTEND": 200
+      }
+    },
+    {
+      "id": "GP11",
+      "kind": "synthetic",
+      "category": "penalty_hold_trap",
+      "baseline_call": "PIT_NOW_MEDIUM",
+      "baseline_agrees": true,
+      "stability": 0.7,
+      "plan_stability": 0.7,
+      "baseline_plan": {
+        "pit_lap": 35,
+        "compound": "MEDIUM"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 2.26,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "PIT_NOW_MEDIUM": 140,
+        "STAY_OUT_EXTEND": 60
+      }
+    },
+    {
+      "id": "GP12",
+      "kind": "synthetic",
+      "category": "vsc_cheap_stop",
+      "baseline_call": "PIT_NOW_HARD",
+      "baseline_agrees": true,
+      "stability": 0.9,
+      "plan_stability": 0.9,
+      "baseline_plan": {
+        "pit_lap": 30,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 0.9,
+      "margin_to_second_best_s": 3.23,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "PIT_NOW_HARD": 180,
+        "STAY_OUT_EXTEND": 20
+      }
+    },
+    {
+      "id": "GP13",
+      "kind": "synthetic",
+      "category": "pit_entry_closed",
+      "baseline_call": "OPPOSITE_AHEAD",
+      "baseline_agrees": true,
+      "stability": 0.33,
+      "plan_stability": 0.33,
+      "baseline_plan": {
+        "pit_lap": 28,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 0.42,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "STAY_OUT_EXTEND": 134,
+        "OPPOSITE_AHEAD": 66
+      }
+    },
+    {
+      "id": "GP14",
+      "kind": "synthetic",
+      "category": "wet_crossover",
+      "baseline_call": "PIT_NOW_INTER",
+      "baseline_agrees": true,
+      "stability": 0.48,
+      "plan_stability": 0.48,
+      "baseline_plan": {
+        "pit_lap": 15,
+        "compound": "INTERMEDIATE"
+      },
+      "agreement_under_noise": 0.48,
+      "margin_to_second_best_s": 3.59,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "OPPOSITE_AHEAD": 104,
+        "PIT_NOW_INTER": 96
+      }
+    },
+    {
+      "id": "GP15",
+      "kind": "synthetic",
+      "category": "drying_crossover",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 40,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 5.77,
+      "second_best": "PIT_NOW_MEDIUM",
+      "calls": {
+        "PIT_NOW_SOFT": 200
+      }
+    },
+    {
+      "id": "GP16",
+      "kind": "synthetic",
+      "category": "drs_train_trap",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 26,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 2.93,
+      "second_best": "PIT_NOW_HARD",
+      "calls": {
+        "STAY_OUT_EXTEND": 200
+      }
+    },
+    {
+      "id": "GP17",
+      "kind": "synthetic",
+      "category": "undercut",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": false,
+      "stability": 0.76,
+      "plan_stability": 0.76,
+      "baseline_plan": {
+        "pit_lap": 26,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 0.0,
+      "margin_to_second_best_s": 0.94,
+      "second_best": "OPPOSITE_AHEAD",
+      "calls": {
+        "STAY_OUT_EXTEND": 152,
+        "OPPOSITE_AHEAD": 48
+      }
+    },
+    {
+      "id": "GP18",
+      "kind": "synthetic",
+      "category": "late_sc",
+      "baseline_call": "PIT_NOW_SOFT",
+      "baseline_agrees": true,
+      "stability": 0.495,
+      "plan_stability": 0.495,
+      "baseline_plan": {
+        "pit_lap": 49,
+        "compound": "SOFT"
+      },
+      "agreement_under_noise": 0.495,
+      "margin_to_second_best_s": 0.02,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "STAY_OUT_EXTEND": 101,
+        "PIT_NOW_SOFT": 99
+      }
+    },
+    {
+      "id": "GP19",
+      "kind": "synthetic",
+      "category": "red_flag",
+      "baseline_call": "PIT_NOW_HARD",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 20,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 18.46,
+      "second_best": "STAY_OUT_EXTEND",
+      "calls": {
+        "PIT_NOW_HARD": 200
+      }
+    },
+    {
+      "id": "GP20",
+      "kind": "synthetic",
+      "category": "no_stop",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 0,
+        "compound": "NONE"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 13.44,
+      "second_best": "PIT_NOW_SOFT",
+      "calls": {
+        "STAY_OUT_EXTEND": 200
+      }
+    },
+    {
+      "id": "GP21",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "baseline_call": "PIT_NOW_HARD",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 30,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 16.5,
+      "second_best": "PIT_NOW_SOFT",
+      "calls": {
+        "PIT_NOW_HARD": 200
+      }
+    },
+    {
+      "id": "GP22",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "baseline_call": "PIT_NOW_MEDIUM",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 30,
+        "compound": "MEDIUM"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 5.44,
+      "second_best": "PIT_NOW_HARD",
+      "calls": {
+        "PIT_NOW_MEDIUM": 200
+      }
+    },
+    {
+      "id": "GP23",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": true,
+      "stability": 0.77,
+      "plan_stability": 0.43,
+      "baseline_plan": {
+        "pit_lap": 0,
+        "compound": "NONE"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": null,
+      "second_best": null,
+      "calls": {
+        "STAY_OUT_EXTEND": 154,
+        "OPPOSITE_AHEAD": 46
+      }
+    },
+    {
+      "id": "GP24",
+      "kind": "synthetic",
+      "category": "radio_override_trap",
+      "baseline_call": "STAY_OUT_EXTEND",
+      "baseline_agrees": true,
+      "stability": 1.0,
+      "plan_stability": 1.0,
+      "baseline_plan": {
+        "pit_lap": 22,
+        "compound": "HARD"
+      },
+      "agreement_under_noise": 1.0,
+      "margin_to_second_best_s": 4.31,
+      "second_best": "PIT_NOW_HARD",
+      "calls": {
+        "STAY_OUT_EXTEND": 200
+      }
+    }
+  ]
+}

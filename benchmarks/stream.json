@@ -2,59 +2,59 @@
   "events": 200000,
   "burst": {
     "trials": 5,
-    "sustained_events_per_s": 927570,
+    "sustained_events_per_s": 902748,
     "sustained_events_per_s_range": [
-      883492,
-      985357
+      875257,
+      958408
     ],
-    "committed_to_parquet_events_per_s": 753197,
-    "producer_events_per_s": 1001424,
+    "committed_to_parquet_events_per_s": 685392,
+    "producer_events_per_s": 959420,
     "stream_to_trigger_ms": {
-      "count": 285,
-      "p50_ms": 16.128,
-      "p95_ms": 26.112,
-      "p99_ms": 29.184,
-      "mean_ms": 14.91578947368421,
-      "max_ms": 31
+      "count": 297,
+      "p50_ms": 17.92,
+      "p95_ms": 28.16,
+      "p99_ms": 32.884,
+      "mean_ms": 17.397306397306398,
+      "max_ms": 33
     },
-    "cold_start_events_per_s": 158581,
-    "parquet_files": 16,
-    "parquet_rows": 201497,
+    "cold_start_events_per_s": 149305,
+    "parquet_files": 15,
+    "parquet_rows": 201509,
     "sink_errors": 0,
     "decode_errors": 0,
-    "triggers": 285
+    "triggers": 297
   },
   "paced": {
     "rate_events_per_s": 20000,
-    "sustained_events_per_s": 19994,
+    "sustained_events_per_s": 19982,
     "stream_to_trigger_ms": {
-      "count": 313,
+      "count": 309,
       "p50_ms": 2.016,
       "p95_ms": 3.008,
-      "p99_ms": 3.008,
-      "mean_ms": 1.8146964856230032,
-      "max_ms": 20
+      "p99_ms": 4.032,
+      "mean_ms": 1.9352750809061487,
+      "max_ms": 15
     },
     "produce_to_processed_ms": {
       "count": 200000,
       "p50_ms": 2.112,
       "p95_ms": 3.392,
-      "p99_ms": 7.552,
-      "mean_ms": 2.2929771949999997,
-      "max_ms": 26.466
+      "p99_ms": 7.808,
+      "mean_ms": 2.26897466,
+      "max_ms": 20.511
     },
     "duckdb_concurrent": {
       "reader_threads": 4,
-      "queries_run": 34148,
+      "queries_run": 32784,
       "errors": 0,
       "error_samples": [],
-      "p50_ms": 1.01,
-      "p95_ms": 1.91,
+      "p50_ms": 1.06,
+      "p95_ms": 1.99,
       "by_query_p50_ms": {
-        "telemetry_count": 0.96,
-        "degradation_by_driver": 0.91,
-        "sector_speeds": 1.31,
-        "trigger_mix": 0.84
+        "telemetry_count": 1.03,
+        "degradation_by_driver": 0.94,
+        "sector_speeds": 1.38,
+        "trigger_mix": 0.87
       },
       "row_count_never_decreased": true,
       "final_rows_equal_events": true
@@ -67,19 +67,19 @@
       "strategies": 6,
       "workers": 15,
       "p50_ms": 7.04,
-      "p95_ms": 7.5445,
-      "p99_ms": 7.5445,
-      "mean_ms": 6.91038,
-      "single_strategy_p50_ms": 0.848
+      "p95_ms": 7.552,
+      "p99_ms": 7.808,
+      "mean_ms": 6.711065,
+      "single_strategy_p50_ms": 0.88
     },
     "over_mcp_http": {
       "calls": 100,
       "trajectories_per_call": 60000,
       "workers": 15,
-      "round_trip_p50_ms": 7.07,
-      "round_trip_p95_ms": 7.47,
-      "server_p50_ms": 6.51,
-      "server_p95_ms": 6.92
+      "round_trip_p50_ms": 7.04,
+      "round_trip_p95_ms": 7.53,
+      "server_p50_ms": 6.49,
+      "server_p95_ms": 6.88
     }
   },
   "duckdb_olap": {
@@ -90,10 +90,10 @@
     "queries": {
       "degradation_leaderboard": {
         "p50_ms": 1.17,
-        "p95_ms": 1.27
+        "p95_ms": 1.34
       },
       "stint_summary": {
-        "p50_ms": 1.24,
+        "p50_ms": 1.3,
         "p95_ms": 1.35
       },
       "pace_delta": {
@@ -101,12 +101,12 @@
         "p95_ms": 1.12
       },
       "decision_scoped_model_sql": {
-        "p50_ms": 0.9,
-        "p95_ms": 0.96
+        "p50_ms": 0.22,
+        "p95_ms": 0.3
       },
       "field_at_decision_instant": {
         "p50_ms": 1.37,
-        "p95_ms": 1.45
+        "p95_ms": 1.48
       }
     },
     "median_of_p50_ms": 1.17
@@ -114,7 +114,7 @@
   "raw": {
     "burst": {
       "median": {
-        "committed_events_per_s": 753196.731691082,
+        "committed_events_per_s": 685392.247704432,
         "median_trial": {
           "mode": "burst",
           "events": 200000,
@@ -124,45 +124,45 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 0,
-          "produce_seconds": 0.199715542,
-          "producer_events_per_s": 1001424.3157901051,
-          "end_to_end_seconds": 0.215617125,
-          "sustained_events_per_s": 927570.1083575806,
-          "committed_seconds": 0.265534875,
-          "committed_events_per_s": 753196.731691082,
+          "produce_seconds": 0.208459334,
+          "producer_events_per_s": 959419.7398711827,
+          "end_to_end_seconds": 0.22154575,
+          "sustained_events_per_s": 902748.0779929202,
+          "committed_seconds": 0.291803709,
+          "committed_events_per_s": 685392.247704432,
           "produce_to_processed_latency": {
             "count": 200000,
-            "p50_ms": 16.896,
+            "p50_ms": 18.944,
             "p95_ms": 30.208,
             "p99_ms": 33.792,
-            "mean_ms": 16.388967830000002,
-            "max_ms": 36.585
+            "mean_ms": 18.52866914,
+            "max_ms": 35.251
           },
           "stream_to_trigger_latency": {
-            "count": 285,
-            "p50_ms": 16.128,
-            "p95_ms": 26.112,
-            "p99_ms": 29.184,
-            "mean_ms": 14.91578947368421,
-            "max_ms": 31
+            "count": 297,
+            "p50_ms": 17.92,
+            "p95_ms": 28.16,
+            "p99_ms": 32.884,
+            "mean_ms": 17.397306397306398,
+            "max_ms": 33
           },
-          "triggers": 285,
+          "triggers": 297,
           "laps": 1212,
-          "parquet_files": 16,
-          "parquet_rows": 201497,
+          "parquet_files": 15,
+          "parquet_rows": 201509,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_3",
-          "telemetry_files_on_disk": 12
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_0",
+          "telemetry_files_on_disk": 11
         },
         "sustained_events_per_s_range": [
-          883491.5721220984,
-          985356.5765023358
+          875256.7647774796,
+          958408.2724741685
         ],
         "trials": 5,
         "trigger_p99_ms_range": [
-          14.08,
-          58.368
+          18.944,
+          41.98
         ]
       },
       "monte_carlo": {
@@ -171,10 +171,10 @@
         "strategies": 6,
         "workers": 15,
         "p50_ms": 7.04,
-        "p95_ms": 7.5445,
-        "p99_ms": 7.5445,
-        "mean_ms": 6.91038,
-        "single_strategy_p50_ms": 0.848
+        "p95_ms": 7.552,
+        "p99_ms": 7.808,
+        "mean_ms": 6.711065,
+        "single_strategy_p50_ms": 0.88
       },
       "trials": [
         {
@@ -186,155 +186,75 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 0,
-          "produce_seconds": 0.193625833,
-          "producer_events_per_s": 1032920.0236416801,
-          "end_to_end_seconds": 0.202972208,
-          "sustained_events_per_s": 985356.5765023358,
-          "committed_seconds": 0.259035625,
-          "committed_events_per_s": 772094.5719338797,
+          "produce_seconds": 0.208459334,
+          "producer_events_per_s": 959419.7398711827,
+          "end_to_end_seconds": 0.22154575,
+          "sustained_events_per_s": 902748.0779929202,
+          "committed_seconds": 0.291803709,
+          "committed_events_per_s": 685392.247704432,
           "produce_to_processed_latency": {
             "count": 200000,
-            "p50_ms": 12.544,
-            "p95_ms": 18.944,
-            "p99_ms": 20.992,
-            "mean_ms": 12.753287375,
-            "max_ms": 24.402
-          },
-          "stream_to_trigger_latency": {
-            "count": 292,
-            "p50_ms": 11.008,
-            "p95_ms": 18.944,
-            "p99_ms": 19.968,
-            "mean_ms": 11.66095890410959,
-            "max_ms": 21
-          },
-          "triggers": 292,
-          "laps": 1212,
-          "parquet_files": 15,
-          "parquet_rows": 201504,
-          "sink_errors": 0,
-          "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_0",
-          "telemetry_files_on_disk": 11
-        },
-        {
-          "mode": "burst",
-          "events": 200000,
-          "sessions": [
-            9165,
-            9636
-          ],
-          "partitions": 20,
-          "target_rate_events_per_s": 0,
-          "produce_seconds": 0.203782291,
-          "producer_events_per_s": 981439.5501128212,
-          "end_to_end_seconds": 0.20813925,
-          "sustained_events_per_s": 960895.1699403164,
-          "committed_seconds": 0.248719916,
-          "committed_events_per_s": 804117.3510206557,
-          "produce_to_processed_latency": {
-            "count": 200000,
-            "p50_ms": 7.552,
-            "p95_ms": 13.056,
-            "p99_ms": 15.104,
-            "mean_ms": 7.98073816,
-            "max_ms": 16.477
-          },
-          "stream_to_trigger_latency": {
-            "count": 301,
-            "p50_ms": 6.016,
-            "p95_ms": 12.032,
-            "p99_ms": 14.08,
-            "mean_ms": 6.737541528239202,
-            "max_ms": 16
-          },
-          "triggers": 301,
-          "laps": 1212,
-          "parquet_files": 15,
-          "parquet_rows": 201513,
-          "sink_errors": 0,
-          "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_1",
-          "telemetry_files_on_disk": 11
-        },
-        {
-          "mode": "burst",
-          "events": 200000,
-          "sessions": [
-            9165,
-            9636
-          ],
-          "partitions": 20,
-          "target_rate_events_per_s": 0,
-          "produce_seconds": 0.19575775,
-          "producer_events_per_s": 1021670.9172433786,
-          "end_to_end_seconds": 0.226374542,
-          "sustained_events_per_s": 883491.5721220984,
-          "committed_seconds": 0.302531917,
-          "committed_events_per_s": 661087.2729834982,
-          "produce_to_processed_latency": {
-            "count": 200000,
-            "p50_ms": 12.032,
-            "p95_ms": 41.984,
-            "p99_ms": 58.368,
-            "mean_ms": 17.168391975,
-            "max_ms": 61.8
-          },
-          "stream_to_trigger_latency": {
-            "count": 282,
-            "p50_ms": 11.008,
-            "p95_ms": 37.888,
-            "p99_ms": 58.368,
-            "mean_ms": 15.379432624113475,
-            "max_ms": 61
-          },
-          "triggers": 282,
-          "laps": 1212,
-          "parquet_files": 17,
-          "parquet_rows": 201494,
-          "sink_errors": 0,
-          "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_2",
-          "telemetry_files_on_disk": 13
-        },
-        {
-          "mode": "burst",
-          "events": 200000,
-          "sessions": [
-            9165,
-            9636
-          ],
-          "partitions": 20,
-          "target_rate_events_per_s": 0,
-          "produce_seconds": 0.199715542,
-          "producer_events_per_s": 1001424.3157901051,
-          "end_to_end_seconds": 0.215617125,
-          "sustained_events_per_s": 927570.1083575806,
-          "committed_seconds": 0.265534875,
-          "committed_events_per_s": 753196.731691082,
-          "produce_to_processed_latency": {
-            "count": 200000,
-            "p50_ms": 16.896,
+            "p50_ms": 18.944,
             "p95_ms": 30.208,
             "p99_ms": 33.792,
-            "mean_ms": 16.388967830000002,
-            "max_ms": 36.585
+            "mean_ms": 18.52866914,
+            "max_ms": 35.251
           },
           "stream_to_trigger_latency": {
-            "count": 285,
-            "p50_ms": 16.128,
-            "p95_ms": 26.112,
-            "p99_ms": 29.184,
-            "mean_ms": 14.91578947368421,
-            "max_ms": 31
+            "count": 297,
+            "p50_ms": 17.92,
+            "p95_ms": 28.16,
+            "p99_ms": 32.884,
+            "mean_ms": 17.397306397306398,
+            "max_ms": 33
           },
-          "triggers": 285,
+          "triggers": 297,
           "laps": 1212,
-          "parquet_files": 16,
-          "parquet_rows": 201497,
+          "parquet_files": 15,
+          "parquet_rows": 201509,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_3",
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_0",
+          "telemetry_files_on_disk": 11
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.19165575,
+          "producer_events_per_s": 1043537.6971470983,
+          "end_to_end_seconds": 0.222570625,
+          "sustained_events_per_s": 898591.1775194952,
+          "committed_seconds": 0.316106333,
+          "committed_events_per_s": 632698.4913649294,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 13.568,
+            "p95_ms": 33.792,
+            "p99_ms": 41.984,
+            "mean_ms": 16.086821744999998,
+            "max_ms": 45.009
+          },
+          "stream_to_trigger_latency": {
+            "count": 286,
+            "p50_ms": 13.056,
+            "p95_ms": 32.256,
+            "p99_ms": 41.98,
+            "mean_ms": 15.136363636363637,
+            "max_ms": 43
+          },
+          "triggers": 286,
+          "laps": 1212,
+          "parquet_files": 16,
+          "parquet_rows": 201498,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_1",
           "telemetry_files_on_disk": 12
         },
         {
@@ -346,35 +266,115 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 0,
-          "produce_seconds": 0.205301375,
-          "producer_events_per_s": 974177.5962289585,
-          "end_to_end_seconds": 0.216027708,
-          "sustained_events_per_s": 925807.1654400924,
-          "committed_seconds": 0.277170417,
-          "committed_events_per_s": 721577.7288382115,
+          "produce_seconds": 0.202661125,
+          "producer_events_per_s": 986869.0899648366,
+          "end_to_end_seconds": 0.209166375,
+          "sustained_events_per_s": 956176.6321188097,
+          "committed_seconds": 0.298917,
+          "committed_events_per_s": 669082.0528775547,
           "produce_to_processed_latency": {
             "count": 200000,
-            "p50_ms": 9.984,
-            "p95_ms": 17.92,
-            "p99_ms": 19.968,
-            "mean_ms": 10.772916665,
-            "max_ms": 21.992
+            "p50_ms": 11.008,
+            "p95_ms": 26.112,
+            "p99_ms": 30.208,
+            "mean_ms": 12.536992029999999,
+            "max_ms": 32.893
           },
           "stream_to_trigger_latency": {
-            "count": 289,
-            "p50_ms": 8.064,
-            "p95_ms": 16.896,
-            "p99_ms": 19.968,
-            "mean_ms": 9.59515570934256,
-            "max_ms": 21
+            "count": 287,
+            "p50_ms": 9.984,
+            "p95_ms": 15.104,
+            "p99_ms": 27.136,
+            "mean_ms": 10.425087108013937,
+            "max_ms": 30
           },
-          "triggers": 289,
+          "triggers": 287,
           "laps": 1212,
           "parquet_files": 16,
-          "parquet_rows": 201501,
+          "parquet_rows": 201499,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/trial_4",
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_2",
+          "telemetry_files_on_disk": 12
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.195422458,
+          "producer_events_per_s": 1023423.8277772558,
+          "end_to_end_seconds": 0.228504375,
+          "sustained_events_per_s": 875256.7647774796,
+          "committed_seconds": 0.325176375,
+          "committed_events_per_s": 615050.8320292333,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 15.616,
+            "p95_ms": 26.112,
+            "p99_ms": 31.232,
+            "mean_ms": 16.06278624,
+            "max_ms": 37.114
+          },
+          "stream_to_trigger_latency": {
+            "count": 290,
+            "p50_ms": 15.104,
+            "p95_ms": 23.04,
+            "p99_ms": 27.136,
+            "mean_ms": 14.89655172413793,
+            "max_ms": 30
+          },
+          "triggers": 290,
+          "laps": 1212,
+          "parquet_files": 16,
+          "parquet_rows": 201502,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_3",
+          "telemetry_files_on_disk": 12
+        },
+        {
+          "mode": "burst",
+          "events": 200000,
+          "sessions": [
+            9165,
+            9636
+          ],
+          "partitions": 20,
+          "target_rate_events_per_s": 0,
+          "produce_seconds": 0.201865417,
+          "producer_events_per_s": 990759.1056074752,
+          "end_to_end_seconds": 0.208679334,
+          "sustained_events_per_s": 958408.2724741685,
+          "committed_seconds": 0.289326292,
+          "committed_events_per_s": 691261.0624408791,
+          "produce_to_processed_latency": {
+            "count": 200000,
+            "p50_ms": 8.96,
+            "p95_ms": 14.08,
+            "p99_ms": 18.944,
+            "mean_ms": 8.89210636,
+            "max_ms": 20.996
+          },
+          "stream_to_trigger_latency": {
+            "count": 291,
+            "p50_ms": 8.064,
+            "p95_ms": 15.104,
+            "p99_ms": 18.944,
+            "mean_ms": 8.625429553264604,
+            "max_ms": 20
+          },
+          "triggers": 291,
+          "laps": 1212,
+          "parquet_files": 16,
+          "parquet_rows": 201503,
+          "sink_errors": 0,
+          "decode_errors": 0,
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/trial_4",
           "telemetry_files_on_disk": 12
         }
       ],
@@ -388,42 +388,42 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 0,
-          "produce_seconds": 0.402139959,
-          "producer_events_per_s": 497339.2857982561,
-          "end_to_end_seconds": 1.261184542,
-          "sustained_events_per_s": 158581.07464815406,
-          "committed_seconds": 1.330988834,
-          "committed_events_per_s": 150264.2207740715,
+          "produce_seconds": 0.447594041,
+          "producer_events_per_s": 446833.4733705715,
+          "end_to_end_seconds": 1.339538916,
+          "sustained_events_per_s": 149305.10611608092,
+          "committed_seconds": 1.447207208,
+          "committed_events_per_s": 138197.21107967285,
           "produce_to_processed_latency": {
             "count": 200000,
             "p50_ms": 1081.344,
-            "p95_ms": 1128.852,
-            "p99_ms": 1128.852,
-            "mean_ms": 985.8509556099999,
-            "max_ms": 1143.592
+            "p95_ms": 1188.589,
+            "p99_ms": 1188.589,
+            "mean_ms": 1097.3367786449999,
+            "max_ms": 1197.53
           },
           "stream_to_trigger_latency": {
-            "count": 230,
+            "count": 238,
             "p50_ms": 1081.344,
-            "p95_ms": 1127.556,
-            "p99_ms": 1127.556,
-            "mean_ms": 1018.408695652174,
-            "max_ms": 1141
+            "p95_ms": 1146.88,
+            "p99_ms": 1186.324,
+            "mean_ms": 1097.7563025210084,
+            "max_ms": 1193
           },
-          "triggers": 230,
+          "triggers": 238,
           "laps": 1212,
           "parquet_files": 23,
-          "parquet_rows": 201442,
+          "parquet_rows": 201450,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3229876669/warmup_0",
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-bench-3924182295/warmup_0",
           "telemetry_files_on_disk": 19
         }
       ]
     },
     "paced": {
       "median": {
-        "committed_events_per_s": 19961.171280111284,
+        "committed_events_per_s": 19960.789109708203,
         "median_trial": {
           "mode": "paced",
           "events": 200000,
@@ -433,45 +433,45 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 20000,
-          "produce_seconds": 10.000658042,
-          "producer_events_per_s": 19998.68400259816,
-          "end_to_end_seconds": 10.002877333,
-          "sustained_events_per_s": 19994.246989332743,
-          "committed_seconds": 10.019452125,
-          "committed_events_per_s": 19961.171280111284,
+          "produce_seconds": 10.006665958,
+          "producer_events_per_s": 19986.676965079125,
+          "end_to_end_seconds": 10.008987042,
+          "sustained_events_per_s": 19982.042054880705,
+          "committed_seconds": 10.019643958,
+          "committed_events_per_s": 19960.789109708203,
           "produce_to_processed_latency": {
             "count": 200000,
             "p50_ms": 2.112,
             "p95_ms": 3.392,
-            "p99_ms": 7.552,
-            "mean_ms": 2.2929771949999997,
-            "max_ms": 26.466
+            "p99_ms": 7.808,
+            "mean_ms": 2.26897466,
+            "max_ms": 20.511
           },
           "stream_to_trigger_latency": {
-            "count": 313,
+            "count": 309,
             "p50_ms": 2.016,
             "p95_ms": 3.008,
-            "p99_ms": 3.008,
-            "mean_ms": 1.8146964856230032,
-            "max_ms": 20
+            "p99_ms": 4.032,
+            "mean_ms": 1.9352750809061487,
+            "max_ms": 15
           },
-          "triggers": 313,
+          "triggers": 309,
           "laps": 1212,
-          "parquet_files": 24,
-          "parquet_rows": 201525,
+          "parquet_files": 26,
+          "parquet_rows": 201521,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-9x3jmuc4/trial_0",
-          "telemetry_files_on_disk": 12
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-vmhwqiuu/trial_0",
+          "telemetry_files_on_disk": 14
         },
         "sustained_events_per_s_range": [
-          19994.246989332743,
-          19994.246989332743
+          19982.042054880705,
+          19982.042054880705
         ],
         "trials": 1,
         "trigger_p99_ms_range": [
-          3.008,
-          3.008
+          4.032,
+          4.032
         ]
       },
       "trials": [
@@ -484,36 +484,36 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 20000,
-          "produce_seconds": 10.000658042,
-          "producer_events_per_s": 19998.68400259816,
-          "end_to_end_seconds": 10.002877333,
-          "sustained_events_per_s": 19994.246989332743,
-          "committed_seconds": 10.019452125,
-          "committed_events_per_s": 19961.171280111284,
+          "produce_seconds": 10.006665958,
+          "producer_events_per_s": 19986.676965079125,
+          "end_to_end_seconds": 10.008987042,
+          "sustained_events_per_s": 19982.042054880705,
+          "committed_seconds": 10.019643958,
+          "committed_events_per_s": 19960.789109708203,
           "produce_to_processed_latency": {
             "count": 200000,
             "p50_ms": 2.112,
             "p95_ms": 3.392,
-            "p99_ms": 7.552,
-            "mean_ms": 2.2929771949999997,
-            "max_ms": 26.466
+            "p99_ms": 7.808,
+            "mean_ms": 2.26897466,
+            "max_ms": 20.511
           },
           "stream_to_trigger_latency": {
-            "count": 313,
+            "count": 309,
             "p50_ms": 2.016,
             "p95_ms": 3.008,
-            "p99_ms": 3.008,
-            "mean_ms": 1.8146964856230032,
-            "max_ms": 20
+            "p99_ms": 4.032,
+            "mean_ms": 1.9352750809061487,
+            "max_ms": 15
           },
-          "triggers": 313,
+          "triggers": 309,
           "laps": 1212,
-          "parquet_files": 24,
-          "parquet_rows": 201525,
+          "parquet_files": 26,
+          "parquet_rows": 201521,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-9x3jmuc4/trial_0",
-          "telemetry_files_on_disk": 12
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-vmhwqiuu/trial_0",
+          "telemetry_files_on_disk": 14
         }
       ],
       "warmup": [
@@ -526,35 +526,35 @@
           ],
           "partitions": 20,
           "target_rate_events_per_s": 20000,
-          "produce_seconds": 10.002872542,
-          "producer_events_per_s": 19994.256565825588,
-          "end_to_end_seconds": 10.005116875,
-          "sustained_events_per_s": 19989.77148380388,
-          "committed_seconds": 10.012856833,
-          "committed_events_per_s": 19974.31935118132,
+          "produce_seconds": 10.007604209,
+          "producer_events_per_s": 19984.80313801147,
+          "end_to_end_seconds": 10.00988125,
+          "sustained_events_per_s": 19980.257008543434,
+          "committed_seconds": 10.024481375,
+          "committed_events_per_s": 19951.156824808804,
           "produce_to_processed_latency": {
             "count": 200000,
             "p50_ms": 2.112,
-            "p95_ms": 499.712,
+            "p95_ms": 466.944,
             "p99_ms": 901.12,
-            "mean_ms": 51.690226280000005,
-            "max_ms": 1016.988
+            "mean_ms": 49.135181945,
+            "max_ms": 1019.464
           },
           "stream_to_trigger_latency": {
-            "count": 310,
+            "count": 309,
             "p50_ms": 2.016,
-            "p95_ms": 4.032,
+            "p95_ms": 3.008,
             "p99_ms": 368.64,
-            "mean_ms": 16.816129032258065,
-            "max_ms": 762
+            "mean_ms": 14.941747572815533,
+            "max_ms": 768
           },
-          "triggers": 310,
+          "triggers": 309,
           "laps": 1212,
           "parquet_files": 25,
-          "parquet_rows": 201522,
+          "parquet_rows": 201521,
           "sink_errors": 0,
           "decode_errors": 0,
-          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-9x3jmuc4/warmup_0",
+          "lakehouse": "/var/folders/tm/k0n4nq8s30v0st6hxwk69hc00000gn/T/pitwall-paced-vmhwqiuu/warmup_0",
           "telemetry_files_on_disk": 13
         }
       ]
