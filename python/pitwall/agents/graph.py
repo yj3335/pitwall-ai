@@ -23,6 +23,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from pitwall.agents import rules
+from pitwall.regulations import check_citations
 from pitwall.agents.llm import FailoverLLM
 from pitwall.mcp_client.client import MCPError
 from pitwall.olap import SCHEMA_DOC, AsOf, Lakehouse, UnsafeSQLError
@@ -415,8 +416,13 @@ async def verifier_node(state: PitWallState, config) -> dict:
         fb += ("\n" if fb else "") + "Advisory: " + rules.feedback(soft)
     if critic["issues"] and not critic["ok"]:
         fb += ("\n" if fb else "") + "Reviewer notes (advisory): " + "; ".join(critic["issues"])
+    # advisory: cited articles must exist in the edition in force (existence only)
+    cites = check_citations(c.edition, p.get("fia_article_citations") or [])
+    if cites["invalid"]:
+        fb += ("\n" if fb else "") + (f"Advisory: these citations are not articles of the {c.edition} regulations: "
+                                       + ", ".join(cites["invalid"]))
     verdict = {"ok": not hard, "violations": [v.as_dict() for v in hard], "advisories": [v.as_dict() for v in soft],
-               "critic": critic, "feedback": fb,
+               "critic": critic, "feedback": fb, "citations": cites,
                "traffic": traffic.get("verdict") if traffic else None, "revise": revise}
     update: dict[str, Any] = {"verdict": verdict}
     if revise:

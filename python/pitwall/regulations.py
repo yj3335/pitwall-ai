@@ -96,3 +96,37 @@ def article_ref(edition: str, clause: str) -> str:
 def cite(edition: str, clause: str) -> str:
     e = editions()[edition]
     return f"Art. {article_ref(edition, clause)} ({e.season} Sporting Regulations, Issue {e.issue})"
+
+
+# "Art. 30.5(m)", "Article 54.4 c)", "34.15", "B1.10.5" (one string may hold several)
+_CITATION = re.compile(r"(?<![\d.])(b?\d{1,2}\.\d{1,2}(?:\.\d{1,2})?)(?:\s*\(\s*([a-z])\s*\)|\s+([a-z])\))?", re.IGNORECASE)
+
+
+@lru_cache(maxsize=None)
+def _articles(edition: str) -> dict[str, set[str]]:
+    """Article number -> paragraph letters indexed for it, in one edition."""
+    out: dict[str, set[str]] = {}
+    for c in _chunks(edition):
+        letters = out.setdefault(c["article"].lower(), set())
+        para = re.sub(r"p\d+$", "", c.get("paragraphs") or "")
+        letters.update(para)
+        letters.update(m.group(1) for m in re.finditer(r"(?:^|\s)([a-z])\)\s", _norm(c["text"])))
+    return out
+
+
+def check_citations(edition: str, citations: list[str]) -> dict:
+    """Which cited articles exist in the edition in force. A citation with no
+    article number ("UNSAFE RELEASE") cannot be verified and counts as invalid.
+    This checks existence only: a real article can still be the wrong one."""
+    arts = _articles(edition)
+    valid, invalid = [], []
+    for c in citations or []:
+        refs = [(m.group(1).lower(), (m.group(2) or m.group(3) or "").lower()) for m in _CITATION.finditer(str(c))]
+        if not refs:
+            invalid.append(str(c))
+            continue
+        for art, letter in refs:
+            ref = f"{art}({letter})" if letter else art
+            ok = art in arts and (not letter or letter in arts[art])
+            (valid if ok else invalid).append(ref)
+    return {"total": len(valid) + len(invalid), "valid": valid, "invalid": invalid}

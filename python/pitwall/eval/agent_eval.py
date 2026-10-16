@@ -28,6 +28,9 @@ Metrics
   rejoined a DRS train under green) and whose final call does neither.
 - Failover recovery: injected or real primary failures whose request was then
   served by the fast model; client errors: runs that raised.
+- Citation validity: cited articles that exist in the edition in force (a
+  citation with no article number counts as invalid; existence only, not
+  whether it is the right rule).
 - End-to-end latency p50 / p95 per arm.
 """
 from __future__ import annotations
@@ -46,6 +49,7 @@ from pitwall.agents.llm import FailoverLLM, FaultInjector, OllamaChat
 from pitwall.eval.scenarios import load_scenarios, materialise
 from pitwall.mcp_client.client import HTTPMCPClient
 from pitwall.olap import Lakehouse
+from pitwall.regulations import check_citations
 from pitwall.rag.store import HybridRetriever
 
 FAULT_RATE = 0.10
@@ -113,6 +117,7 @@ async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat
         rec["final"] = {k: final.get(k) for k in ("recommended_action", "target_compound", "pit_lap", "penalty_hold_s",
                                                   "fia_article_citations")}
         rec.update(await judge(scn, final, deps))
+        rec["citations_check"] = check_citations(scn["context"]["edition"], final.get("fia_article_citations") or [])
         rec["error"] = None
     except Exception as e:  # noqa: BLE001 - a client-visible failure, counted
         rec.update(final=None, compliant=False, traffic_clean=False, agrees=False, forbidden=False, violations=[],
@@ -123,6 +128,17 @@ async def run_one(scn: dict, mode: str, deps_base: dict, graph, chat: OllamaChat
                   "injected": llm.faults.injected, "by_model": s["by_model"],
                   "errors": [e[:200] for e in s["errors"]]}
     return rec
+
+
+def citation_summary(rows: list[dict]) -> dict:
+    checks = [x["citations_check"] for x in rows if x.get("citations_check")]
+    total = sum(c["total"] for c in checks)
+    valid = sum(len(c["valid"]) for c in checks)
+    return {"citations_total": total, "citations_valid": valid,
+            "citation_validity_rate": round(valid / total, 4) if total else None,
+            "runs_with_invalid_citation": sum(bool(c["invalid"]) for c in checks),
+            "runs_without_citation": sum(c["total"] == 0 for c in checks),
+            "invalid_citations": sorted({i for c in checks for i in c["invalid"]})}
 
 
 def correction_counts(caught: list[dict]) -> dict:
@@ -162,6 +178,7 @@ def summarise(rows: list[dict]) -> dict:
         "recovered_by_fallback": recovered,
         "failover_recovery_rate": round(recovered / faults, 4) if faults else None,
         "client_errors": sum(x["error"] is not None for x in rows),
+        **citation_summary(rows),
         "non_compliant": [x["id"] for x in rows if not x["compliant"]],
         "disagreements": [x["id"] for x in rows if not x["agrees"]],
     }

@@ -12,6 +12,12 @@ actually hit while building and verifying the system, with how it was found.
   answers what the LLM layers add over the simulator itself. The handoff audit had
   estimated this from recorded simulator picks.
 
+- **Citation validity.** `regulations.check_citations` looks up every cited article
+  and paragraph in the edition in force. A citation with no article number, such as
+  "UNSAFE RELEASE", counts as invalid. Void articles are not citable. The verifier
+  reports invalid citations as an advisory, and the benchmark reports citation
+  validity for each arm. It checks existence, not relevance.
+
 ### Fixed in the handoff audit
 - **Kafka offsets were committed before their Parquet rows were durable.** An
   offset was marked as soon as the engine had handled the record, while its rows

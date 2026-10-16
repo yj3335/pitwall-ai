@@ -39,3 +39,15 @@ def test_every_clause_resolves_in_every_edition():
         for clause in r.CLAUSES:
             assert r.article_ref(edition, clause)
     assert "2023 Sporting Regulations, Issue 6" in r.cite("2023-i6", "two_compound")
+
+
+def test_citations_are_checked_against_the_edition_in_force():
+    from pitwall.regulations import check_citations
+
+    r = check_citations("2023-i6", ["Art. 30.5(n)", "Article 54.4 c)", "Art. 34.15 / 54.3(d)"])
+    assert r["invalid"] == [] and r["total"] == 4
+    r = check_citations("2023-i6", ["UNSAFE RELEASE", "Art. 99.1", "Art. 30.5(z)"])
+    assert r["valid"] == [] and r["invalid"] == ["UNSAFE RELEASE", "99.1", "30.5(z)"]
+    # void articles of the 2025 issue are not citable
+    assert check_citations("2025-i5", ["Art. 29.1", "Art. 41.1"])["valid"] == []
+    assert check_citations("2025-i5", ["Art. 55.12"])["invalid"] == []
