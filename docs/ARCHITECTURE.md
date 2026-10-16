@@ -76,13 +76,15 @@ and each goroutine owns a `stream.Engine`, so driver state needs no locks. A rec
 offset is marked only after the engine has applied it (`AutoCommitMarks`, committed
 every second), so the engine stage is at-least-once.
 
-That guarantee does not reach the lakehouse. The Parquet sink buffers rows (20,000
-telemetry rows, or 2 s for laps and triggers) after their offsets may already be
-committed:
+That guarantee does not reach the lakehouse. Each Parquet sink buffers rows for up
+to 2 s (or until a batch fills: 20,000 telemetry rows, 2,000 laps, 500 triggers), and
+their offsets may already be committed during that time:
 - On SIGTERM the processor flushes every buffer before leaving the group, so nothing
   is lost.
-- On a hard crash (`kill -9`, power loss) the rows still in the buffer are lost from
-  the lakehouse, and the restarted engines rebuild their 5-lap windows from new laps.
+- On a hard crash (`kill -9`, power loss) the rows still in the buffer, up to about
+  2 s of data, are lost from the lakehouse, and the restarted engines rebuild their
+  5-lap windows from new laps. The writer also does not fsync the directory after the
+  rename, so a power loss can lose a just-committed file.
 
 Closing the gap needs offsets committed only once their batch is durable, or
 idempotent rows keyed by `(session, driver, seq)` and de-duplicated on read.

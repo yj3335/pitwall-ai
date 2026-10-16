@@ -209,6 +209,7 @@ tags (`apache/kafka:4.0.0`, `qdrant/qdrant:v1.19.2`, `golang:1.26`, `python:3.13
 
 - `kafka-storage.sh format` errors about `controller.quorum.voters`: an old
   `.run/kraft.properties` is in place; `rm -rf .run .kafka_data` and run `make services-up` again.
-- The DuckDB view shows no rows while the processor runs: lap and trigger batches
-  commit every 2 s or 2,000 rows; telemetry every 20,000 rows (`-flush-rows`).
+- The DuckDB view shows no rows while the processor runs: every table commits a batch
+  every 2 s, or sooner when a batch fills (telemetry 20,000 rows, `-flush-rows`; laps
+  2,000; triggers 500).
 - The first hybrid query is slow: the cross-encoder is downloaded and loaded on first use into `.venv/fastembed_cache/`.
