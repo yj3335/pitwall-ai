@@ -6,7 +6,7 @@ SESSION ?= 9558
 MODELS := qwen2.5-coder:14b llama3.2:3b bge-m3
 
 .PHONY: venv ollama-pull services-up services-down status build data lakehouse index \
-        run stop mcp-sim api processor replay web-dev test test-go test-py test-web test-web-live bench smoke clean
+        run stop mcp-sim api processor replay web-dev test test-go test-py test-web test-web-live bench robustness smoke clean
 
 ## toolchain ---------------------------------------------------------------
 venv:
@@ -81,6 +81,9 @@ test-web-live:   # real stack + real models: needs `make run` and a replay
 
 bench: build
 	bash scripts/bench.sh
+
+robustness:   # about 2 hours: fault seeds, temperature sweep, input sensitivity (after make bench)
+	bash scripts/robustness.sh
 
 smoke:
 	bash scripts/smoke-test.sh
