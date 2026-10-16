@@ -12,7 +12,7 @@ is down (`requires_ollama`, `requires_qdrant`, a Kafka dial check). Nothing is m
 except where a test needs a scripted LLM to force a specific code path (the agent's
 cyclic-loop tests), and those still call the real Go MCP server.
 
-## Go (`go test -race ./...`): 38 tests in 7 packages, 0 data races
+## Go (`go test -race ./...`): 39 tests in 7 packages, 0 data races
 
 | Package | What is verified |
 |---|---|
