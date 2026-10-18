@@ -199,12 +199,21 @@ docker compose up -d --build
 docker compose --profile replay run --rm replayer -file data/races/session_9165_events.jsonl.gz -speed 20
 ```
 
-**Status: written but not run.** The development machine has no Docker. Everything in
-`docs/TESTING.md` and `docs/BENCHMARKS.md` was measured on the native `.venv/` stack
-(`make run`). The compose file mirrors that stack's flags and environment variables,
-and `python/requirements.lock` pins the Python versions the tests ran on. The image
-tags (`apache/kafka:4.0.0`, `qdrant/qdrant:v1.19.2`, `golang:1.26`, `python:3.13`,
-`node:22`) are the only parts not exercised.
+**Status: smoke-tested in CI.** The development machine has no Docker, so the
+`compose` job in `.github/workflows/ci.yml` runs it on every push:
+1. Build the Go and Python images.
+2. Start Kafka, the topic job, Qdrant, the lakehouse job, the simulator, the processor
+   and the API.
+3. From the host, check that `:8081`, `:8090` and `:8080` are healthy, that the
+   processor holds its partitions (`/readyz`), and that `/api/status` sees the
+   simulator, the processor, Qdrant and all three race sessions.
+4. Check that MCP `tools/list` returns the four tools.
+
+The check leaves out Ollama (absent on CI), the Qdrant index job (it embeds with
+bge-m3) and the dashboard image. Everything in `docs/TESTING.md` and
+`docs/BENCHMARKS.md` was measured on the native `.venv/` stack (`make run`). The
+API does not wait for the index job: run `docker compose run --rm index` once
+Ollama is up.
 
 ## Configuration
 

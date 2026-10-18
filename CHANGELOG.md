@@ -46,6 +46,16 @@ actually hit while building and verifying the system, with how it was found.
   In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
 
 ### Fixed in the handoff audit
+- **Services listened on every network interface, with no authentication.**
+  - **Locally.** The simulator, the processor and the API now bind `127.0.0.1` (the
+    Go binaries default to it).
+  - **In Compose.** Services listen on `0.0.0.0` inside their containers, which the
+    bridge network needs, and every published port is bound to the host's loopback.
+- **The Compose file had never been run.** A CI job now builds the images, starts the
+  stack and checks health, readiness and status on every push. It passed first
+  time.
+  - **One change it needed.** The API no longer waits for the Qdrant index job,
+    which needs Ollama.
 - **Re-delivered Kafka records were written to the lakehouse twice.** Delivery is
   at-least-once: after a crash, restart or rebalance, records since the last commit
   arrive again, and their rows were already on disk.

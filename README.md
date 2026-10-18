@@ -203,8 +203,9 @@ docker/         Dockerfiles for docker-compose.yml
   from being written twice after a crash, restart or rebalance. The marks assume one
   processor per lakehouse directory, as the stack runs it
   ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
-- **Docker Compose not run.** `docker-compose.yml` is written but unexercised: the
-  development machine has no Docker. Every number here comes from the native `.venv/`
-  stack.
+- **Docker Compose is smoke-tested, not benchmarked.** CI builds the images and
+  checks the containerised stack's health, readiness and status on every push. Ollama,
+  the Qdrant index job and the dashboard image are not part of that check. Every
+  number here comes from the native `.venv/` stack.
 - **Unchecked radio text.** The engineer radio text is model-written and not checked
   by the guardrail.

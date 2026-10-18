@@ -1,6 +1,6 @@
-# Full PitWall AI stack in containers. The supported, tested path is the native
-# .venv toolchain (make run); this file mirrors it and has not been run on the
-# development machine, which has no Docker (docs/OPERATIONS.md).
+# Full PitWall AI stack in containers. The benchmarked path is the native .venv
+# toolchain (make run); this file mirrors it and is smoke-tested by the compose
+# job in .github/workflows/ci.yml (docs/OPERATIONS.md).
 #
 #   docker compose up -d --build          # Kafka, Qdrant, simulator, processor, API, dashboard
 #   docker compose --profile replay run --rm replayer -file data/races/session_9165_events.jsonl.gz -speed 20
