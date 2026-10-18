@@ -49,6 +49,12 @@ make stop     # stops them and waits for the ports to close (Kafka shuts down gr
 
 Ollama must already be running (`ollama serve`). Logs and pids are in `.run/`.
 
+The MCP simulator, the processor and the API listen on `127.0.0.1` only (the Go
+binaries default to it; pass `-http 0.0.0.0:8081` to expose one deliberately). There
+is no authentication, so nothing is reachable from the network by default. In Docker
+Compose the services listen on `0.0.0.0` inside their containers, which the bridge
+network needs, and every published port is bound to the host's loopback.
+
 The dashboard runs separately:
 
 ```bash

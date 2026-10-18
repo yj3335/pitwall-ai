@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	httpAddr := flag.String("http", ":8081", "HTTP listen address")
+	httpAddr := flag.String("http", "127.0.0.1:8081", "HTTP listen address (loopback by default; 0.0.0.0:8081 in a container)")
 	stdio := flag.Bool("stdio", false, "serve MCP over stdin/stdout instead of HTTP")
 	brokers := flag.String("brokers", "", "Kafka brokers for live driver windows ('' disables)")
 	quiet := flag.Bool("quiet", false, "do not log tool calls")

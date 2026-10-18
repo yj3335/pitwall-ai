@@ -31,7 +31,7 @@ func main() {
 	brokers := flag.String("brokers", "localhost:9092", "comma-separated Kafka brokers")
 	group := flag.String("group", "pitwall-processor", "consumer group")
 	out := flag.String("out", "data/lakehouse", "lakehouse root ('' disables Parquet)")
-	httpAddr := flag.String("http", ":8090", "live state HTTP address ('' disables)")
+	httpAddr := flag.String("http", "127.0.0.1:8090", "live state HTTP address, loopback by default ('' disables)")
 	fromFile := flag.String("from-file", "", "process an events file offline instead of Kafka")
 	noTelemetry := flag.Bool("no-telemetry-table", false, "skip the raw telemetry table (laps/triggers only)")
 	publish := flag.Bool("publish-triggers", true, "produce triggers to f1.triggers")

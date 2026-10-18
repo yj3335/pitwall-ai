@@ -14,4 +14,4 @@ WORKDIR /web
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
 COPY --from=build /web ./
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["npx", "next", "start", "-p", "3000", "-H", "0.0.0.0"]

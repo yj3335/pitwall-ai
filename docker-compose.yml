@@ -6,6 +6,8 @@
 #   docker compose --profile replay run --rm replayer -file data/races/session_9165_events.jsonl.gz -speed 20
 #
 # Ollama stays on the host (GPU / Metal access): run `make ollama-pull` there first.
+# Services listen on 0.0.0.0 inside the containers (the bridge network needs it);
+# every published port is bound to the host's loopback only.
 name: pitwall
 
 x-python: &python
@@ -44,7 +46,7 @@ services:
       KAFKA_NUM_PARTITIONS: 20
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_LOG_RETENTION_HOURS: 6
-    ports: ["29092:29092"]
+    ports: ["127.0.0.1:29092:29092"]
     volumes: ["kafka-data:/var/lib/kafka/data"]
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
@@ -65,7 +67,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.19.2
-    ports: ["6333:6333"]
+    ports: ["127.0.0.1:6333:6333"]
     volumes: ["qdrant-data:/qdrant/storage"]
 
   # One-shot jobs: the deterministic offline lakehouse (make lakehouse) and the
@@ -79,6 +81,8 @@ services:
         rm -rf data/lakehouse/telemetry data/lakehouse/laps data/lakehouse/triggers
         for f in data/races/session_*_events.jsonl.gz; do processor -from-file "$$f" -out data/lakehouse; done
 
+  # embeds the corpus with bge-m3 on the host's Ollama; the API does not wait for
+  # it (retrieval is unavailable until it has run once)
   index:
     <<: *python
     depends_on: { qdrant: { condition: service_started } }
@@ -87,31 +91,31 @@ services:
   mcp-sim:
     <<: *go
     depends_on: { kafka-topics: { condition: service_completed_successfully } }
-    command: ["mcp-sim", "-http", ":8081", "-brokers", "kafka:9092", "-quiet"]
-    ports: ["8081:8081"]
+    command: ["mcp-sim", "-http", "0.0.0.0:8081", "-brokers", "kafka:9092", "-quiet"]
+    ports: ["127.0.0.1:8081:8081"]
     healthcheck: { test: ["CMD", "curl", "-fs", "localhost:8081/healthz"], interval: 5s, retries: 20 }
 
   processor:
     <<: *go
     depends_on: { kafka-topics: { condition: service_completed_successfully } }
-    command: ["processor", "-brokers", "kafka:9092", "-out", "data/lakehouse_live", "-http", ":8090"]
-    ports: ["8090:8090"]
+    command: ["processor", "-brokers", "kafka:9092", "-out", "data/lakehouse_live", "-http", "0.0.0.0:8090"]
+    ports: ["127.0.0.1:8090:8090"]
     stop_grace_period: 20s
-    healthcheck: { test: ["CMD", "curl", "-fs", "localhost:8090/healthz"], interval: 5s, retries: 20 }
+    healthcheck: { test: ["CMD", "curl", "-fs", "localhost:8090/readyz"], interval: 5s, retries: 30 }
 
   api:
     <<: *python
     depends_on:
       lakehouse: { condition: service_completed_successfully }
-      index: { condition: service_completed_successfully }
+      qdrant: { condition: service_started }
       mcp-sim: { condition: service_healthy }
       processor: { condition: service_healthy }
-    ports: ["8080:8080"]
+    ports: ["127.0.0.1:8080:8080"]
 
   web:
     build: { context: ., dockerfile: docker/web.Dockerfile }
     depends_on: [api]
-    ports: ["3000:3000"]
+    ports: ["127.0.0.1:3000:3000"]
 
   replayer:
     <<: *go

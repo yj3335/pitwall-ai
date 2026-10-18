@@ -26,11 +26,12 @@ up() {
   bash "$ROOT/scripts/services.sh" up
   curl -fs -m 2 localhost:11434/api/tags >/dev/null || { echo "Ollama is not running: start it with 'ollama serve'" >&2; exit 1; }
   (cd "$ROOT" && mkdir -p bin && go build -o bin/ ./cmd/...)
-  start mcp-sim 8081 "$ROOT/bin/mcp-sim" -http :8081 -brokers localhost:9092 -quiet
+  # every service listens on loopback only: nothing is reachable from the network
+  start mcp-sim 8081 "$ROOT/bin/mcp-sim" -http 127.0.0.1:8081 -brokers localhost:9092 -quiet
   # the live processor writes its own lakehouse: data/lakehouse is the deterministic
   # offline replay (make lakehouse) that scenarios, tests and benchmarks read
-  start processor 8090 "$ROOT/bin/processor" -brokers localhost:9092 -out "$ROOT/data/lakehouse_live" -http :8090
-  start api 8080 bash -c "cd '$ROOT/python' && exec '$ROOT/.venv/bin/python' -m uvicorn pitwall.api.app:app --host 0.0.0.0 --port 8080"
+  start processor 8090 "$ROOT/bin/processor" -brokers localhost:9092 -out "$ROOT/data/lakehouse_live" -http 127.0.0.1:8090
+  start api 8080 bash -c "cd '$ROOT/python' && exec '$ROOT/.venv/bin/python' -m uvicorn pitwall.api.app:app --host 127.0.0.1 --port 8080"
   # readyz: the processor holds its partitions, so an immediate replay is not skipped
   wait_http localhost:8081/healthz && wait_http localhost:8090/readyz && wait_http localhost:8080/healthz
   echo "stack up:"

@@ -53,7 +53,7 @@ replay: build
 	$(ENV) ./bin/replayer -brokers localhost:9092 -file data/races/session_$(SESSION)_events.jsonl.gz -speed 20
 
 api:
-	$(ENV) cd python && $(PY) -m uvicorn pitwall.api.app:app --host 0.0.0.0 --port 8080
+	$(ENV) cd python && $(PY) -m uvicorn pitwall.api.app:app --host 127.0.0.1 --port 8080
 
 run:
 	bash scripts/run-stack.sh up
