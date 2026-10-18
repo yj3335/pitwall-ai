@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	pq "github.com/parquet-go/parquet-go"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -117,4 +118,98 @@ func TestOffsetsCommitOnlyAfterParquetIsDurable(t *testing.T) {
 	if len(files) == 0 || p.Stats().ParquetRows < n {
 		t.Fatalf("telemetry not on disk: %d files, %d rows", len(files), p.Stats().ParquetRows)
 	}
+}
+
+type lapRow struct {
+	Driver int32 `parquet:"driver_number"`
+	Lap    int32 `parquet:"lap_number"`
+}
+
+type trigRow struct {
+	Driver int32  `parquet:"driver_number"`
+	Ts     int64  `parquet:"ts_ms"`
+	Kind   string `parquet:"kind"`
+}
+
+func readAll[T any](t *testing.T, dir, table string) []T {
+	t.Helper()
+	files, _ := filepath.Glob(filepath.Join(dir, table, "session=*", "*.parquet"))
+	var out []T
+	for _, f := range files {
+		rows, err := pq.ReadFile[T](f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		out = append(out, rows...)
+	}
+	return out
+}
+
+// A restart re-reads records from the last committed offset (at-least-once).
+// The second processor, on the same lakehouse, must write none of the rows
+// the first one already committed, in any of the three tables, and must still
+// write everything new.
+func TestRestartDoesNotDuplicateLakehouseRows(t *testing.T) {
+	events, err := stream.ReadEvents("../../data/races/session_9165_events.jsonl.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	events = events[:30_000]
+	run := func(dir string, evs []stream.Event) *pipeline.Pipeline {
+		p := pipeline.New(pipeline.Config{LakehouseDir: dir, WriterID: fmt.Sprintf("w%d_", time.Now().UnixNano()), WriteTelemetry: true})
+		eng := p.NewEngine()
+		for _, ev := range evs {
+			p.Apply(eng, ev)
+		}
+		if err := p.Close(); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	ref := t.TempDir()
+	run(ref, events)
+	dir := t.TempDir()
+	run(dir, events[:20_000])
+	second := run(dir, events[15_000:]) // 5,000 events delivered again
+	if got := second.Stats().SkippedRows; got < 5_000 {
+		t.Fatalf("second run skipped %d rows, want at least the 5,000 re-delivered telemetry rows", got)
+	}
+
+	tel := readAll[telKeyRow](t, dir, "telemetry")
+	seen := map[int64]bool{}
+	for _, r := range tel {
+		if seen[r.Seq] {
+			t.Fatalf("telemetry seq %d written twice", r.Seq)
+		}
+		seen[r.Seq] = true
+	}
+	if len(tel) != len(events) {
+		t.Fatalf("telemetry rows %d, want %d", len(tel), len(events))
+	}
+	lapSet := func(rows []lapRow) map[lapRow]int {
+		m := map[lapRow]int{}
+		for _, r := range rows {
+			m[r]++
+		}
+		return m
+	}
+	laps, refLaps := lapSet(readAll[lapRow](t, dir, "laps")), lapSet(readAll[lapRow](t, ref, "laps"))
+	for k, n := range laps {
+		if n > 1 {
+			t.Fatalf("lap %+v written %d times", k, n)
+		}
+	}
+	if len(laps) != len(refLaps) {
+		t.Fatalf("%d distinct laps, want %d (as in one uninterrupted run)", len(laps), len(refLaps))
+	}
+	trig := map[trigRow]int{}
+	for _, r := range readAll[trigRow](t, dir, "triggers") {
+		if trig[r]++; trig[r] > 1 {
+			t.Fatalf("trigger %+v written twice", r)
+		}
+	}
+}
+
+type telKeyRow struct {
+	Seq int64 `parquet:"seq"`
 }

@@ -46,6 +46,18 @@ actually hit while building and verifying the system, with how it was found.
   In the GP24 benchmark run, qwen2.5-coder repeated the same rejected stop twice.
 
 ### Fixed in the handoff audit
+- **Re-delivered Kafka records were written to the lakehouse twice.** Delivery is
+  at-least-once: after a crash, restart or rebalance, records since the last commit
+  arrive again, and their rows were already on disk.
+  - **Marks.** The pipeline now keeps high-water marks per session and car, one per
+    table (telemetry seq, lap number, trigger time and kind). They are loaded from
+    the Parquet files at startup and raised as rows are written.
+  - **Why per table.** A single seq mark would lose rows of a table that had not
+    flushed yet.
+  - **Replayed events still feed the engines.**
+  - **Cost.** No measurable throughput cost in an interleaved A/B.
+  - **Proof.** `TestRestartDoesNotDuplicateLakehouseRows`, which fails without the
+    marks.
 - **Two Kafka startup races, exposed by the first CI run on Linux.**
   - *Topics.* `EnsureTopics` returned as soon as the broker accepted the create.
     A caller that looked the topic up immediately could get "topic not found"

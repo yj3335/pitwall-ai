@@ -198,10 +198,10 @@ docker/         Dockerfiles for docker-compose.yml
   make. The prediction is stable under input noise.
 - **Inputs not in OpenF1.** Track wetness and the 2024 Sao Paulo pit loss (one green
   stop measured) are estimates.
-- **At-least-once, not exactly-once.** Kafka offsets are committed only after their
-  Parquet rows are on disk, so a crash loses nothing. But after a crash or a
-  rebalance, records whose rows were written before their offsets were committed
-  are read again, and readers do not de-duplicate them yet
+- **One processor per lakehouse.** Kafka offsets are committed only after their
+  Parquet rows are on disk, and per-table high-water marks stop re-delivered records
+  from being written twice after a crash, restart or rebalance. The marks assume one
+  processor per lakehouse directory, as the stack runs it
   ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 - **Docker Compose not run.** `docker-compose.yml` is written but unexercised: the
   development machine has no Docker. Every number here comes from the native `.venv/`

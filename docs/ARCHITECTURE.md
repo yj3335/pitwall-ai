@@ -87,11 +87,32 @@ and each goroutine owns a `stream.Engine`, so driver state needs no locks.
   offsets never move past lost rows; a restart reads those records again.
 - **SIGTERM.** The processor stops consuming, flushes every sink (which marks the
   offsets of everything written), commits, and only then leaves the group.
-- **What remains.** Delivery is at-least-once, not exactly-once. After a hard crash
-  or a rebalance, a record whose row reached disk but whose offset was not yet
-  committed is read again, so the lakehouse can hold duplicates. Readers do not
-  de-duplicate them yet; the key would be `(session, driver, seq)`. A restarted
-  engine also rebuilds its 5-lap windows from new laps.
+- **Re-delivered records are not written twice.** Kafka delivery is at-least-once:
+  after a crash, restart or rebalance, records whose rows reached disk but whose
+  offsets were not yet committed arrive again. The pipeline keeps high-water marks
+  (`pipeline.Watermarks`) of what each table holds, per session and car:
+  - telemetry: the highest event `seq`;
+  - laps: the highest lap number;
+  - triggers: the latest trigger time and the kinds written at it.
+
+  Each table has its own mark, because the sinks flush independently; one shared
+  mark would drop rows of a table that had not flushed. The marks are loaded from
+  the Parquet files at startup (key columns only: about 0.2 s for 332,787 rows) and
+  raised as rows are handed to the sinks. Rows at or below a mark are skipped and
+  counted (`skipped_rows` in `/v1/stats`).
+- **Replayed events still run through the engines,** so a restarted engine rebuilds
+  its windows from them. Triggers are still published to `f1.triggers`, where the API
+  de-duplicates them.
+- **What remains.** The marks cover one processor per lakehouse directory, which is
+  how the stack runs. Two processors writing the same directory would not see each
+  other's marks after startup. Producers must number each race's events with an
+  increasing `seq`, as the replayer does.
+- **Cost.** None measurable: an interleaved A/B of the stream benchmark gave the same
+  throughput with and without the marks (about 940k events/s sustained either way).
+- **Tests.** `TestRestartDoesNotDuplicateLakehouseRows` (real Singapore events, a
+  restart with 5,000 re-delivered: no duplicate key in any table, and as many
+  distinct laps as an uninterrupted run; it fails without the marks) and
+  `TestWatermarksAreKeptPerTable`.
 - **Tests.** `TestOffsetsCommitOnlyAfterParquetIsDurable` (live broker: nothing is
   committed while rows sit in memory, everything after the flush), and the sink
   barrier tests.

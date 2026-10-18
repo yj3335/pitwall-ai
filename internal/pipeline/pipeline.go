@@ -4,6 +4,7 @@ package pipeline
 
 import (
 	"encoding/json"
+	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,6 +35,8 @@ type Pipeline struct {
 	telemetry *pq.Sink[stream.Event]
 	laps      *pq.Sink[stream.LapRecord]
 	triggers  *pq.Sink[stream.Trigger]
+	// what the lakehouse already holds: re-delivered records are not written twice
+	Marks *Watermarks
 
 	EventLatency   metrics.Hist // Kafka produce -> processed
 	TriggerLatency metrics.Hist // Kafka produce -> trigger detected
@@ -62,6 +65,11 @@ func New(cfg Config) *Pipeline {
 	}
 	p := &Pipeline{Board: stream.NewBoard(), cfg: cfg, started: time.Now()}
 	if cfg.LakehouseDir != "" {
+		marks, err := LoadWatermarks(cfg.LakehouseDir)
+		if err != nil {
+			log.Printf("lakehouse watermarks: %v (rows already on disk may be written again)", err)
+		}
+		p.Marks = marks
 		if cfg.WriteTelemetry {
 			p.telemetry = pq.NewSink(pq.NewBatchWriter[stream.Event](cfg.LakehouseDir, "telemetry", cfg.WriterID), cfg.FlushRows, cfg.FlushEvery)
 		}
@@ -85,12 +93,20 @@ func (p *Pipeline) Apply(eng *stream.Engine, ev stream.Event) {
 	}
 	p.Events.Add(1)
 	if p.telemetry != nil {
-		p.telemetry.Add(ev)
+		if p.Marks.admitTelemetry(ev.SessionKey, ev.DriverNumber, ev.Seq) {
+			p.telemetry.Add(ev)
+		} else {
+			p.Marks.Skipped.Add(1)
+		}
 	}
 	if res.Lap != nil {
 		p.Laps.Add(1)
 		if p.laps != nil {
-			p.laps.Add(*res.Lap)
+			if p.Marks.admitLap(res.Lap.SessionKey, res.Lap.DriverNumber, res.Lap.LapNumber) {
+				p.laps.Add(*res.Lap)
+			} else {
+				p.Marks.Skipped.Add(1)
+			}
 		}
 	}
 	for _, t := range res.Triggers {
@@ -99,7 +115,11 @@ func (p *Pipeline) Apply(eng *stream.Engine, ev stream.Event) {
 			p.TriggerLatency.RecordMicros((now - t.ProducedMs) * 1000)
 		}
 		if p.triggers != nil {
-			p.triggers.Add(t)
+			if p.Marks.admitTrigger(t.SessionKey, t.DriverNumber, t.TsMs, t.Kind) {
+				p.triggers.Add(t)
+			} else {
+				p.Marks.Skipped.Add(1)
+			}
 		}
 		if p.cfg.TriggerSink != nil {
 			p.cfg.TriggerSink(t)
@@ -181,6 +201,7 @@ type Stats struct {
 	TriggerLatency metrics.Summary `json:"trigger_latency"`
 	ParquetFiles   int64           `json:"parquet_files"`
 	ParquetRows    int64           `json:"parquet_rows"`
+	SkippedRows    int64           `json:"skipped_rows"` // already in the lakehouse
 	SinkErrors     int64           `json:"sink_errors"`
 }
 
@@ -194,6 +215,9 @@ func (p *Pipeline) Stats() Stats {
 	}
 	if up > 0 {
 		s.EventsPerSec = float64(s.Events) / up
+	}
+	if p.Marks != nil {
+		s.SkippedRows = p.Marks.Skipped.Load()
 	}
 	if p.telemetry != nil {
 		s.ParquetFiles += p.telemetry.Writer().Files()

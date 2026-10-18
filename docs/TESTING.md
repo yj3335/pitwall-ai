@@ -12,7 +12,7 @@ is down (`requires_ollama`, `requires_qdrant`, a Kafka dial check). Nothing is m
 except where a test needs a scripted LLM to force a specific code path (the agent's
 cyclic-loop tests), and those still call the real Go MCP server.
 
-## Go (`go test -race ./...`): 44 tests in 8 packages, 0 data races
+## Go (`go test -race ./...`): 47 tests in 8 packages, 0 data races
 
 | Package | What is verified |
 |---|---|
@@ -22,7 +22,7 @@ cyclic-loop tests), and those still call the real Go MCP server.
 | `internal/sim` | Determinism for a fixed seed; 10k rollouts per strategy; two-compound legality (including the intermediate waiver); a 5 s hold costs about 5 s; a VSC stop saves pit time; a closed pit entry is never recommended; 8 concurrent simulations; exact 2-lap undercut arithmetic and the penalty's effect on it; DRS-train detection; **overtaking difficulty flips a Singapore-style VSC call from pit to stay out**; **a rival's observed degradation changes the projection**; **the quadratic cliff** (about 2 s/lap five laps past it, with widening noise) and **a soft stint that runs 8 laps past its cliff loses to mediums while a 10-lap one beats them**; **rivals switch to intermediates when it rains**; latency budget (10k rollouts < 15 ms, measured about 1 ms); **defence: a faster car behind must pass a leader on track under the same overtaking model** (a street circuit protects the leader; fails without the defence model) |
 | `internal/mcp` | Lifecycle, `tools/list` schemas, ID echo, parse / invalid-request / method-not-found codes, tool errors as `isError` results, batches with notifications; **8 concurrent HTTP clients**; the legacy SSE round trip; stdio; `get_live_driver_window` from a Board fed with the real 2024 British GP stream, with a sub-millisecond lookup |
 | `internal/metrics` | Histogram quantiles within bucket error; concurrent recording; bucket monotonicity |
-| `internal/pipeline` | **On the live broker: no offset is committed while rows sit in the Parquet buffers, and every offset is committed after the flush** (fails if the pipeline acknowledges records before they are durable) |
+| `internal/pipeline` | **On the live broker: no offset is committed while rows sit in the Parquet buffers, and every offset is committed after the flush** (fails if the pipeline acknowledges records before they are durable); **a restart with 5,000 re-delivered events writes no duplicate telemetry, lap or trigger row**, and each table keeps its own high-water mark |
 | `cmd/processor` | `POST /v1/race-control`: publishes with the streaming session and a timestamp filled in; 400 on empty or invalid bodies; 502 when the broker rejects; 503 when publishing is disabled; `GET /readyz` is 503 until the consumer holds telemetry partitions |
 
 ## Python (`pytest`): 88 tests
